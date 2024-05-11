@@ -1,0 +1,89 @@
+theme = "ayu_mirage"
+
+[editor]
+bufferline = "multiple"
+cursorline = true
+line-number = "relative"
+rulers = [80, 120]
+
+[editor.indent-guides]
+render = true
+character = "|"
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+
+[editor.file-picker]
+hidden = false
+git-ignore = true
+
+[keys.normal]
+C-s = ":w"
+C-p = "save_selection"
+j = "move_visual_line_up"
+k = "move_visual_line_down"
+up = "no_op"
+down = "no_op"
+left = "no_op"
+right = "no_op"
+
+A-x = "extend_to_line_bounds"
+X = ["extend_line_up", "extend_to_line_bounds"]
+
+"ö" = "switch_case"
+"ä" = "switch_to_lowercase"
+"Ä" = "switch_to_uppercase"
+
+"C-ö" = ":config-reload"
+"C-ä" = ":config-open"
+
+A-l = ":format"
+d = "delete_selection_noyank"
+A-d = "delete_selection"
+[keys.normal.C-t]
+d = "goto_next_diag"
+D = "goto_prev_diag"
+A-d = "goto_last_diag"
+A-D = "goto_first_diag"
+f = "goto_next_function"
+F = "goto_prev_function"
+s = "goto_next_class"
+S = "goto_prev_class"
+a = "goto_next_parameter"
+A = "goto_prev_parameter"
+c = "goto_next_comment"
+C = "goto_prev_comment"
+t = "goto_next_test"
+T = "goto_prev_test"
+p = "goto_next_paragraph"
+P = "goto_prev_paragraph"
+g = "goto_next_change"
+G = "goto_prev_change"
+h = "goto_last_change"
+H = "goto_first_change"
+"space"	= "add_newline_below"
+"C-space" = "add_newline_above"
+
+[keys.insert]
+A-k = "normal_mode"
+up = "no_op"
+down = "no_op"
+left = "no_op"
+right = "no_op"
+
+[keys.select]
+j = "move_visual_line_up"
+k = "move_visual_line_down"
+up = "no_op"
+down = "no_op"
+left = "no_op"
+right = "no_op"
+
+A-x = "extend_to_line_bounds"
+X = ["extend_line_up", "extend_to_line_bounds"]
