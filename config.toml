@@ -20,7 +20,7 @@ display-messages = true
 display-inlay-hints = true
 
 [editor.file-picker]
-hidden = false
+hidden = true
 git-ignore = true
 
 [keys.normal]
