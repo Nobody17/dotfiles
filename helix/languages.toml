@@ -7,5 +7,13 @@ auto-format = true
 
 [[language]]
 name = "elixir"
-
 auto-format = true
+# scope = "source.elixir"
+# file-types = ["ex", "exs"]
+# diagnostic-severity = "Hint"
+# comment-token = "#"
+# indent = {tab-width = 2, unit = " "}
+# injection-regex = "(elixir|ex)"
+# shebangs = ["elixir"]
+# roots = ["mix.exs", "mix.lock"]
+# language-servers = [ "elixir-ls" ]

@@ -19,10 +19,6 @@ select = "underline"
 display-messages = true
 display-inlay-hints = true
 
-[editor.file-picker]
-hidden = true
-git-ignore = true
-
 [keys.normal]
 C-s = ":w"
 C-p = "save_selection"
