@@ -17,3 +17,12 @@ auto-format = true
 # shebangs = ["elixir"]
 # roots = ["mix.exs", "mix.lock"]
 # language-servers = [ "elixir-ls" ]
+
+
+[language-server.sql-language-server]
+command = "sql-language-server"
+args = ["up", "--method", "stdio"]
+
+[[language]]
+name = "sql"
+language-servers = [ "sql-language-server" ]

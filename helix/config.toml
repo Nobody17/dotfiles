@@ -68,6 +68,7 @@ H = "goto_first_change"
 
 [keys.insert]
 A-k = "normal_mode"
+C-s = ["normal_mode", ":w"]
 up = "no_op"
 down = "no_op"
 left = "no_op"
