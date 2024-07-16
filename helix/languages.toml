@@ -8,16 +8,6 @@ auto-format = true
 [[language]]
 name = "elixir"
 auto-format = true
-# scope = "source.elixir"
-# file-types = ["ex", "exs"]
-# diagnostic-severity = "Hint"
-# comment-token = "#"
-# indent = {tab-width = 2, unit = " "}
-# injection-regex = "(elixir|ex)"
-# shebangs = ["elixir"]
-# roots = ["mix.exs", "mix.lock"]
-# language-servers = [ "elixir-ls" ]
-
 
 [language-server.sql-language-server]
 command = "sql-language-server"
@@ -26,3 +16,6 @@ args = ["up", "--method", "stdio"]
 [[language]]
 name = "sql"
 language-servers = [ "sql-language-server" ]
+# identifiers lower
+formatter = { command = "sqlformat", args = ["--reindent", "--indent_width", "2","--identifiers", "lower", "--keywords", "upper", "-"] }
+auto-format = true
