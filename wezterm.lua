@@ -10,8 +10,11 @@ local config = wezterm.config_builder()
 -- For example, changing the color scheme:
 config.color_scheme = 'Catppuccin Mocha'
 
-config.default_cwd = 'C:\\'
-config.default_prog = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
+if wezterm.target_triple == "x86_64-pc-windows-msvc" then
+    config.default_cwd = 'C:\\'
+    config.default_prog = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
+end
+
 
 local act = wezterm.action
 config.disable_default_key_bindings = true
