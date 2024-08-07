@@ -21,10 +21,10 @@ display-messages = true
 display-inlay-hints = true
 
 [keys.normal]
-C-s = ":w"
+C-s = [":format", ":w"]
 C-p = "save_selection"
-j = "move_visual_line_up"
-k = "move_visual_line_down"
+# j = "move_visual_line_up"
+# k = "move_visual_line_down"
 up = "no_op"
 down = "no_op"
 left = "no_op"
@@ -69,7 +69,7 @@ H = "goto_first_change"
 
 [keys.insert]
 A-k = "normal_mode"
-C-s = ["normal_mode", ":w"]
+C-s = ["normal_mode", ":format", ":w"]
 up = "no_op"
 down = "no_op"
 left = "no_op"
@@ -77,8 +77,8 @@ right = "no_op"
 "tab" = "no_op"
 
 [keys.select]
-j = "move_visual_line_up"
-k = "move_visual_line_down"
+# j = "move_visual_line_up"
+# k = "move_visual_line_down"
 up = "no_op"
 down = "no_op"
 left = "no_op"
@@ -86,3 +86,6 @@ right = "no_op"
 
 A-x = "extend_to_line_bounds"
 X = ["extend_line_up", "extend_to_line_bounds"]
+
+d = "delete_selection_noyank"
+A-d = "delete_selection"
