@@ -6,7 +6,8 @@ cursorline = true
 line-number = "relative"
 rulers = [80, 120]
 default-line-ending = "lf"
-
+idle-timeout = 5
+completion-timeout = 5
 [editor.indent-guides]
 render = true
 character = "|"
