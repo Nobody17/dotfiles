@@ -19,3 +19,12 @@ language-servers = [ "sql-language-server" ]
 # identifiers lower
 formatter = { command = "sqlformat", args = ["--reindent", "--indent_width", "2","--identifiers", "lower", "--keywords", "upper", "-"] }
 auto-format = true
+
+[[language]]
+name = "c"
+auto-format = true
+
+[language-server.clangd]
+command = "clangd"
+args = ["--function-arg-placeholders=0", "--query-driver=avr-gcc"]
+# args = ["--query-driver=/usr/bin/avr-gcc"]

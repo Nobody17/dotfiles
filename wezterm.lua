@@ -32,6 +32,8 @@ config.keys = {
   { key = 's', mods = 'CTRL|ALT', action = act.ActivatePaneDirection 'Up' },
   { key = 'd', mods = 'CTRL|ALT', action = act.ActivatePaneDirection 'Down' },
   { key = 'f', mods = 'CTRL|ALT', action = act.ActivatePaneDirection 'Right' },
+  { key = 'v', mods = 'CTRL', action = act.PasteFrom 'Clipboard'},
+  { key = 'V', mods = 'CTRL', action = act.PasteFrom 'Clipboard'},
 }
 
 for i = 1, 8 do
