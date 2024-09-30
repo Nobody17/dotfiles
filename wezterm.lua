@@ -7,12 +7,43 @@ local config = wezterm.config_builder()
 
 -- This is where you actually apply your config choices
 
+function get_random_entry(tbl)
+  local keys = {}
+  for key, _ in ipairs(tbl) do
+    table.insert(keys, key)
+  end
+  local randomKey = keys[math.random(1, #keys)]
+  return tbl[randomKey]
+end
+
 -- For example, changing the color scheme:
 config.color_scheme = 'Catppuccin Mocha'
 
 if wezterm.target_triple == "x86_64-pc-windows-msvc" then
-    config.default_cwd = 'C:\\'
-    config.default_prog = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
+  config.default_cwd = 'C:\\'
+  config.default_prog = { 'C:\\Program Files\\PowerShell\\7\\pwsh.exe' }
+elseif wezterm.target_triple == "x86_64-unknown-linux-gnu" then
+  config.default_prog = { "/bin/fish" }
+  config.hide_tab_bar_if_only_one_tab = true
+  config.background = {
+    {
+      source = {
+        -- File = '/home/yorunai/Pictures/Wallpaper/Wallpaper.png'
+
+      },
+      opacity = 1,
+      height = "Cover",
+      width = "Cover"
+    },
+    {
+      source = {
+        Color = "black",
+      },
+      opacity = 0.7,
+      height = "100%",
+      width = "100%"
+    }
+  }
 end
 
 
@@ -32,8 +63,8 @@ config.keys = {
   { key = 's', mods = 'CTRL|ALT', action = act.ActivatePaneDirection 'Up' },
   { key = 'd', mods = 'CTRL|ALT', action = act.ActivatePaneDirection 'Down' },
   { key = 'f', mods = 'CTRL|ALT', action = act.ActivatePaneDirection 'Right' },
-  { key = 'v', mods = 'CTRL', action = act.PasteFrom 'Clipboard'},
-  { key = 'V', mods = 'CTRL', action = act.PasteFrom 'Clipboard'},
+  { key = 'v', mods = 'CTRL',     action = act.PasteFrom 'Clipboard' },
+  { key = 'V', mods = 'CTRL',     action = act.PasteFrom 'Clipboard' },
 }
 
 for i = 1, 8 do

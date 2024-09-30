@@ -1,4 +1,4 @@
-theme = "catppuccin_mocha"
+theme = "catppuccin_mocha_transparent"
 
 [editor]
 bufferline = "multiple"
@@ -34,9 +34,6 @@ right = "no_op"
 A-x = "extend_to_line_bounds"
 X = ["extend_line_up", "extend_to_line_bounds"]
 
-"ö" = "switch_case"
-"ä" = "switch_to_lowercase"
-"Ä" = "switch_to_uppercase"
 
 "C-ö" = ":config-reload"
 "C-ä" = ":config-open"
@@ -44,7 +41,23 @@ X = ["extend_line_up", "extend_to_line_bounds"]
 A-l = ":format"
 d = "delete_selection_noyank"
 A-d = "delete_selection"
-[keys.normal.C-t]
+
+[keys.normal."ä"]
+q = "switch_case"
+e = "switch_to_lowercase"
+w = "switch_to_uppercase"
+a = "increment"
+s = "decrement"
+
+[keys.normal."ö"]
+q = ":quit"
+A-q = ":quit!"
+w = ":buffer-close"
+A-w = ":buffer-close!"
+c = ":config-reload"
+A-c = ":config-open"
+
+[keys.normal."ü"]
 d = "goto_next_diag"
 D = "goto_prev_diag"
 A-d = "goto_last_diag"
