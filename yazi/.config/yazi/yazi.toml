@@ -1,0 +1,9 @@
+[manager]
+show_hidden = true
+sort_by = "natural"
+
+[opener]
+edit = [
+	{ run = 'hx "$@"', block = true, for = "unix" },
+	{ run = "hx %*",   block = true, for = "windows" },
+]
