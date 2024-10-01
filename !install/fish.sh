@@ -11,3 +11,5 @@ sudo make install
 cd ..
 rm -rf fish
 rm fish.tar.xz
+
+echo 'sudo chsh -s /usr/bin/fish username to start fish with wsl'
