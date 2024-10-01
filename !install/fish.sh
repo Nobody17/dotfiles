@@ -13,3 +13,4 @@ rm -rf fish
 rm fish.tar.xz
 
 echo 'sudo chsh -s /usr/bin/fish username to start fish with wsl'
+echo 'git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-wincred.exe" for git credentials in WSL'
