@@ -19,3 +19,10 @@ fzf --fish | source
 zoxide init fish | source
 starship init fish | source
 enable_transience
+
+# pnpm
+set -gx PNPM_HOME "/home/yorunai/.local/share/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+  set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end
