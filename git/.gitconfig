@@ -7,9 +7,11 @@
 [interactive]
     diffFilter = delta --color-only
 
+[include]
+    path = /home/yorunai/.config/delta/themes/catppuccin.gitconfig
 [delta]
     navigate = true    # use n and N to move between diff sections
-
+    features = catppuccin-mocha
     # delta detects terminal colors automatically; set one of these to disable auto-detection
     # dark = true
     # light = true

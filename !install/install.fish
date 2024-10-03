@@ -9,7 +9,7 @@ for file in *.fish
 end
 
 for file in $scripts
-    $file
+    ./$file
     if test $status -ne 0
         echo "Script $file failed"
         exit 1
