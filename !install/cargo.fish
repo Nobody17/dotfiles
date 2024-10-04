@@ -14,3 +14,4 @@ cargo install zoxide --locked
 cargo install --locked yazi-fm yazi-cli
 cargo install --locked zellij
 cargo install git-delta
+cargo install ripgrep
