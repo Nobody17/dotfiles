@@ -23,6 +23,13 @@ enable_transience
 # pnpm
 set -gx PNPM_HOME "/home/yorunai/.local/share/pnpm"
 if not string match -q -- $PNPM_HOME $PATH
-  set -gx PATH "$PNPM_HOME" $PATH
+    set -gx PATH "$PNPM_HOME" $PATH
 end
 # pnpm end
+
+#abbreviations
+abbr cd z
+abbr g lazygit
+abbr l eza -lah --git --git-repos --group-directories-first
+abbr lts eza -lah --git --git-repos --group-directories-first --total-size
+abbr n nvim

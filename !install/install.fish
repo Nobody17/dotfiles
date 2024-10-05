@@ -4,7 +4,7 @@ mkdir -p ~/.local/bin
 fish_add_path -m ~/.local/bin
 
 for file in *.fish
-    if test $file = install.fish or test $file = nvim.fish
+    if test $file = install.fish || test $file = nvim.fish
         continue
     else
         set scripts $scripts $file
@@ -21,6 +21,7 @@ for file in $scripts
 end
 
 ../stow.fish
+
 # bat theme (also used in lazygit) is in a config file, but it needs to be recognized
 bat cache --build
 # git credentials in wsl, do it after stow
