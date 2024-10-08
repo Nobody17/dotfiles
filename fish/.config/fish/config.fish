@@ -19,6 +19,7 @@ fzf --fish | source
 zoxide init fish | source
 starship init fish | source
 enable_transience
+source ~/.asdf/asdf.fish
 
 # pnpm
 set -gx PNPM_HOME "/home/yorunai/.local/share/pnpm"
