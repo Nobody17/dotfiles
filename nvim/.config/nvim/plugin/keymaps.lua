@@ -1,6 +1,6 @@
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<esc>', '<cmd>nohlsearch<cr>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -23,3 +23,23 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+-- In visual mode, move selected lines up and down (with automatic indentation)
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+
+-- Keep cursor centered on the screen when searching or moving half pages
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+
+vim.keymap.set('n', '<n>', 'nzzzv')
+vim.keymap.set('n', '<N>', 'Nzzzv')
+
+vim.keymap.set('x', '<leader>p', '"_dP', { desc = '[P]aste without overwriting paste register' })
+
+vim.keymap.set('n', '<leader>y', '"+y', { desc = '[Y]ank into system clipboard' })
+vim.keymap.set('v', '<leader>y', '"+y', { desc = '[Y]ank into system clipboard' })
+vim.keymap.set('n', '<leader>Y', '"+Y', { desc = '[Y]ank into system clipboard' })
+
+vim.keymap.set('n', '<leader>d', '"_d', { desc = '[D]elete into void register' })
+vim.keymap.set('v', '<leader>d', '"_d', { desc = '[D]elete into void register' })

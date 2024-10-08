@@ -141,6 +141,7 @@ return {
       local servers = {
         clangd = {},
         elixirls = {},
+        marksman = {},
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -168,7 +169,6 @@ return {
           },
         },
       }
-
 
       -- Ensure the servers and tools above are installed
       --  To check the current status of installed tools and/or manually install
@@ -199,5 +199,5 @@ return {
         },
       }
     end,
-  }
+  },
 }
