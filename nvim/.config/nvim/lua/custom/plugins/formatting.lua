@@ -42,20 +42,16 @@ return {
           -- To organize the imports.
           'ruff_organize_imports',
         },
+        markdown = {
+          'mdformat',
+        },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
     },
   },
-  {
-    'nmac427/guess-indent.nvim',
-    opts = {
-      on_tab_options = {
-        ['expandtab'] = true,
-        ['tabstop'] = 'detected', -- If the option value is 'detected', The value is set to the automatically detected indent size.
-        ['softtabstop'] = 'detected',
-        ['shiftwidth'] = 'detected',
-      },
-    },
-  },
+  -- {
+  --   'nmac427/guess-indent.nvim',
+  --   opts = {},
+  -- },
 }

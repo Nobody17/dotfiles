@@ -13,11 +13,14 @@ vim.opt.mouse = 'a'
 -- Enable break indent
 vim.opt.breakindent = true
 vim.opt.smartindent = true
+vim.opt.smarttab = true
 
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
+
+vim.g.markdown_recommended_style = 0
 
 -- Save undo history
 vim.opt.undofile = true
