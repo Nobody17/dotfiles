@@ -28,6 +28,8 @@ if not string match -q -- $PNPM_HOME $PATH
 end
 # pnpm end
 
+pyenv init - | source
+
 #abbreviations
 abbr cd z
 abbr g lazygit

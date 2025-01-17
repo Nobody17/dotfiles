@@ -106,7 +106,7 @@ return {
       --   time_format = '%H:%M',
       -- },
       workspaces = {
-        { name = 'oldvault', path = '~/SecondBrain/Second Brain/' },
+        -- { name = 'oldvault', path = '~/SecondBrain/Second Brain/' },
         { name = 'secondbrain', path = '~/Documents/ObsidianVaults/SecondBrain/' },
       },
       callbacks = {
