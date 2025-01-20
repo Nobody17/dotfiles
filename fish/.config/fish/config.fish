@@ -27,7 +27,11 @@ if not string match -q -- $PNPM_HOME $PATH
     set -gx PATH "$PNPM_HOME" $PATH
 end
 # pnpm end
+
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
+
+pyenv init - | source
+
 #abbreviations
 abbr cd z
 abbr g lazygit

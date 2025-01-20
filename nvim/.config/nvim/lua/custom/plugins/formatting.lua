@@ -47,7 +47,8 @@ return {
         },
         sql = {
           'sqlfmt',
-          'sqlfluff',
+          -- The following is very slow, timeout_ms needs to be higher when used:
+          -- 'sqlfluff',
         },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
