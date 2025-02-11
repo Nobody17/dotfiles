@@ -7,6 +7,11 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         sql = { 'sqlfluff' },
+        typescript = { 'eslint' },
+        javascript = { 'eslint' },
+        -- typescript = { 'deno' },
+        -- javascript = { 'deno' },
+        json = { 'jsonlint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,

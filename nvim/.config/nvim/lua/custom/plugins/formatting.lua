@@ -51,7 +51,12 @@ return {
           -- 'sqlfluff',
         },
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettier', 'deno_fmt', stop_after_first = true },
+        typescript = { 'prettier', 'deno_fmt', stop_after_first = true },
+        json = { 'prettier', 'deno_fmt', stop_after_first = true },
+        vue = { 'prettier' },
+        html = { 'prettier' },
+        css = { 'prettier' },
       },
     },
   },
