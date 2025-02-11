@@ -21,13 +21,6 @@ starship init fish | source
 enable_transience
 source ~/.asdf/asdf.fish
 
-# pnpm
-set -gx PNPM_HOME "/home/yorunai/.local/share/pnpm"
-if not string match -q -- $PNPM_HOME $PATH
-    set -gx PATH "$PNPM_HOME" $PATH
-end
-# pnpm end
-
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
 
 pyenv init - | source
@@ -38,3 +31,8 @@ abbr g lazygit
 abbr l eza -lah --git --git-repos --group-directories-first
 abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
+
+#path
+fish_add_path "/home/yorunai/.config/herd-lite/bin"
+set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
+
