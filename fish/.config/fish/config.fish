@@ -38,3 +38,7 @@ abbr g lazygit
 abbr l eza -lah --git --git-repos --group-directories-first
 abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
+
+fish_add_path "/home/yorunai/.config/herd-lite/bin"
+set -gx PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
+
