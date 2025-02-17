@@ -35,4 +35,3 @@ abbr n nvim
 #path
 fish_add_path "/home/yorunai/.config/herd-lite/bin"
 set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
-
