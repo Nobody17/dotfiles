@@ -32,6 +32,8 @@ abbr l eza -lah --git --git-repos --group-directories-first
 abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
 
+set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+
 #path
 fish_add_path "/home/yorunai/.config/herd-lite/bin"
 set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
