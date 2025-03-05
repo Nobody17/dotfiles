@@ -13,7 +13,7 @@ return {
         custom_handlers = {
           markdown = {
             extends = true,
-            parse = function(root, buf)
+            parse = function(ctx)
               local marks = {}
               ---@param row integer
               ---@param start_col integer
@@ -29,8 +29,8 @@ return {
                 })
               end
 
-              local start_row = root:range()
-              local text = vim.treesitter.get_node_text(root, buf)
+              local start_row = ctx.root:range()
+              local text = vim.treesitter.get_node_text(ctx.root, ctx.buf)
               for i, line in ipairs(vim.split(text, '\n', { plain = true })) do
                 local row = start_row + i - 1
                 ---@type integer|nil

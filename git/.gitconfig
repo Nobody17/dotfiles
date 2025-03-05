@@ -1,7 +1,7 @@
 [user]
 	name = Nobody17
 	email = 24973487+Nobody17@users.noreply.github.com
-	signingKey = /home/yorunai/.ssh/id_ed25519_sk
+	signingKey = /home/yorunai/.ssh/id_github_sk
 [core]
     pager = delta
 
