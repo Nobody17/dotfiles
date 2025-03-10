@@ -14,7 +14,10 @@ return { -- Collection of various small independent plugins/modules
     -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
     -- - sd'   - [S]urround [D]elete [']quotes
     -- - sr)'  - [S]urround [R]eplace [)] [']
-    -- require('mini.surround').setup {
+    local surround = require 'mini.surround'
+    surround.setup {}
+    -- vim.keymap.del('n', 's')
+    -- vim.keymap.set('n', 'sa', surround.add 'n', { desc = 'Add surrounding' })
     -- mappings = {
     --   add = 'sa', -- Add surrounding in Normal and Visual modes
     --   delete = 'sd', -- Delete surrounding
@@ -28,6 +31,8 @@ return { -- Collection of various small independent plugins/modules
     --   suffix_next = 'n', -- Suffix to search with "next" method
     -- },
     -- }
+
+    require('mini.jump2d').setup {}
 
     -- Simple and easy statusline.
     --  You could remove this setup call if you don't like it,
