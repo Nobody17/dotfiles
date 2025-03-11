@@ -33,7 +33,7 @@ abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
 
 #WSL
-#set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
 set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
