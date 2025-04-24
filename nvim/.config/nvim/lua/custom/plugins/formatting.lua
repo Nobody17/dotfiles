@@ -43,7 +43,10 @@ return {
           'ruff_organize_imports',
         },
         markdown = {
+          'prettier',
+          'deno_fmt',
           'mdformat',
+          stop_after_first = true,
         },
         sql = {
           'sqlfmt',

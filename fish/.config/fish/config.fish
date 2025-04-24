@@ -22,21 +22,27 @@ enable_transience
 source ~/.asdf/asdf.fish
 
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
+set -gxa ASDF_DATA_DIR "/home/yorunai/.asdf"
+fish_add_path "/home/yorunai/.asdf/shims"
 
 pyenv init - | source
 
 #abbreviations
 abbr cd z
 abbr g lazygit
+abbr lzd lazydocker
 abbr l eza -lah --git --git-repos --group-directories-first
 abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
 
 #WSL
-set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+#set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
 set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 #path
+fish_add_path "/usr/local/go/bin"
+fish_add_path "/home/yorunai/go/bin"
 fish_add_path "/home/yorunai/.config/herd-lite/bin"
 set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
+
