@@ -1,9 +1,9 @@
-if status is-interactive
-    # Commands to run in interactive sessions can go here
-
-    set -x ZELLIJ_AUTO_EXIT true
-    eval (zellij setup --generate-auto-start fish | string collect)
-end
+# if status is-interactive
+#     # Commands to run in interactive sessions can go here
+#
+#     set -x ZELLIJ_AUTO_EXIT true
+#     eval (zellij setup --generate-auto-start fish | string collect)
+# end
 
 function y
     set tmp (mktemp -t "yazi-cwd.XXXXXX")
@@ -34,6 +34,7 @@ abbr lzd lazydocker
 abbr l eza -lah --git --git-repos --group-directories-first
 abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
+alias get_idf=". $HOME/esp/esp-idf/export.fish"
 
 #WSL
 #set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
@@ -41,6 +42,7 @@ abbr n nvim
 set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 #path
+fish_add_path "/opt/nvim/bin"
 fish_add_path "/usr/local/go/bin"
 fish_add_path "/home/yorunai/go/bin"
 fish_add_path "/home/yorunai/.config/herd-lite/bin"

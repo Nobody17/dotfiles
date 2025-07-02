@@ -4,6 +4,6 @@ sort_by = "natural"
 
 [opener]
 edit = [
-	{ run = 'hx "$@"', block = true, for = "unix" },
-	{ run = "hx %*",   block = true, for = "windows" },
+	{ run = 'nvim "$@"', block = true, for = "unix" },
+	{ run = "nvim %*",   block = true, for = "windows" },
 ]
