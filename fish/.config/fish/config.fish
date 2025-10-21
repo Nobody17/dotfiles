@@ -21,7 +21,6 @@ fish_add_path "/home/yorunai/bin"
 pyenv init - | source
 
 #abbreviations
-abbr cd z
 abbr g lazygit
 abbr lzd lazydocker
 abbr l eza -lah --git --git-repos --group-directories-first
@@ -36,6 +35,7 @@ set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 
 #path
 fish_add_path "/opt/nvim/bin"
+fish_add_path "/home/yorunai/.local/share/nvim/mason/bin"
 fish_add_path "/usr/local/go/bin"
 fish_add_path "/home/yorunai/go/bin"
 fish_add_path "/home/yorunai/.config/herd-lite/bin"

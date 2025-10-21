@@ -27,9 +27,9 @@ return {
       'hrsh7th/cmp-nvim-lsp',
     },
     opts = function(_, opts)
-      local esp32 = require 'esp32'
-      opts.servers = opts.servers or {}
-      opts.servers.clangd = esp32.lsp_config()
+      -- local esp32 = require 'esp32'
+      -- opts.servers = opts.servers or {}
+      -- opts.servers.clangd = esp32.lsp_config()
       return opts
     end,
     config = function()
@@ -136,8 +136,9 @@ return {
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
       local mason_registry = require 'mason-registry'
-      local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
-        .. '/node_modules/@vue/language-server'
+      -- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
+      -- .. '/node_modules/@vue/language-server'
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -148,13 +149,6 @@ return {
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        elixirls = {
-          settings = {
-            elixirLS = {
-              dialyzerEnabled = false,
-            },
-          },
-        },
         marksman = {},
         -- gopls = {},
         pyright = {
@@ -190,7 +184,6 @@ return {
             'vue',
           },
         },
-        volar = {},
         --
         lua_ls = {
           -- cmd = {...},
