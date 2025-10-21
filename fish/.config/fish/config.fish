@@ -1,9 +1,9 @@
-if status is-interactive
-    # Commands to run in interactive sessions can go here
-
-    set -x ZELLIJ_AUTO_EXIT true
-    eval (zellij setup --generate-auto-start fish | string collect)
-end
+#if status is-interactive
+#    # Commands to run in interactive sessions can go here
+#
+#    set -x ZELLIJ_AUTO_EXIT true
+#    eval (zellij setup --generate-auto-start fish | string collect)
+#end
 
 function y
     set tmp (mktemp -t "yazi-cwd.XXXXXX")
@@ -19,11 +19,11 @@ fzf --fish | source
 zoxide init fish | source
 starship init fish | source
 enable_transience
-source ~/.asdf/asdf.fish
 
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
 set -gxa ASDF_DATA_DIR "/home/yorunai/.asdf"
 fish_add_path "/home/yorunai/.asdf/shims"
+fish_add_path "/home/yorunai/bin"
 
 pyenv init - | source
 
@@ -36,9 +36,9 @@ abbr lts eza -lah --git --git-repos --group-directories-first --total-size
 abbr n nvim
 
 #WSL
-#set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
-set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
+#set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 #path
 fish_add_path "/usr/local/go/bin"
