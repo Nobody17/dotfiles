@@ -135,6 +135,16 @@ return {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      local mason_elixirls_path = vim.fn.stdpath 'data' .. '/mason/packages/elixir-ls'
+      local asdf_init_script = vim.fn.expand 'asdf'
+      local elixir_ls_entry_file = mason_elixirls_path .. '/launch.exs'
+
+      local elixirls_cmd_string = string.format(
+        [[ source "%s" && exec elixir --erl "-kernel standard_io_encoding latin1 +sbwt none +sbwtdcpu none +sbwtdio none" "%s" ]],
+        asdf_init_script,
+        elixir_ls_entry_file
+      )
+
       local mason_registry = require 'mason-registry'
       -- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
       -- .. '/node_modules/@vue/language-server'
@@ -199,6 +209,14 @@ return {
             },
           },
         },
+        elixirls = {
+          -- Use the custom bash command string defined above
+          cmd = { 'bash', '-c', elixirls_cmd_string },
+          -- Root directory patterns for Elixir projects
+          root_dir = require('lspconfig.util').root_pattern('mix.exs', '.tool-versions', '.git'),
+          -- Optional: Add other specific ElixirLS settings here if needed
+          -- settings = { elixirLS = { dialyzerEnabled = false } }
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -218,6 +236,7 @@ return {
         'mdformat',
         'sqlfluff',
         'sqlfmt',
+        'elixirls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
