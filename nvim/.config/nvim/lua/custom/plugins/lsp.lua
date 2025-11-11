@@ -93,7 +93,7 @@ return {
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -120,7 +120,7 @@ return {
           -- code, if the language server you are using supports them
           --
           -- This may be unwanted, since they displace some of your code
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
@@ -135,15 +135,8 @@ return {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
-      local mason_elixirls_path = vim.fn.stdpath 'data' .. '/mason/packages/elixir-ls'
-      local asdf_init_script = vim.fn.expand 'asdf'
-      local elixir_ls_entry_file = mason_elixirls_path .. '/launch.exs'
-
-      local elixirls_cmd_string = string.format(
-        [[ source "%s" && exec elixir --erl "-kernel standard_io_encoding latin1 +sbwt none +sbwtdcpu none +sbwtdio none" "%s" ]],
-        asdf_init_script,
-        elixir_ls_entry_file
-      )
+      local mason_elixirls = vim.fn.stdpath 'data' .. '/mason/packages/elixir-ls'
+      local asdf_init = vim.fn.expand '~/.asdf/asdf.sh'
 
       local mason_registry = require 'mason-registry'
       -- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
@@ -208,14 +201,6 @@ return {
               diagnostics = { disable = { 'missing-fields' } },
             },
           },
-        },
-        elixirls = {
-          -- Use the custom bash command string defined above
-          cmd = { 'bash', '-c', elixirls_cmd_string },
-          -- Root directory patterns for Elixir projects
-          root_dir = require('lspconfig.util').root_pattern('mix.exs', '.tool-versions', '.git'),
-          -- Optional: Add other specific ElixirLS settings here if needed
-          -- settings = { elixirLS = { dialyzerEnabled = false } }
         },
       }
 

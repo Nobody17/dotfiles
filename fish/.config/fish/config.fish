@@ -9,7 +9,9 @@ end
 
 # Set up fzf key bindings
 fzf --fish | source
-zoxide init fish | source
+if status is-interactive
+  zoxide init fish | source
+end
 starship init fish | source
 enable_transience
 
