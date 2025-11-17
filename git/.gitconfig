@@ -4,6 +4,7 @@
 	signingKey = /home/yorunai/.ssh/id_github_sk
 [core]
     pager = delta
+	autocrlf = input
 
 [interactive]
     diffFilter = delta --color-only
@@ -33,3 +34,7 @@
 	format = ssh
 [init]
 	defaultBranch = main
+[http "https://git.hci.uni-hannover.de/"]
+	sslCAInfo = /etc/ssl/certs/ca-certificates.crt
+[credential]
+	helper = store
