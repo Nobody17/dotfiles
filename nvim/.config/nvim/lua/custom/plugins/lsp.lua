@@ -240,25 +240,26 @@ return {
       }
 
       -- setup texlab
-      require('lspconfig').texlab.setup {
-        capabilities = capabilities,
-        settings = {
-          texlab = {
-            auxDirectory = 'build',
-            build = {
-              executable = 'latexmk',
-              args = { '-pdf', '-interaction=nonstopmode', '-synctex=1', '-file-line-error', '-outdir=build', '%f' },
-              onSave = true,
-              forwardSearchAfter = true,
-            },
-            forwardSearch = {
-              executable = 'zathura',
-              args = { '--synctex-forward', '%l:1:%f', '%p' },
-            },
-            chktex = { onOpenAndSave = true },
-          },
-        },
-      }
+      -- require('lspconfig').texlab.setup {
+      --   -- vim.lsp.config?
+      --   capabilities = capabilities,
+      --   settings = {
+      --     texlab = {
+      --       auxDirectory = 'build',
+      --       build = {
+      --         executable = 'latexmk',
+      --         args = { '-pdf', '-interaction=nonstopmode', '-synctex=1', '-file-line-error', '-outdir=build', '%f' },
+      --         onSave = true,
+      --         forwardSearchAfter = true,
+      --       },
+      --       forwardSearch = {
+      --         executable = 'zathura',
+      --         args = { '--synctex-forward', '%l:1:%f', '%p' },
+      --       },
+      --       chktex = { onOpenAndSave = true },
+      --     },
+      --   },
+      -- }
     end,
   },
   -- {
