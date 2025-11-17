@@ -27,9 +27,9 @@ return {
       'hrsh7th/cmp-nvim-lsp',
     },
     opts = function(_, opts)
-      local esp32 = require 'esp32'
-      opts.servers = opts.servers or {}
-      opts.servers.clangd = esp32.lsp_config()
+      -- local esp32 = require 'esp32'
+      -- opts.servers = opts.servers or {}
+      -- opts.servers.clangd = esp32.lsp_config()
       return opts
     end,
     config = function()
@@ -93,7 +93,7 @@ return {
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -120,7 +120,7 @@ return {
           -- code, if the language server you are using supports them
           --
           -- This may be unwanted, since they displace some of your code
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
@@ -135,9 +135,13 @@ return {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      local mason_elixirls = vim.fn.stdpath 'data' .. '/mason/packages/elixir-ls'
+      local asdf_init = vim.fn.expand '~/.asdf/asdf.sh'
+
       local mason_registry = require 'mason-registry'
-      local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
-        .. '/node_modules/@vue/language-server'
+      -- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
+      -- .. '/node_modules/@vue/language-server'
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -148,13 +152,6 @@ return {
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        elixirls = {
-          settings = {
-            elixirLS = {
-              dialyzerEnabled = false,
-            },
-          },
-        },
         marksman = {},
         -- gopls = {},
         pyright = {
@@ -190,7 +187,6 @@ return {
             'vue',
           },
         },
-        volar = {},
         --
         lua_ls = {
           -- cmd = {...},
@@ -226,6 +222,7 @@ return {
         'sqlfluff',
         'sqlfmt',
         'texlab',
+        'elixirls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
