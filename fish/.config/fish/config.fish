@@ -31,9 +31,9 @@ abbr n nvim
 alias get_idf=". $HOME/esp/esp-idf/export.fish"
 
 #WSL
-set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+# set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
-#set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
+set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 #path
 fish_add_path "/home/yorunai/Programming/software/android-studio/bin/"
