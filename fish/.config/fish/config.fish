@@ -14,11 +14,22 @@ if status is-interactive
 end
 starship init fish | source
 enable_transience
-
+# 1. Enable shell history for IEx
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
-set -gxa ASDF_DATA_DIR "/home/yorunai/.asdf"
-fish_add_path "/home/yorunai/.asdf/shims"
-fish_add_path "/home/yorunai/bin"
+
+# 2. Define ASDF Data Directory (Standard path)
+set -gx ASDF_DATA_DIR "$HOME/.asdf"
+
+# 3. Add shims and asdf bin to path
+# Note: It's better to add the bin folder too so the 'asdf' command itself is found
+fish_add_path "$ASDF_DATA_DIR/bin"
+fish_add_path "$ASDF_DATA_DIR/shims"
+fish_add_path "$HOME/bin"
+
+# 4. Source asdf (Standard way for Fish)
+if test -f "$ASDF_DATA_DIR/asdf.fish"
+    source "$ASDF_DATA_DIR/asdf.fish"
+end
 
 pyenv init - | source
 
@@ -31,9 +42,9 @@ abbr n nvim
 alias get_idf=". $HOME/esp/esp-idf/export.fish"
 
 #WSL
-# set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+#set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
-set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
+#set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 #path
 fish_add_path "/home/yorunai/Programming/software/android-studio/bin/"
@@ -44,16 +55,7 @@ fish_add_path "/usr/local/go/bin"
 fish_add_path "/home/yorunai/go/bin"
 fish_add_path "/home/yorunai/.config/herd-lite/bin"
 set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
-
-
 set PATH $PATH /home/yorunai/.local/bin
-
-# >>> mamba initialize >>>
-# !! Contents within this block are managed by 'micromamba shell init' !!
-set -gx MAMBA_EXE "/home/yorunai/.local/bin/micromamba"
-set -gx MAMBA_ROOT_PREFIX "/home/yorunai/.local/share/mamba"
-$MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
-# <<< mamba initialize <<<
 
 # Prefer custom FFmpeg (xHE-AAC via libfdk_aac)
 set -e -g fish_user_paths            # remove any shadowing global
