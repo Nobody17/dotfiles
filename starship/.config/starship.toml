@@ -1,5 +1,7 @@
 palette = "catppuccin_mocha"
 
+command_timeout = 1000
+
 [aws]
 symbol = "  "
 

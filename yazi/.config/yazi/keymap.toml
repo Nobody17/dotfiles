@@ -1,0 +1,4 @@
+[[manager.prepend_keymap]]
+on   = [ "c", "p" ]
+run  = "shell -- 'wl-copy < \"$1\"'"
+desc = "Copy image to clipboard"

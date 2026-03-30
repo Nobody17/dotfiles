@@ -30,7 +30,7 @@ end
 config.background = {
 	{
 		source = {
-			File = "/home/yorunai/Pictures/Wallpaper/miku_lying_bra.png",
+			File = "/home/yorunai/Pictures/Wallpaper/miku_lying.png",
 		},
 		opacity = 1,
 		height = "Cover",

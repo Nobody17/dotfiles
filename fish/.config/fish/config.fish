@@ -1,10 +1,12 @@
+source /usr/share/cachyos-fish-config/cachyos-config.fish
+
 function y
-    set tmp (mktemp -t "yazi-cwd.XXXXXX")
-    yazi $argv --cwd-file="$tmp"
-    if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
-        builtin cd -- "$cwd"
-    end
-    rm -f -- "$tmp"
+	set tmp (mktemp -t "yazi-cwd.XXXXXX")
+	command yazi $argv --cwd-file="$tmp"
+	if read -z cwd < "$tmp"; and [ "$cwd" != "$PWD" ]; and test -d "$cwd"
+		builtin cd -- "$cwd"
+	end
+	rm -f -- "$tmp"
 end
 
 # Set up fzf key bindings
@@ -23,17 +25,19 @@ fish_add_path "/home/yorunai/bin"
 pyenv init - | source
 
 #abbreviations
-abbr g lazygit
-abbr lzd lazydocker
-abbr l eza -lah --git --git-repos --group-directories-first
-abbr lts eza -lah --git --git-repos --group-directories-first --total-size
-abbr n nvim
+abbr -a g -- lazygit
+abbr -a lzd -- lazydocker
+abbr -a l -- eza -lah --git --git-repos --group-directories-first
+abbr -a lts -- eza -lah --git --git-repos --group-directories-first --total-size
+abbr -a n -- nvim
+abbr -a wl --position anywhere -- --UseOzonePlatform --ozone-platform-hint=wayland
+
 alias get_idf=". $HOME/esp/esp-idf/export.fish"
 
 #WSL
 # set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
-set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
+# set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 #path
 fish_add_path "/home/yorunai/Programming/software/android-studio/bin/"
@@ -48,14 +52,6 @@ set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
 
 set PATH $PATH /home/yorunai/.local/bin
 
-# >>> mamba initialize >>>
-# !! Contents within this block are managed by 'micromamba shell init' !!
-set -gx MAMBA_EXE "/home/yorunai/.local/bin/micromamba"
-set -gx MAMBA_ROOT_PREFIX "/home/yorunai/.local/share/mamba"
-$MAMBA_EXE shell hook --shell fish --root-prefix $MAMBA_ROOT_PREFIX | source
-# <<< mamba initialize <<<
-
-# Prefer custom FFmpeg (xHE-AAC via libfdk_aac)
-set -e -g fish_user_paths            # remove any shadowing global
+set -e -g fish_user_paths
 fish_add_path -U --prepend /opt/ffmpeg/bin
 
