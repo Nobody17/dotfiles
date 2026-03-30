@@ -38,3 +38,5 @@
 	sslCAInfo = /etc/ssl/certs/ca-certificates.crt
 [credential]
 	helper = store
+[rerere]
+	enabled = true

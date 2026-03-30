@@ -9,18 +9,22 @@ function y
 	rm -f -- "$tmp"
 end
 
-# Set up fzf key bindings
 fzf --fish | source
 if status is-interactive
   zoxide init fish | source
 end
 starship init fish | source
 enable_transience
-
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
-set -gxa ASDF_DATA_DIR "/home/yorunai/.asdf"
-fish_add_path "/home/yorunai/.asdf/shims"
-fish_add_path "/home/yorunai/bin"
+
+set -gx ASDF_DATA_DIR "$HOME/.asdf"
+fish_add_path "$ASDF_DATA_DIR/bin"
+fish_add_path "$ASDF_DATA_DIR/shims"
+
+# 4. Source asdf (Standard way for Fish)
+if test -f "$ASDF_DATA_DIR/asdf.fish"
+    source "$ASDF_DATA_DIR/asdf.fish"
+end
 
 pyenv init - | source
 
@@ -35,23 +39,21 @@ abbr -a wl --position anywhere -- --UseOzonePlatform --ozone-platform-hint=wayla
 alias get_idf=". $HOME/esp/esp-idf/export.fish"
 
 #WSL
-# set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
+#set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
 #Linux
-# set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
-
-#path
-fish_add_path "/home/yorunai/Programming/software/android-studio/bin/"
-fish_add_path "/home/yorunai/Programming/software/platform-tools/"
-fish_add_path "/opt/nvim/bin"
-fish_add_path "/home/yorunai/.local/share/nvim/mason/bin"
-fish_add_path "/usr/local/go/bin"
-fish_add_path "/home/yorunai/go/bin"
-fish_add_path "/home/yorunai/.config/herd-lite/bin"
-set -gxa PHP_INI_SCAN_DIR "/home/yorunai/.config/herd-lite/bin"
-
-
-set PATH $PATH /home/yorunai/.local/bin
+#set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
 set -e -g fish_user_paths
-fish_add_path -U --prepend /opt/ffmpeg/bin
+set -gxa PHP_INI_SCAN_DIR "$HOME/.config/herd-lite/bin"
 
+#path
+fish_add_path "$HOME/Programming/software/android-studio/bin/"
+fish_add_path "$HOME/Programming/software/platform-tools/"
+fish_add_path "/opt/nvim/bin"
+fish_add_path "$HOME/.local/share/nvim/mason/bin"
+fish_add_path "/usr/local/go/bin"
+fish_add_path "$HOME/go/bin"
+fish_add_path "$HOME/.config/herd-lite/bin"
+fish_add_path "$HOME/bin"
+fish_add_path "$HOME/.local/bin"
+fish_add_path -U --prepend /opt/ffmpeg/bin
