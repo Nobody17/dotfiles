@@ -18,3 +18,4 @@ paru --needed go yq taplo-cli
 paru --needed git-delta lazygit lazydocker
 paru --needed eza zoxide ripgrep fd fzf
 paru --needed starship stow
+paru --needed libfido2
