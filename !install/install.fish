@@ -3,31 +3,60 @@
 mkdir -p ~/.local/bin
 fish_add_path -m ~/.local/bin
 
+# 1. Check for apt and run scripts in apt/ directory
+if command -q apt
+    if test -d apt
+        echo "Apt detected. Running scripts in apt/..."
+        for file in apt/*.fish
+            # Ensure we don't try to run the directory if it's empty/glob fails
+            if test -f $file
+                fish ./$file
+                if test $status -ne 0
+                    echo "Script $file failed"
+                    exit 1
+                end
+            end
+        end
+    end
+end
+
+if test -f ./paru.fish
+    ./paru.fish
+
+
+# 2. Collect and run fish scripts in the current directory
+# Excluding install.fish and nvim.fish as per your original logic
+set scripts
 for file in *.fish
-    if test $file = install.fish || test $file = nvim.fish
+    if test $file = install.fish -o $file = paru.fish
         continue
     else
-        set scripts $scripts $file
+        set -a scripts $file
     end
 end
 
 for file in $scripts
     ./$file
-    echo $file
+    echo "Executed: $file"
     if test $status -ne 0
         echo "Script $file failed"
         exit 1
     end
 end
 
-../stow.fish
+# 3. Environment Setup
+if test -f ../stow.fish
+    ../stow.fish
+end
 
-# bat theme (also used in lazygit) is in a config file, but it needs to be recognized
-bat cache --build
-# git credentials in wsl, do it after stow
+# Rebuild bat cache
+if command -q bat
+    bat cache --build
+end
+
+# Git credentials for WSL
 set wsl_file /proc/sys/fs/binfmt_misc/WSLInterop
-if test -e $wsl_file then
+if test -e $wsl_file
     git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-wincred.exe"
 end
 
-./nvim.fish
