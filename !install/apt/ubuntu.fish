@@ -7,6 +7,7 @@ sudo apt install bat
 sudo apt install sqlite3
 sudo apt install python3.12-venv
 sudo apt install perl latexmk
+sudo apt install gettext
 sudo apt install zathura
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat

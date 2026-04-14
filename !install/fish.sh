@@ -1,4 +1,14 @@
 #!/bin/bash
+
+if ! command -v cargo &> /dev/null; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+fi
+
+if ! rustup default &> /dev/null; then
+    rustup default stable
+fi
+
 if [ -f /etc/arch-release ]; then
     echo "Detected Arch-based system..."
     sudo pacman -Syu --needed base-devel ncurses cmake
@@ -11,8 +21,9 @@ else
     exit 1
 fi
 
-fish_source_url=$(curl -s https://api.github.com/repos/fish-shell/fish-shell/releases/latest | grep "browser_download_url" | grep -oE "https://[^ ]+\.tar\.xz")
+fish_source_url=$(curl -s https://api.github.com/repos/fish-shell/fish-shell/releases/latest | grep "browser_download_url" | grep -v "linux" | grep -oE "https://[^ ]+\.tar\.xz" | head -n 1)
 
+echo $fish_source_url
 curl -L "$fish_source_url" -o fish.tar.xz
 mkdir -p fish_build
 tar -xf fish.tar.xz -C fish_build --strip-components=1
@@ -20,7 +31,7 @@ tar -xf fish.tar.xz -C fish_build --strip-components=1
 cd fish_build
 cmake .
 make
-sudo make install
+sudo env "PATH=$PATH" make install
 cd ..
 
 rm -rf fish_build fish.tar.xz
