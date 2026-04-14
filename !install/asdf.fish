@@ -9,26 +9,7 @@ if command -v paru > /dev/null
     end
 
 else if command -v apt > /dev/null
-    echo "Apt detected. Installing asdf manually and dependencies via repository..."
-
-    # Manual installation of asdf via GitHub
-    set -l asdf_latest_release_url (curl -s "https://api.github.com/repos/asdf-vm/asdf/releases/latest" | grep tarball_url | cut -d '"' -f 4)
-    curl -Lo asdf_archive.tar.gz $asdf_latest_release_url
-
-    mkdir -p asdf_temporary_directory
-    tar xf asdf_archive.tar.gz -C asdf_temporary_directory --strip-components=1
-
-    # Clean old installation if exists
-    if test -d ~/.asdf
-        rm -rf ~/.asdf
-    end
-
-    mv asdf_temporary_directory/ ~/.asdf/
-    rm asdf_archive.tar.gz
-
-    # Source the manual installation
-    source ~/.asdf/asdf.fish
-
+    go install github.com/asdf-vm/asdf/cmd/asdf@v0.18.1
     # Install Erlang/Elixir dependencies via apt
     sudo apt update
     sudo apt -y install build-essential autoconf m4 libncurses5-dev libwxgtk3.2-dev \

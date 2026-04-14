@@ -1,3 +1,4 @@
+#!/usr/bin/env fish
 if type -q pacman
     echo "Arch-based system detected. Proceeding..."
 else

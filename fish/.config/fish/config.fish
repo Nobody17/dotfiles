@@ -1,4 +1,6 @@
-source /usr/share/cachyos-fish-config/cachyos-config.fish
+if grep -q "cachyos" /etc/os-release 2>/dev/null
+  source /usr/share/cachyos-fish-config/cachyos-config.fish
+end
 
 function y
 	set tmp (mktemp -t "yazi-cwd.XXXXXX")
@@ -61,4 +63,5 @@ fish_add_path "$HOME/go/bin"
 fish_add_path "$HOME/.config/herd-lite/bin"
 fish_add_path "$HOME/bin"
 fish_add_path "$HOME/.local/bin"
+fish_add_path $HOME/.cargo/bin
 fish_add_path -U --prepend /opt/ffmpeg/bin

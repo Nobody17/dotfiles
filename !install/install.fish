@@ -8,11 +8,11 @@ if command -q apt
     if test -d apt
         if test -f apt/ubuntu.fish
             apt/ubuntu.fish
-
+	end
         echo "Apt detected. Running scripts in apt/..."
         for file in apt/*.fish
             # Ensure we don't try to run the directory if it's empty/glob fails
-            if test $file = ubuntu.fish
+            if test $file = apt/ubuntu.fish
                 continue
             else
                 fish ./$file
@@ -27,6 +27,7 @@ end
 
 if test -f ./paru.fish
     ./paru.fish
+end
 
 
 # 2. Collect and run fish scripts in the current directory
