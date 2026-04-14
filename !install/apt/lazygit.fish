@@ -25,7 +25,7 @@ rm gnu-keyring.gpg
 rm less.sig less.tar.gz
 rm -rf less
 
-# Install delta with cargo
+# Install delta with cargo (not like this)
 # set DELTA_VERSION (curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
 # curl -Lo delta.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/delta-{$DELTA_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
 # tar xf delta.tar.gz

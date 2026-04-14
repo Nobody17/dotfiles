@@ -6,10 +6,15 @@ fish_add_path -m ~/.local/bin
 # 1. Check for apt and run scripts in apt/ directory
 if command -q apt
     if test -d apt
+        if test -f apt/ubuntu.fish
+            apt/ubuntu.fish
+
         echo "Apt detected. Running scripts in apt/..."
         for file in apt/*.fish
             # Ensure we don't try to run the directory if it's empty/glob fails
-            if test -f $file
+            if test $file = ubuntu.fish
+                continue
+            else
                 fish ./$file
                 if test $status -ne 0
                     echo "Script $file failed"
