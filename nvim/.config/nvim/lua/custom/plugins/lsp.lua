@@ -15,8 +15,8 @@ return {
     'neovim/nvim-lspconfig',
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for Neovim
-      { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
-      'williamboman/mason-lspconfig.nvim',
+      { 'mason-org/mason.nvim', opts = {} }, -- NOTE: Must be loaded before dependants
+      'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
@@ -139,8 +139,6 @@ return {
       local asdf_init = vim.fn.expand '~/.asdf/asdf.sh'
 
       local mason_registry = require 'mason-registry'
-      -- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path()
-      -- .. '/node_modules/@vue/language-server'
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -170,23 +168,8 @@ return {
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         eslint = {},
-        prettier = {},
-        ts_ls = {
-          init_options = {
-            plugins = {
-              {
-                name = '@vue/typescript-plugin',
-                location = vue_language_server_path,
-                languages = { 'javascript', 'typescript', 'vue' },
-              },
-            },
-          },
-          filetypes = {
-            'javascript',
-            'typescript',
-            'vue',
-          },
-        },
+        ts_ls = {},
+        texlab = {},
         --
         lua_ls = {
           -- cmd = {...},
@@ -217,6 +200,7 @@ return {
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'prettier',
         'ruff',
         'mdformat',
         'sqlfluff',
@@ -226,40 +210,15 @@ return {
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
-      require('mason-lspconfig').setup {
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
-      }
+      for server_name, server in pairs(servers) do
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        vim.lsp.config(server_name, server)
+      end
 
-      -- setup texlab
-      -- require('lspconfig').texlab.setup {
-      --   -- vim.lsp.config?
-      --   capabilities = capabilities,
-      --   settings = {
-      --     texlab = {
-      --       auxDirectory = 'build',
-      --       build = {
-      --         executable = 'latexmk',
-      --         args = { '-pdf', '-interaction=nonstopmode', '-synctex=1', '-file-line-error', '-outdir=build', '%f' },
-      --         onSave = true,
-      --         forwardSearchAfter = true,
-      --       },
-      --       forwardSearch = {
-      --         executable = 'zathura',
-      --         args = { '--synctex-forward', '%l:1:%f', '%p' },
-      --       },
-      --       chktex = { onOpenAndSave = true },
-      --     },
-      --   },
-      -- }
+      require('mason-lspconfig').setup {
+        ensure_installed = vim.tbl_keys(servers),
+        automatic_enable = true,
+      }
     end,
   },
   -- {

@@ -1,5 +1,5 @@
 return { -- Collection of various small independent plugins/modules
-  'echasnovski/mini.nvim',
+  'nvim-mini/mini.nvim',
   config = function()
     -- Better Around/Inside textobjects
     --
@@ -29,7 +29,7 @@ return { -- Collection of various small independent plugins/modules
     --   suffix_next = 'n', -- Suffix to search with "next" method
     local surround = require 'mini.surround'
 
-    require('mini.jump2d').setup {}
+    -- require('mini.jump2d').setup {}
 
     -- Simple and easy statusline.
     --  You could remove this setup call if you don't like it,

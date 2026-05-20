@@ -1,9 +1,8 @@
 return {
   {
     'MeanderingProgrammer/render-markdown.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    dependencies = { 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {},
@@ -68,16 +67,13 @@ return {
       -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
       -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
       -- refer to `:h file-pattern` for more examples
-      'BufReadPre '
-        .. vim.fn.expand '~'
-        .. '/Documents/ObsidianVaults/SecondBrain/*.md',
+      'BufReadPre ' .. vim.fn.expand '~' .. '/Documents/ObsidianVaults/SecondBrain/*.md',
       'BufNewFile ' .. vim.fn.expand '~' .. '/Documents/ObsidianVaults/SecondBrain/*.md',
     },
     dependencies = {
       'nvim-lua/plenary.nvim',
       'hrsh7th/nvim-cmp',
       'nvim-telescope/telescope.nvim',
-      'nvim-treesitter/nvim-treesitter',
     },
     keys = {
       vim.keymap.set('n', '<leader>on', '<cmd>ObsidianNew<cr>', { desc = '[O]bsidian: Open [N]ew File' }),

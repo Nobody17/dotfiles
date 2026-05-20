@@ -8,7 +8,7 @@
     "deepseek-v4-pro:cloud"
   ],
   "theme": "catppuccin-mocha",
-  "lastChangelogVersion": "0.75.0",
+  "lastChangelogVersion": "0.75.3",
   "packages": [
     "npm:pi-subagents",
     "npm:@sherif-fanous/pi-catppuccin",
