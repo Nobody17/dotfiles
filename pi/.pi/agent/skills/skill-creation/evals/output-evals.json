@@ -1,0 +1,70 @@
+{
+  "skill_name": "skill-creation",
+  "evals": [
+    {
+      "id": "improve-existing-skill",
+      "prompt": "Improve an existing skill at evals/fixtures/release-checklist. The user says agents keep skipping rollback verification. The skill already has SKILL.md, references/deployments.md, and empty eval templates.",
+      "files": [
+        {
+          "source": "evals/fixtures/release-checklist/SKILL.fixture.md",
+          "target": "evals/fixtures/release-checklist/SKILL.md"
+        },
+        "evals/fixtures/release-checklist/references/deployments.md",
+        "evals/fixtures/release-checklist/evals/trigger-queries.json",
+        "evals/fixtures/release-checklist/evals/output-evals.json"
+      ],
+      "expected_output": "A conservative edit that preserves existing structure, adds rollback verification as a gotcha or workflow step, fills or improves evals, and reports validation results.",
+      "assertions": [
+        "The agent reads the existing SKILL.md before editing rather than replacing it from a generic template.",
+        "The rollback verification correction appears in SKILL.md as a Gotcha or explicit workflow validation step.",
+        "Generated eval placeholders are replaced with realistic should-trigger, near-miss, and output-quality cases.",
+        "The final response lists validation commands run and any manual evals still outstanding."
+      ],
+      "manual_review": [
+        "Check that edits are evidence-backed and minimal rather than a broad rewrite.",
+        "Check that references remain one level deep and core workflow remains in SKILL.md."
+      ]
+    },
+    {
+      "id": "create-source-driven-skill",
+      "prompt": "Create a skill from the internal API runbook and two incident notes in evals/fixtures. The runbook has setup, endpoint examples, common 429 failures, auth token permission failures, and validation commands.",
+      "files": [
+        "evals/fixtures/api-runbook.md",
+        "evals/fixtures/incidents/2026-02-14-rate-limit.md",
+        "evals/fixtures/incidents/2026-03-03-auth-refresh.md"
+      ],
+      "expected_output": "A new skill folder with concise SKILL.md, source-grounded gotchas, a workflow, validation steps, and provenance/source references.",
+      "assertions": [
+        "SKILL.md contains YAML frontmatter with a specific third-person description under 1024 characters.",
+        "The workflow emphasizes practical agent actions, commands, failure modes, and validation rather than copying introductory docs.",
+        "At least one gotcha is grounded in the incident notes or runbook failures.",
+        "Source links or a GENERATION.md file record where the skill content came from."
+      ],
+      "manual_review": [
+        "Compare the skill against source artifacts to ensure it synthesizes rather than mirrors documentation.",
+        "Check that user-facing marketing/setup basics were omitted unless needed for agent action."
+      ]
+    },
+    {
+      "id": "description-boundary-review",
+      "prompt": "Review the data-cleaning skill at evals/fixtures/data-cleaning whose description is 'Helps with files.' Make it trigger for CSV cleanup and spreadsheet-like text files, but not for general filesystem tasks.",
+      "files": [
+        {
+          "source": "evals/fixtures/data-cleaning/SKILL.fixture.md",
+          "target": "evals/fixtures/data-cleaning/SKILL.md"
+        }
+      ],
+      "expected_output": "An improved description plus trigger evals that cover positive phrasings and near misses, without expanding the skill beyond data-cleaning intent.",
+      "assertions": [
+        "The description uses imperative 'Use when...' phrasing and user-intent language.",
+        "The description names CSV/data-cleaning contexts and includes a clear boundary against unrelated file operations.",
+        "Trigger evals include both should-trigger prompts and near-miss prompts with rationales.",
+        "The agent checks the description length remains under 1024 characters."
+      ],
+      "manual_review": [
+        "Check whether the new description would activate on realistic terse prompts, not only exact keywords.",
+        "Check whether near-miss prompts are genuinely adjacent rather than obvious negatives."
+      ]
+    }
+  ]
+}

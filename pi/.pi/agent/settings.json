@@ -14,6 +14,6 @@
     "npm:@sherif-fanous/pi-catppuccin",
     "npm:pi-web-access"
   ],
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "xhigh",
   "hideThinkingBlock": true
 }

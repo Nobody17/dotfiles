@@ -1,0 +1,6 @@
+# Python
+__pycache__/
+*.pyc
+
+# Skill eval run artifacts (ephemeral test outputs)
+skills/*/evals/runs/

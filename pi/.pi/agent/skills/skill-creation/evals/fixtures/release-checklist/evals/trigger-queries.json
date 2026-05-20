@@ -1,0 +1,11 @@
+{
+  "skill_name": "release-checklist",
+  "queries": [
+    {
+      "id": "should-trigger-1",
+      "query": "Realistic user prompt that should activate this skill.",
+      "should_trigger": true,
+      "rationale": "Why this skill should be used."
+    }
+  ]
+}

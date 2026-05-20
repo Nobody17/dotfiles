@@ -1,0 +1,15 @@
+{
+  "skill_name": "release-checklist",
+  "evals": [
+    {
+      "id": "core-workflow-1",
+      "prompt": "Realistic task the skill should handle.",
+      "files": [],
+      "expected_output": "Human-readable description of success.",
+      "assertions": [
+        "Observable, verifiable assertion about the output."
+      ],
+      "manual_review": []
+    }
+  ]
+}

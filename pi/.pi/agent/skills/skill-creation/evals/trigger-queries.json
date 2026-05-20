@@ -1,0 +1,101 @@
+{
+  "skill_name": "skill-creation",
+  "queries": [
+    {
+      "id": "should-trigger-create-1",
+      "query": "Create a new agent skill for our incident postmortem workflow from the runbook I just added.",
+      "should_trigger": true,
+      "rationale": "The user is asking to create an Agent Skill from source material."
+    },
+    {
+      "id": "should-trigger-improve-1",
+      "query": "Please improve the existing SKILL.md for my CSV cleanup helper; it keeps missing the validation step.",
+      "should_trigger": true,
+      "rationale": "The user explicitly asks to improve an existing skill and mentions SKILL.md."
+    },
+    {
+      "id": "should-trigger-review-1",
+      "query": "Can you review this skill folder and tell me why the agent doesn't pick it up reliably?",
+      "should_trigger": true,
+      "rationale": "The user is reviewing a skill and debugging trigger behavior."
+    },
+    {
+      "id": "should-trigger-description-1",
+      "query": "Rewrite the description so this tool-use workflow activates when people ask about filling PDF forms.",
+      "should_trigger": true,
+      "rationale": "Optimizing a skill description for activation is in scope."
+    },
+    {
+      "id": "should-trigger-evals-1",
+      "query": "Add trigger queries and output evals for my new database-migration skill.",
+      "should_trigger": true,
+      "rationale": "Creating skill evals is part of skill testing and iteration."
+    },
+    {
+      "id": "should-trigger-repeatable-workflow-1",
+      "query": "I keep coaching the agent through the same release checklist. Can we teach it that process?",
+      "should_trigger": true,
+      "rationale": "The user wants to encode a repeatable workflow as a skill even without saying skill."
+    },
+    {
+      "id": "should-trigger-source-driven-1",
+      "query": "Turn these API docs and examples into something agents can use without rereading the whole docs site every time.",
+      "should_trigger": true,
+      "rationale": "The user wants source-driven generation of reusable agent instructions."
+    },
+    {
+      "id": "should-trigger-script-1",
+      "query": "This skill needs a helper script with --help and JSON output; add it and document how agents should run it.",
+      "should_trigger": true,
+      "rationale": "Bundling scripts for a skill is explicitly covered."
+    },
+    {
+      "id": "near-miss-docs-1",
+      "query": "Write end-user documentation for how to export CSV files from our app.",
+      "should_trigger": false,
+      "rationale": "This is user-facing product documentation, not an Agent Skill."
+    },
+    {
+      "id": "near-miss-code-review-1",
+      "query": "Review this Python function for bugs and improve the tests.",
+      "should_trigger": false,
+      "rationale": "General code review and testing should use other skills, not skill creation."
+    },
+    {
+      "id": "near-miss-training-1",
+      "query": "Create a training plan so junior developers learn our deployment process.",
+      "should_trigger": false,
+      "rationale": "Teaching humans a process is adjacent but not creating an agent skill."
+    },
+    {
+      "id": "near-miss-shell-script-1",
+      "query": "Write a Bash script that validates JSON files and prints a summary.",
+      "should_trigger": false,
+      "rationale": "A standalone script request is not skill packaging or skill instruction design."
+    },
+    {
+      "id": "near-miss-yaml-1",
+      "query": "Fix the YAML frontmatter in this blog post.",
+      "should_trigger": false,
+      "rationale": "YAML frontmatter alone is too broad; the request is not about SKILL.md."
+    },
+    {
+      "id": "near-miss-agent-config-1",
+      "query": "Update my agent settings to use a different default model.",
+      "should_trigger": false,
+      "rationale": "Agent configuration is separate from authoring Agent Skills."
+    },
+    {
+      "id": "near-miss-pdf-work-1",
+      "query": "Extract the tables from this PDF and save them as CSV.",
+      "should_trigger": false,
+      "rationale": "This should activate a PDF/data skill, not skill creation."
+    },
+    {
+      "id": "near-miss-evals-general-1",
+      "query": "Design benchmark evals for our search ranking model.",
+      "should_trigger": false,
+      "rationale": "General model evaluation is outside skill trigger/output eval design."
+    }
+  ]
+}
