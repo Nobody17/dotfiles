@@ -135,11 +135,6 @@ return {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
-      local mason_elixirls = vim.fn.stdpath 'data' .. '/mason/packages/elixir-ls'
-      local asdf_init = vim.fn.expand '~/.asdf/asdf.sh'
-
-      local mason_registry = require 'mason-registry'
-
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -207,6 +202,9 @@ return {
         'sqlfmt',
         'texlab',
         'elixirls',
+        'deno',
+        'eslint_d',
+        'jsonlint',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 

@@ -1,6 +1,9 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+require 'settings'
+require 'keymaps'
+
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
@@ -23,8 +26,11 @@ end
 -- Add lazy to the `runtimepath`, this allows us to `require` it.
 ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
-require('lazy').setup('custom/plugins', {
+require('lazy').setup('plugins', {
   change_detection = {
-    nofify = false,
+    notify = false,
+  },
+  rocks = {
+    enabled = false,
   },
 })

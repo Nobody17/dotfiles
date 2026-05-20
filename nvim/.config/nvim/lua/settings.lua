@@ -62,4 +62,5 @@ vim.opt.scrolloff = 10
 
 vim.opt.colorcolumn = '120'
 
-vim.opt.undodir = os.getenv 'HOME' .. '/.config/nvim/.undodir'
+vim.opt.undodir = vim.fn.stdpath 'state' .. '/undo'
+vim.fn.mkdir(vim.opt.undodir:get()[1], 'p')
