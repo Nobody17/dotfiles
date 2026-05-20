@@ -1,0 +1,5 @@
+# Keep machine-local/sensitive/runtime pi data out of stow.
+^\.stow-local-ignore$
+^\.pi/agent/auth\.json$
+^\.pi/agent/run-history\.jsonl$
+^\.pi/agent/sessions(/.*)?$

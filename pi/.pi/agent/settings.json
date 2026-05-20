@@ -1,0 +1,19 @@
+{
+  "defaultModel": "gpt-5.5",
+  "defaultProvider": "openai-codex",
+  "enabledModels": [
+    "gpt-5.4-mini",
+    "gpt-5.3-codex",
+    "gpt-5.5",
+    "deepseek-v4-pro:cloud"
+  ],
+  "theme": "catppuccin-mocha",
+  "lastChangelogVersion": "0.75.0",
+  "packages": [
+    "npm:pi-subagents",
+    "npm:@sherif-fanous/pi-catppuccin",
+    "npm:pi-web-access"
+  ],
+  "defaultThinkingLevel": "high",
+  "hideThinkingBlock": true
+}

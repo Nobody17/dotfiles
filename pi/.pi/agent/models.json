@@ -1,0 +1,30 @@
+{
+  "providers": {
+    "ollama-cloud": {
+      "api": "openai-completions",
+      "apiKey": "!secret-tool lookup service ollama-cloud key api",
+      "baseUrl": "https://ollama.com/v1",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "thinkingFormat": "deepseek"
+      },
+      "models": [
+        {
+          "id": "deepseek-v4-pro:cloud",
+          "name": "DeepSeek V4 Pro",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1048576,
+          "maxTokens": 32768,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": null,
+            "medium": null,
+            "high": "high",
+            "xhigh": "max"
+          }
+        }
+      ]
+    }
+  }
+}

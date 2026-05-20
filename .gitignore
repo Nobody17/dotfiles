@@ -1,3 +1,8 @@
 runtime/
 .undodir/
 local.fish
+
+# pi local state/secrets
+pi/.pi/agent/auth.json
+pi/.pi/agent/run-history.jsonl
+pi/.pi/agent/sessions/
