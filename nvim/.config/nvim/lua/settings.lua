@@ -64,3 +64,10 @@ vim.opt.colorcolumn = '120'
 
 vim.opt.undodir = vim.fn.stdpath 'state' .. '/undo'
 vim.fn.mkdir(vim.opt.undodir:get()[1], 'p')
+
+vim.api.nvim_create_autocmd('FileType', {
+  desc = 'Enable native Tree-sitter highlighting when a parser is available',
+  callback = function(event)
+    pcall(vim.treesitter.start, event.buf)
+  end,
+})

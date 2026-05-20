@@ -55,7 +55,7 @@ return {
   {
     'https://codeberg.org/andyg/leap.nvim',
     config = function()
-      vim.keymap.set({ 'n', 'x', 'o' }, 'gs', '<Plug>(leap)', { desc = 'Leap' })
+      vim.keymap.set({ 'n', 'x', 'o' }, 'm', '<Plug>(leap)', { desc = 'Leap' })
       vim.keymap.set('n', 'gS', '<Plug>(leap-from-window)', { desc = 'Leap from window' })
 
       vim.keymap.set({ 'x', 'o' }, 'an', function()

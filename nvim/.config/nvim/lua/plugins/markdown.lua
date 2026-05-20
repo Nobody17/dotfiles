@@ -11,8 +11,6 @@ return {
     config = function()
       require('render-markdown').setup {
         latex = { enabled = false },
-        html = { enabled = false },
-        yaml = { enabled = false },
         custom_handlers = {
           markdown = {
             extends = true,
@@ -62,7 +60,7 @@ return {
     end,
   },
   {
-    'epwalsh/obsidian.nvim',
+    'obsidian-nvim/obsidian.nvim',
     version = '*', -- recommended, use latest release instead of latest commit
     lazy = true,
     cond = function()
@@ -79,7 +77,7 @@ return {
     },
     dependencies = {
       'nvim-lua/plenary.nvim',
-      'hrsh7th/nvim-cmp',
+      'saghen/blink.cmp',
       'nvim-telescope/telescope.nvim',
     },
     keys = {
@@ -103,6 +101,11 @@ return {
       --   date_format = '%Y-%m-%d-%a',
       --   time_format = '%H:%M',
       -- },
+      completion = {
+        nvim_cmp = false,
+        blink = true,
+        min_chars = 2,
+      },
       workspaces = {
         -- { name = 'oldvault', path = '~/SecondBrain/Second Brain/' },
         { name = 'secondbrain', path = obsidian_vault_path },

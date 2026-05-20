@@ -23,8 +23,8 @@ return {
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
 
-      -- Allows extra capabilities provided by nvim-cmp
-      'hrsh7th/cmp-nvim-lsp',
+      -- Allows extra capabilities provided by blink.cmp
+      { 'saghen/blink.cmp', version = '1.*' },
     },
     opts = function(_, opts)
       -- local esp32 = require 'esp32'
@@ -130,10 +130,8 @@ return {
 
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
-      --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
-      --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      --  When you add blink.cmp, Neovim advertises extra completion capabilities to language servers.
+      local capabilities = require('blink.cmp').get_lsp_capabilities()
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -147,13 +145,7 @@ return {
       local servers = {
         marksman = {},
         -- gopls = {},
-        pyright = {
-          settings = {
-            pyright = {
-              disableOrganizeImports = true,
-            },
-          },
-        },
+        ty = {},
         --sqls = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -165,6 +157,7 @@ return {
         eslint = {},
         ts_ls = {},
         texlab = {},
+        elixirls = {},
         --
         lua_ls = {
           -- cmd = {...},
@@ -190,23 +183,19 @@ return {
       --  You can press `g?` for help in this menu.
       require('mason').setup()
 
-      -- You can add other tools here that you want Mason to install
-      -- for you, so that they are available from within Neovim.
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        'stylua', -- Used to format Lua code
+      -- Non-LSP tools used by conform.nvim and nvim-lint.
+      local ensure_tools_installed = {
+        'stylua',
         'prettier',
         'ruff',
         'mdformat',
-        'sqlfluff',
         'sqlfmt',
-        'texlab',
-        'elixirls',
-        'deno',
+        'pint',
+        'sqlfluff',
         'eslint_d',
         'jsonlint',
-      })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      }
+      require('mason-tool-installer').setup { ensure_installed = ensure_tools_installed }
 
       for server_name, server in pairs(servers) do
         server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
