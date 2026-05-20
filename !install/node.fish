@@ -26,6 +26,28 @@ fnm install --lts
 fnm install --latest
 fnm use latest
 
+if command -v npm > /dev/null
+    npm install --global corepack@latest
+else
+    echo "Error: npm not found"
+end
+# Enable corepack so pnpm is available
+if command -v corepack > /dev/null
+    corepack enable
+    corepack prepare pnpm@latest --activate
+else
+    echo "Error: corepack not found"
+end
+
+# Generate pnpm fish completions
+if command -v pnpm > /dev/null
+    set -l completions_dir "$HOME/.config/fish/completions"
+    mkdir -p $completions_dir
+    pnpm completion fish > "$completions_dir/pnpm.fish"
+else
+    echo "Error: pnpm not found"
+end
+
 if command -v node > /dev/null
     echo "Success: Node "(node -v)" are installed and ready."
 else

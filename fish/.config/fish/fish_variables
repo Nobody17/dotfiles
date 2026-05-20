@@ -10,7 +10,7 @@ SETUVAR _fisher_catppuccin_2F_fish_files:\x7e/\x2econfig/fish/themes/Catppuccin\
 SETUVAR _fisher_jorgebucaran_2F_fisher_files:\x7e/\x2econfig/fish/functions/fisher\x2efish\x1e\x7e/\x2econfig/fish/completions/fisher\x2efish
 SETUVAR _fisher_plugins:jorgebucaran/fisher\x1ecatppuccin/fish
 SETUVAR _fisher_upgraded_to_4_4:\x1d
-SETUVAR fish_user_paths:/home/yorunai/\x2ecargo/bin\x1e/opt/nvim/bin\x1e/home/yorunai/\x2easdf/bin\x1e/home/yorunai/\x2easdf/shims\x1e/home/yorunai/\x2econfig/herd\x2dlite/bin\x1e/home/yorunai/\x2efzf/bin\x1e/home/yorunai/\x2elocal/bin\x1e/home/yorunai/\x2elocal/share/nvim/mason/bin\x1e/home/yorunai/\x2epyenv/bin\x1e/home/yorunai/bin\x1e/home/yorunai/go/bin\x1e/home/yorunai/Programming/software/android\x2dstudio/bin\x1e/home/yorunai/Programming/software/platform\x2dtools\x1e/nix/var/nix/profiles/default/bin\x1e/opt/ffmpeg/bin\x1e/opt/mpv\x2dfdk/bin\x1e\x2dlinux\x2dx86_64/bin\x1e\x2dlinux64/bin\x1e/usr/local/go/bin
+SETUVAR fish_user_paths:/home/yorunai/\x2elocal/share/pnpm\x1e/home/yorunai/\x2ecargo/bin\x1e/opt/nvim/bin\x1e/home/yorunai/\x2easdf/bin\x1e/home/yorunai/\x2easdf/shims\x1e/home/yorunai/\x2econfig/herd\x2dlite/bin\x1e/home/yorunai/\x2efzf/bin\x1e/home/yorunai/\x2elocal/bin\x1e/home/yorunai/\x2elocal/share/nvim/mason/bin\x1e/home/yorunai/\x2epyenv/bin\x1e/home/yorunai/bin\x1e/home/yorunai/go/bin\x1e/home/yorunai/Programming/software/android\x2dstudio/bin\x1e/home/yorunai/Programming/software/platform\x2dtools\x1e/nix/var/nix/profiles/default/bin\x1e/opt/ffmpeg/bin\x1e/opt/mpv\x2dfdk/bin\x1e\x2dlinux\x2dx86_64/bin\x1e\x2dlinux64/bin\x1e/usr/local/go/bin
 SETUVAR pure_begin_prompt_with_current_directory:true
 SETUVAR pure_check_for_new_release:false
 SETUVAR pure_color_at_sign:pure_color_mute

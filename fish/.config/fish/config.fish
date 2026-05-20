@@ -64,4 +64,10 @@ fish_add_path "$HOME/.config/herd-lite/bin"
 fish_add_path "$HOME/bin"
 fish_add_path "$HOME/.local/bin"
 fish_add_path $HOME/.cargo/bin
+
+# pnpm global bin
+if command -v pnpm > /dev/null
+    fish_add_path (pnpm bin -g 2>/dev/null || echo "$HOME/.local/share/pnpm")
+end
+
 fish_add_path -U --prepend /opt/ffmpeg/bin
