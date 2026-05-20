@@ -71,3 +71,10 @@ if command -v pnpm > /dev/null
 end
 
 fish_add_path -U --prepend /opt/ffmpeg/bin
+
+# pnpm
+set -gx PNPM_HOME "/home/yorunai/.local/share/pnpm"
+if not string match -q -- "$PNPM_HOME/bin" $PATH
+  set -gx PATH "$PNPM_HOME/bin" $PATH
+end
+# pnpm end
