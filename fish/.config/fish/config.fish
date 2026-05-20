@@ -28,6 +28,10 @@ if test -f "$ASDF_DATA_DIR/asdf.fish"
     source "$ASDF_DATA_DIR/asdf.fish"
 end
 
+if type -q fnm
+    fnm env --use-on-cd | source
+end
+
 # Start SSH agent if not already running
 if not set -q SSH_AUTH_SOCK
     eval (ssh-agent -c) > /dev/null
