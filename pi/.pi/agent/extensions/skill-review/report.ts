@@ -26,7 +26,7 @@ export interface EvalReport {
     total: number;
     completed: number;
     skipped: number;
-    command_failures: number;
+    command_failures?: number;
   };
   trigger_results: Array<{
     query_id: string;

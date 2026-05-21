@@ -145,6 +145,7 @@ interface ReviewGroupConfig {
   key: "assertions" | "manual_review";
   title: string;
   questionTemplate: string;
+  selectPrompt: (index: number, total: number) => string;
   labels: string[];
   verdictMap: Record<string, string>;
 }
@@ -153,6 +154,7 @@ const ASSERTION_GROUP: ReviewGroupConfig = {
   key: "assertions",
   title: "Assertion",
   questionTemplate: "Does the output satisfy this assertion?",
+  selectPrompt: (index, total) => `Does assertion ${index}/${total} pass?`,
   labels: ["✅ PASS", "❌ FAIL", "⏭️ SKIP"],
   verdictMap: { "✅ PASS": "PASS", "❌ FAIL": "FAIL", "⏭️ SKIP": "SKIP" },
 };
@@ -162,6 +164,8 @@ const MANUAL_REVIEW_GROUP: ReviewGroupConfig = {
   title: "Manual Review",
   questionTemplate:
     "Does this manual review item look OK, or does it reveal an issue?",
+  selectPrompt: (index, total) =>
+    `Is manual review item ${index}/${total} OK?`,
   labels: ["✅ OK", "❌ Issue found", "⏭️ SKIP"],
   verdictMap: { "✅ OK": "OK", "❌ Issue found": "ISSUE", "⏭️ SKIP": "SKIP" },
 };
@@ -209,7 +213,7 @@ async function gradeGroup(
     );
 
     const choice = await ctx.ui.select(
-      `${group.title} ${index + 1}/${items.length}?`,
+      group.selectPrompt(index + 1, items.length),
       group.labels,
     );
 
@@ -275,10 +279,11 @@ async function confirmCommandFailures(
   ctx: ExtensionContext,
   report: EvalReport,
 ): Promise<boolean> {
-  if (report.output_summary.command_failures <= 0) return true;
+  const commandFailures = report.output_summary.command_failures ?? 0;
+  if (commandFailures <= 0) return true;
   return ctx.ui.confirm(
     "⚠️ Command Failures",
-    `${report.output_summary.command_failures} eval command(s) timed out or failed. Some output-eval results may be incomplete.`,
+    `${commandFailures} eval command(s) timed out or failed. Some output-eval results may be incomplete.`,
   );
 }
 
