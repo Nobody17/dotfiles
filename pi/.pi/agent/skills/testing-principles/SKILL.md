@@ -1,11 +1,33 @@
 ---
 name: testing-principles
-description: Use when deciding what to test, structuring tests, choosing between mocking vs real implementations, evaluating test quality, or encountering test suites that break on refactoring. Applies regardless of testing framework.
+description: Use when writing, adding, reviewing, or refactoring tests; deciding what behavior and edge cases to test; choosing mocks vs real implementations; improving flaky or brittle test suites; planning bug-regression or feature test coverage; or evaluating test quality. Do not use for production-only implementation/refactoring or test-runner configuration unless test design or quality is requested. Applies regardless of framework.
 ---
 
 # Testing Principles
 
 Framework-agnostic principles for writing tests that are fast, reliable, and resilient to refactoring. These apply whether using vitest, Jest, Mocha, or any other test runner.
+
+## Workflow
+
+When asked to write, review, or repair tests:
+
+1. Identify the observable behavior and public API being tested.
+2. For bugs or new features, define the failing regression/behavior test before changing source code. If the task is review-only, state the test that should fail before the fix.
+3. Choose the test level deliberately: pure unit test, integration test with real collaborators, or end-to-end workflow. Use the lowest level that still proves the behavior.
+4. Use real inputs for pure logic. Mock only external boundaries that make the test slow, nondeterministic, or side-effectful.
+5. Cover the happy path, edge cases, error paths, and boundary conditions. Do not treat “behavioral test” as permission for one minimal happy-path test.
+6. Structure each test with Arrange, Act, Assert; keep setup isolated and deterministic.
+7. Run the smallest relevant test command. If you cannot run it, say exactly what remains unvalidated.
+
+## Gotchas
+
+- Do not apply this skill to production-only implementation/refactoring or test-runner configuration unless the user asks about test behavior, coverage quality, flakiness, or mock strategy.
+- “Behavioral” means assert observable outcomes, not internals. It does not mean “test less.”
+- Databases are external boundaries for unit tests, but use a disposable real database when the behavior under test is persistence, migrations, transactions, constraints, or query semantics.
+- If refactoring breaks a test while external behavior is unchanged, rewrite the test around behavior instead of updating it to match new internals.
+- Do not assert detailed mock call shapes for your own code when an observable outcome can be asserted instead.
+- If a test needs many monkey-patches or mocks of local code, call out the coupling and prefer a dependency-injection seam or pure-core/imperative-shell split.
+- Never add sleeps to fix async or flaky tests. Use fake timers, polling assertions, or event-driven signals.
 
 ## What Makes a Good Test
 
@@ -43,8 +65,9 @@ This also applies to new features: write the test first to clarify the expected 
 ## What to Mock
 
 ### Mock external boundaries
-- Network requests (APIs, databases)
-- File system I/O
+- Remote network requests and production external services
+- Databases for unit tests; use disposable real databases for integration tests that verify persistence, migrations, transactions, constraints, or query semantics
+- File system I/O when the filesystem behavior itself is not the subject of the test
 - System clock (`Date.now()`, `setTimeout`)
 - Random values (`Math.random()`, `crypto.randomUUID()`)
 - Third-party services with side effects (email, payment)
