@@ -247,6 +247,66 @@ function summarizeVerdicts(verdicts: Verdict[]): VerdictSummary {
   return { passed, failed, skipped: total - passed - failed };
 }
 
+// ── Confirm helpers ───────────────────────────────────────────────
+
+async function confirmTriggerSummary(
+  ctx: ExtensionContext,
+  report: EvalReport,
+): Promise<boolean> {
+  if (report.trigger_results.length === 0) return true;
+
+  const commandFailures = report.output_summary.command_failures ?? 0;
+  const warning = commandFailures > 0
+    ? `\n\n⚠️ ${commandFailures} command failure(s)/timeout(s). Some eval results may be incomplete.`
+    : "";
+
+  const failList = report.trigger_results
+    .filter((r) => !r.passed)
+    .map((r) => `❌ ${r.query_id}: ${r.query}`)
+    .join("\n");
+
+  return ctx.ui.confirm(
+    "Trigger Evals",
+    `${report.trigger_summary.passed}/${report.trigger_summary.total} trigger queries passed.${warning}\n\n${failList || "All passed!"}\n\nContinue to output evals?`,
+  );
+}
+
+async function confirmCommandFailures(
+  ctx: ExtensionContext,
+  report: EvalReport,
+): Promise<boolean> {
+  if (report.output_summary.command_failures <= 0) return true;
+  return ctx.ui.confirm(
+    "⚠️ Command Failures",
+    `${report.output_summary.command_failures} eval command(s) timed out or failed. Some output-eval results may be incomplete.`,
+  );
+}
+
+function saveVerdicts(runDir: string, verdicts: Verdict[]): string {
+  const verdictPath = join(runDir, "review-verdicts.json");
+  writeFileSync(verdictPath, JSON.stringify(verdicts, null, 2) + "\n", "utf-8");
+  return verdictPath;
+}
+
+async function showReviewSummary(
+  ctx: ExtensionContext,
+  verdicts: Verdict[],
+  verdictPath: string,
+): Promise<void> {
+  const summary = summarizeVerdicts(verdicts);
+  await ctx.ui.confirm(
+    "Review Complete",
+    [
+      `✅ ${summary.passed} passed`,
+      `❌ ${summary.failed} failed`,
+      `⏭️ ${summary.skipped} skipped`,
+      "",
+      `Verdicts saved to: ${verdictPath}`,
+      `Full review: LAST_REVIEW.md`,
+    ].join("\n"),
+  );
+}
+
 // ── Main review flow ───────────────────────────────────────────────
 
 export async function interactiveReview(
@@ -257,35 +317,10 @@ export async function interactiveReview(
 ): Promise<void> {
   if (!ctx.hasUI) return;
 
+  if (!(await confirmTriggerSummary(ctx, report))) return;
+  if (!(await confirmCommandFailures(ctx, report))) return;
+
   const verdicts: Verdict[] = [];
-
-  // Trigger evals summary
-  if (report.trigger_results.length > 0) {
-    const commandFailures = report.output_summary.command_failures ?? 0;
-    const warning = commandFailures > 0
-      ? `\n\n⚠️ ${commandFailures} command failure(s)/timeout(s). Some eval results may be incomplete.`
-      : "";
-
-    const failList = report.trigger_results
-      .filter((r) => !r.passed)
-      .map((r) => `❌ ${r.query_id}: ${r.query}`)
-      .join("\n");
-
-    const proceed = await ctx.ui.confirm(
-      "Trigger Evals",
-      `${report.trigger_summary.passed}/${report.trigger_summary.total} trigger queries passed.${warning}\n\n${failList || "All passed!"}\n\nContinue to output evals?`,
-    );
-    if (!proceed) return;
-  }
-
-  // Command failure warning before grading
-  if (report.output_summary.command_failures > 0) {
-    const acknowledged = await ctx.ui.confirm(
-      "⚠️ Command Failures",
-      `${report.output_summary.command_failures} eval command(s) timed out or failed. Some output-eval results may be incomplete.`,
-    );
-    if (!acknowledged) return;
-  }
 
   // Grade each output eval
   for (const evalResult of report.output_results) {
@@ -306,7 +341,6 @@ export async function interactiveReview(
       "info",
     );
 
-    // Grade assertions and manual review items using data-driven groups
     verdict.assertions = await gradeGroup(
       ctx,
       ASSERTION_GROUP,
@@ -327,7 +361,6 @@ export async function interactiveReview(
       evidenceText,
     );
 
-    // Optional notes
     const notes = await ctx.ui.input(
       "Evidence notes (optional — Enter to skip)",
       "Any observations about output, behavior, or discrepancies...",
@@ -339,25 +372,6 @@ export async function interactiveReview(
     verdicts.push(verdict);
   }
 
-  // Save verdicts
-  const verdictPath = join(runDir, "review-verdicts.json");
-  writeFileSync(
-    verdictPath,
-    JSON.stringify(verdicts, null, 2) + "\n",
-    "utf-8",
-  );
-
-  // Summary
-  const summary = summarizeVerdicts(verdicts);
-  await ctx.ui.confirm(
-    "Review Complete",
-    [
-      `✅ ${summary.passed} passed`,
-      `❌ ${summary.failed} failed`,
-      `⏭️ ${summary.skipped} skipped`,
-      "",
-      `Verdicts saved to: ${verdictPath}`,
-      `Full review: LAST_REVIEW.md`,
-    ].join("\n"),
-  );
+  const verdictPath = saveVerdicts(runDir, verdicts);
+  await showReviewSummary(ctx, verdicts, verdictPath);
 }
