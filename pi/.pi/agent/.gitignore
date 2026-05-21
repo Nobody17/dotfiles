@@ -2,5 +2,10 @@
 __pycache__/
 *.pyc
 
+# Machine-local/sensitive/runtime pi data
+auth.json
+run-history.jsonl
+sessions/
+
 # Skill eval run artifacts (ephemeral test outputs)
 skills/*/evals/runs/
