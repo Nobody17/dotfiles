@@ -1,6 +1,6 @@
 {
-  "defaultModel": "gpt-5.5",
-  "defaultProvider": "openai-codex",
+  "defaultModel": "deepseek-v4-pro:cloud",
+  "defaultProvider": "ollama-cloud",
   "enabledModels": [
     "gpt-5.4-mini",
     "gpt-5.3-codex",
