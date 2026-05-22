@@ -1,6 +1,6 @@
 ---
 name: skill-creation
-description: Use when creating, improving, or reviewing Agent Skills. Covers skill structure, writing effective instructions, reusable patterns, evaluating skill quality, optimizing descriptions, and bundling scripts. Use when the user asks about building a skill, adding a skill, or improving an existing skill. Also use when the user mentions "skill", "agent skill", "SKILL.md", or wants to teach the agent a repeatable workflow — even if they don't use the word "skill".
+description: Create, improve, review, and evaluate Agent Skills with proper structure, progressive disclosure, trigger descriptions, evals, references, and bundled scripts. Use when the user asks about building, adding, improving, reviewing, or testing a skill; mentions "skill", "agent skill", or "SKILL.md"; or wants to teach the agent a repeatable workflow even without saying "skill".
 ---
 
 # Skill Creation
@@ -104,6 +104,50 @@ improvements to the SKILL.md that would prevent these problems.
 
 Apply changes, re-test, repeat. Stop when the skill consistently produces good results without needing manual corrections.
 
+## New Skill Creation Workflow
+
+Use this when the user wants a new skill or wants to teach the agent a repeatable workflow.
+
+1. **Gather requirements before writing files.** Ask for the task/domain, 2-4 concrete use cases, near-misses that should not trigger, whether deterministic scripts are needed, and any source material (runbooks, prior corrections, docs, examples).
+2. **Pick the target structure.** Default to:
+
+   ```text
+   skill-name/
+   ├── SKILL.md
+   ├── references/        # optional one-level deep docs
+   ├── scripts/           # optional deterministic helpers
+   └── evals/             # trigger/output evals and fixtures
+   ```
+
+3. **Draft the smallest useful `SKILL.md`.** Keep the first draft under ~100 lines. Use this skeleton:
+
+   ```markdown
+   ---
+   name: skill-name
+   description: Capability in third person. Use when specific triggers, contexts, keywords, or file types apply.
+   ---
+
+   # Skill Name
+
+   ## Gotchas
+   - Concrete corrections from source evidence.
+
+   ## Workflow
+   1. Read/inspect the required inputs.
+   2. Do the task using the default tool or procedure.
+   3. Validate with a command, checklist, or rubric.
+
+   ## References
+   Read `references/details.md` only for rare edge cases.
+   ```
+
+4. **Add support files only when they change behavior.** Add scripts for deterministic validation/formatting/repeated operations with explicit errors and `--help`. Split to one-level `references/*.md` when `SKILL.md` exceeds ~100 lines, content is rarely needed, or a distinct deep topic would distract from the core workflow.
+5. **Create initial evals.** Add realistic should-trigger, near-miss, and output-quality cases; never leave scaffold placeholders in `evals/*.json`.
+6. **Run the static gate.** Use `python /path/to/skill-creation/scripts/test-skill.py /path/to/new-skill` and fix errors before presenting the draft.
+7. **Review with the user before expensive evals.** Ask: “Does this cover your use cases? Anything missing or unclear? Should any section be more/less detailed?” Only run live evals after the user approves or asks for them.
+
+Quick final checklist: description has “Use when…”, `SKILL.md` is concise and self-contained, references are one level deep, terminology is consistent, examples are concrete, scripts are justified, evals are realistic, and no time-sensitive claims or generated artifacts are accidentally included.
+
 ## Existing Skill Improvement Workflow
 
 Use this when the user asks to improve or review a skill that already exists.
@@ -191,7 +235,8 @@ The human does not re-read everything — the AI already ran all automated check
   - "Near-miss query Y falsely triggered. Should we narrow the description, or is this an acceptable edge case?"
   - "Manual review point Z: [question]. What do you see?"
 - [ ] **Give the file path.** Tell the human the consolidated review is at `LAST_REVIEW.md` (at the skill root) — open it in any editor for full evidence if they want to drill deeper.
-- [ ] **Do not edit the skill further until the human responds.** Wait for their answers before making changes.
+- [ ] **Use the interactive handoff when available.** If the `skill_review_human_handoff` tool exists, call it with the exact `skillDir` and eval `runDir`; it records human verdicts and links them from `LAST_REVIEW.md`.
+- [ ] **Do not edit the skill further until the human responds or the handoff tool returns verdicts.** Treat returned FAIL/ISSUE verdicts as evidence for the next edit pass.
 - [ ] **After human feedback, loop back to Phase 2.** Treat the human's answers as new evidence — edit the skill, rerun the static gate, then re-evaluate (Phase 3). Repeat until the human has no more corrections.
 - [ ] **When the human is satisfied**, run the final checks:
 
@@ -390,52 +435,38 @@ Available scripts:
   python /path/to/skill-creation/scripts/run-skill-evals.py /path/to/target-skill --mode output --llm-judge
   ```
 
+- **`scripts/consolidate-review.py`** — Inlines scattered eval artifacts into one scannable review file and optionally updates `LAST_REVIEW.md`.
+
+  ```bash
+  python /path/to/skill-creation/scripts/consolidate-review.py /path/to/target-skill/evals/runs/<timestamp> --link-to /path/to/target-skill/LAST_REVIEW.md
+  ```
+
 For script design rules (--help, error messages, structured output, idempotency, dry-run support), read [scripts-and-tools](references/scripts-and-tools.md).
 
-## Example: Before and After
+## Compact Example
 
-### Before (weak skill)
+Weak skill: `description: CSV helper.` plus “use pandas and handle errors.” It will not trigger reliably and gives no executable guidance.
 
-```markdown
----
-name: csv-helper
-description: Helps with CSV files.
----
-
-# CSV Helper
-
-Use pandas to process CSV files. Make sure to handle errors.
-```
-
-**Problems:** Vague description won't trigger reliably. No workflow. No gotchas. "Make sure to handle errors" is too generic to be useful.
-
-### After (improved skill)
+Improved pattern:
 
 ```markdown
 ---
 name: processing-csvs
-description: Use when working with CSV files — loading, cleaning, transforming, analyzing, or exporting data. Use when the user mentions CSV, spreadsheets, comma-separated values, or tabular data in text files — even if they don't say "CSV" explicitly and just say "I have data in a text file with columns."
+description: Clean, transform, analyze, and export CSV or spreadsheet-like text files. Use when the user mentions CSV, spreadsheets, delimited files, tabular text data, row cleanup, joins, filters, or CSV export.
 ---
 
 # Processing CSVs
 
-## Workflow
-
-1. Load the CSV with `scripts/load_csv.py <file>` — outputs JSON with schema info
-2. Identify the transformation needed (filter, aggregate, join, reshape)
-3. Write the transformation using `scripts/transform.py`
-4. Validate: `scripts/validate_csv.py <output.csv>` — checks row counts, schema, nulls
-5. If validation fails, fix and re-validate
-
 ## Gotchas
+- Our CSVs use semicolons (`;`), dates are `DD/MM/YYYY`, and blanks are `\N`.
 
-- Our CSVs use semicolons (`;`) as delimiters, not commas. Always pass `--delimiter ";"`.
-- Date columns are in `DD/MM/YYYY` format, not ISO 8601.
-- Empty cells are represented as `\N`, not empty strings or `NULL`.
-- Encoding is always ISO-8859-1, not UTF-8.
+## Workflow
+1. Inspect schema: `scripts/load_csv.py <file> --delimiter ";"`
+2. Transform using the requested filter/aggregate/join/reshape.
+3. Validate: `scripts/validate_csv.py <output.csv>`; fix and re-run until it passes.
 ```
 
-**Improvements:** Pushy description covers multiple phrasings. Workflow with concrete steps and validation. Gotchas capture environment-specific surprises that would cause real failures. The agent can act on this without reading any references.
+This works because the description has concrete triggers, the workflow names defaults, gotchas prevent observed mistakes, and validation closes the loop.
 
 <!--
 Source references:

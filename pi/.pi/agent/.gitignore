@@ -7,5 +7,6 @@ auth.json
 run-history.jsonl
 sessions/
 
-# Skill eval run artifacts (ephemeral test outputs)
-skills/*/evals/runs/
+# Skill eval artifacts
+evals/
+skills/*/evals/

@@ -8,12 +8,12 @@
     "deepseek-v4-pro:cloud"
   ],
   "theme": "catppuccin-mocha",
-  "lastChangelogVersion": "0.75.3",
+  "lastChangelogVersion": "0.75.4",
   "packages": [
     "npm:pi-subagents",
     "npm:@sherif-fanous/pi-catppuccin",
     "npm:pi-web-access"
   ],
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "medium",
   "hideThinkingBlock": true
 }

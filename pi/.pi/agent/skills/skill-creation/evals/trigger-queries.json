@@ -32,6 +32,12 @@
       "rationale": "Creating skill evals is part of skill testing and iteration."
     },
     {
+      "id": "should-trigger-evaluate-1",
+      "query": "Run the trigger and output evals for this skill and prepare the human review handoff.",
+      "should_trigger": true,
+      "rationale": "The user is asking to evaluate an Agent Skill and prepare review artifacts."
+    },
+    {
       "id": "should-trigger-repeatable-workflow-1",
       "query": "I keep coaching the agent through the same release checklist. Can we teach it that process?",
       "should_trigger": true,
