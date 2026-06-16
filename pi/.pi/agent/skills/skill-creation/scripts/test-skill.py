@@ -11,6 +11,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+try:
+    import yaml
+except ImportError:  # pragma: no cover - PyYAML is optional; fallback parser handles common checks.
+    yaml = None
+
 MAX_NAME_LENGTH = 64
 MAX_DESCRIPTION_LENGTH = 1024
 MAX_SKILL_LINES = 500
@@ -108,22 +113,64 @@ def parse_frontmatter(skill_md: Path) -> tuple[dict[str, Any], str, list[Finding
         findings.append(Finding("error", "frontmatter", "YAML frontmatter is not closed with ---.", str(skill_md)))
         return {}, text, findings
 
+    frontmatter = parts[1]
+    if yaml is not None:
+        try:
+            parsed = yaml.safe_load(frontmatter) or {}
+        except Exception as error:
+            findings.append(
+                Finding(
+                    "error",
+                    "frontmatter",
+                    f"Invalid YAML frontmatter: {error}",
+                    str(skill_md),
+                    "Quote frontmatter values containing ': ' (for example, use description: \"...\") or use a folded block scalar.",
+                )
+            )
+            return {}, parts[2], findings
+        if not isinstance(parsed, dict):
+            findings.append(Finding("error", "frontmatter", "YAML frontmatter must be a mapping.", str(skill_md)))
+            return {}, parts[2], findings
+        return parsed, parts[2], findings
+
     metadata: dict[str, Any] = {}
-    for line in parts[1].splitlines():
+    for line in frontmatter.splitlines():
         if not line.strip() or line.startswith(" ") or line.startswith("#"):
             continue
         if ":" not in line:
             continue
         key, value = line.split(":", 1)
-        metadata[key.strip()] = value.strip().strip('"').strip("'")
+        clean_key = key.strip()
+        clean_value = value.strip()
+        if clean_key in {"description", "compatibility", "license", "allowed-tools"} and not clean_value.startswith(("'", '"', ">", "|")) and re.search(r"\S.*:\s", clean_value):
+            findings.append(
+                Finding(
+                    "error",
+                    "frontmatter",
+                    f"Unquoted frontmatter value for '{clean_key}' contains ': ' and may not parse as YAML.",
+                    str(skill_md),
+                    "Quote the value or use a folded block scalar before sharing the skill.",
+                )
+            )
+        metadata[clean_key] = clean_value.strip('"').strip("'")
 
     return metadata, parts[2], findings
 
 
 def check_frontmatter(skill_dir: Path, skill_md: Path) -> list[Finding]:
     metadata, _body, findings = parse_frontmatter(skill_md)
-    name = metadata.get("name", "")
-    description = metadata.get("description", "")
+    if any(finding.level == "error" and finding.check == "frontmatter" for finding in findings):
+        return findings
+
+    raw_name = metadata.get("name", "")
+    raw_description = metadata.get("description", "")
+    name = raw_name if isinstance(raw_name, str) else ""
+    description = raw_description if isinstance(raw_description, str) else ""
+
+    if raw_name and not isinstance(raw_name, str):
+        findings.append(Finding("error", "name", "Frontmatter field 'name' must be a string.", str(skill_md)))
+    if raw_description and not isinstance(raw_description, str):
+        findings.append(Finding("error", "description", "Frontmatter field 'description' must be a string.", str(skill_md)))
 
     if not name:
         findings.append(Finding("error", "name", "Missing required frontmatter field: name.", str(skill_md)))

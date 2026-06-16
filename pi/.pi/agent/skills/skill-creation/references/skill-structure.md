@@ -40,9 +40,9 @@ A `SKILL.md` file must contain YAML frontmatter followed by Markdown body:
 ```markdown
 ---
 name: skill-name
-description: What this skill does and when to use it.
+description: "What this skill does and when to use it."
 license: Apache-2.0           # Optional
-compatibility: Requires git and jq  # Optional, max 500 chars
+compatibility: "Requires git and jq"  # Optional, max 500 chars
 metadata:                     # Optional, arbitrary key-value
   author: example-org
   version: "1.0"
@@ -65,7 +65,7 @@ Content here. No format restrictions.
 | `metadata` | No | Arbitrary string-to-string map. Use for author, version, etc. Make keys reasonably unique. |
 | `allowed-tools` | No | Space-separated list of pre-approved tools. Experimental — support varies by agent. |
 
-For broad compatibility, avoid XML tags in frontmatter values and avoid reserved brand names such as `anthropic` or `claude` in skill names.
+For broad compatibility, avoid XML tags in frontmatter values and avoid reserved brand names such as `anthropic` or `claude` in skill names. Quote scalar frontmatter values by default, especially `description`: unquoted values containing `: `, `#`, leading `{`/`[`, or embedded quotes can be parsed as nested YAML mappings and prevent skill discovery.
 
 ### Name Rules
 
@@ -88,10 +88,10 @@ Include both **what** the skill does and **when** to use it. Be specific with ke
 
 ```yaml
 # Good
-description: Extracts text and tables from PDF files, fills PDF forms, and merges multiple PDFs. Use when working with PDF documents or when the user mentions PDFs, forms, or document extraction.
+description: "Extracts text and tables from PDF files, fills PDF forms, and merges multiple PDFs. Use when working with PDF documents or when the user mentions PDFs, forms, or document extraction."
 
 # Poor
-description: Helps with PDFs.
+description: "Helps with PDFs."
 ```
 
 For optimization, see [evaluating-skills](evaluating-skills.md).

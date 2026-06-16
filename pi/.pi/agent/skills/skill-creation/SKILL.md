@@ -1,6 +1,6 @@
 ---
 name: skill-creation
-description: Create, improve, review, and evaluate Agent Skills with proper structure, progressive disclosure, trigger descriptions, evals, references, and bundled scripts. Use when the user asks about building, adding, improving, reviewing, or testing a skill; mentions "skill", "agent skill", or "SKILL.md"; or wants to teach the agent a repeatable workflow even without saying "skill".
+description: 'Create, improve, review, and evaluate Agent Skills with proper structure, progressive disclosure, trigger descriptions, evals, references, and bundled scripts. Use when the user asks about building, adding, improving, reviewing, or testing a skill; mentions "skill", "agent skill", or "SKILL.md"; or wants to teach the agent a repeatable workflow even without saying "skill".'
 ---
 
 # Skill Creation
@@ -20,6 +20,7 @@ A skill is a folder with a `SKILL.md` file containing YAML frontmatter (`name`, 
 - Do not place fixture skills with real `SKILL.md` files under a discoverable skill tree; pi may load them as real skills. Store them as `SKILL.fixture.md` and use an output eval `files` mapping with `source` and `target` to copy them as `SKILL.md` inside the isolated workspace.
 - For generated or synced skills, check provenance first and update `GENERATION.md`/`SYNC.md`; avoid local edits to synced skills when the fix belongs upstream.
 - When applying the Existing Skill Improvement Workflow to the `skill-creation` skill itself, resolve `/path/to/skill-creation/` to the skill-creation skill's own directory so script paths work.
+- YAML frontmatter is parsed before a skill loads. Quote `description` and other scalar values when they contain `: `, `#`, leading `{`/`[`, or embedded quotes; default generated skills to `description: "..."`. Unquoted text like `description: Use when writing tests: browser mode` can break discovery with YAML nested-mapping errors.
 
 ## The Iterative Build Loop
 
@@ -124,7 +125,7 @@ Use this when the user wants a new skill or wants to teach the agent a repeatabl
    ```markdown
    ---
    name: skill-name
-   description: Capability in third person. Use when specific triggers, contexts, keywords, or file types apply.
+   description: "Capability in third person. Use when specific triggers, contexts, keywords, or file types apply."
    ---
 
    # Skill Name
@@ -146,7 +147,7 @@ Use this when the user wants a new skill or wants to teach the agent a repeatabl
 6. **Run the static gate.** Use `python /path/to/skill-creation/scripts/test-skill.py /path/to/new-skill` and fix errors before presenting the draft.
 7. **Review with the user before expensive evals.** Ask: “Does this cover your use cases? Anything missing or unclear? Should any section be more/less detailed?” Only run live evals after the user approves or asks for them.
 
-Quick final checklist: description has “Use when…”, `SKILL.md` is concise and self-contained, references are one level deep, terminology is consistent, examples are concrete, scripts are justified, evals are realistic, and no time-sensitive claims or generated artifacts are accidentally included.
+Quick final checklist: frontmatter parses as valid YAML, description has “Use when…” and is quoted when punctuation-heavy, `SKILL.md` is concise and self-contained, references are one level deep, terminology is consistent, examples are concrete, scripts are justified, evals are realistic, and no time-sensitive claims or generated artifacts are accidentally included.
 
 ## Existing Skill Improvement Workflow
 
@@ -445,14 +446,14 @@ For script design rules (--help, error messages, structured output, idempotency,
 
 ## Compact Example
 
-Weak skill: `description: CSV helper.` plus “use pandas and handle errors.” It will not trigger reliably and gives no executable guidance.
+Weak skill: `description: "CSV helper."` plus “use pandas and handle errors.” It will not trigger reliably and gives no executable guidance.
 
 Improved pattern:
 
 ```markdown
 ---
 name: processing-csvs
-description: Clean, transform, analyze, and export CSV or spreadsheet-like text files. Use when the user mentions CSV, spreadsheets, delimited files, tabular text data, row cleanup, joins, filters, or CSV export.
+description: "Clean, transform, analyze, and export CSV or spreadsheet-like text files. Use when the user mentions CSV, spreadsheets, delimited files, tabular text data, row cleanup, joins, filters, or CSV export."
 ---
 
 # Processing CSVs

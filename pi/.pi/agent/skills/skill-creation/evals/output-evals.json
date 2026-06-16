@@ -35,7 +35,7 @@
       ],
       "expected_output": "A new skill folder with concise SKILL.md, source-grounded gotchas, a workflow, validation steps, and provenance/source references.",
       "assertions": [
-        "SKILL.md contains YAML frontmatter with a specific third-person description under 1024 characters.",
+        "SKILL.md contains valid YAML frontmatter with a quoted or otherwise YAML-safe, specific third-person description under 1024 characters.",
         "The workflow emphasizes practical agent actions, commands, failure modes, and validation rather than copying introductory docs.",
         "At least one gotcha is grounded in the incident notes or runbook failures.",
         "Source links or a GENERATION.md file record where the skill content came from."
@@ -59,7 +59,7 @@
         "The description uses imperative 'Use when...' phrasing and user-intent language.",
         "The description names CSV/data-cleaning contexts and includes a clear boundary against unrelated file operations.",
         "Trigger evals include both should-trigger prompts and near-miss prompts with rationales.",
-        "The agent checks the description length remains under 1024 characters."
+        "The agent checks the description length remains under 1024 characters and keeps the frontmatter valid YAML, quoting punctuation-heavy descriptions when needed."
       ],
       "manual_review": [
         "Check whether the new description would activate on realistic terse prompts, not only exact keywords.",

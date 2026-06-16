@@ -59,7 +59,7 @@ return {
         vue = { 'prettier' },
         html = { 'prettier' },
         css = { 'prettier' },
-        php = { 'pint' },
+        -- php = { 'pint' },
       },
     },
   },

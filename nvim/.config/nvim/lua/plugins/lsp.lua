@@ -190,7 +190,7 @@ return {
         'ruff',
         'mdformat',
         'sqlfmt',
-        'pint',
+        -- 'pint',
         'sqlfluff',
         'eslint_d',
         'jsonlint',
