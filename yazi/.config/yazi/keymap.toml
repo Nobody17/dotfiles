@@ -1,4 +1,9 @@
-[[manager.prepend_keymap]]
+[[mgr.prepend_keymap]]
 on   = [ "c", "p" ]
 run  = "shell -- 'wl-copy < \"$1\"'"
 desc = "Copy image to clipboard"
+
+[[mgr.prepend_keymap]]
+on = ["g","n"]
+run = "cd /mnt/nas-main"
+desc = "Go to nas-main"
