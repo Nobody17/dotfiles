@@ -12,7 +12,6 @@ A skill is a folder with a `SKILL.md` file containing YAML frontmatter (`name`, 
 - When improving an existing skill, do **not** start from a blank template. Read the current `SKILL.md`, relevant `references/*.md`, existing `evals/*.json`, and provenance files (`GENERATION.md` or `SYNC.md`) before editing.
 - Evidence-first does not mean "block forever." If no traces or source artifacts exist, make a conservative hygiene pass, state the assumption, and add evals that will collect evidence on the next iteration.
 - `scripts/test-skill.py --create-evals` creates scaffolding only. Replace placeholder prompts/assertions with realistic should-trigger, near-miss, and output-quality evals before treating evaluation as complete.
-- The PyPI package is `skills-ref`, but its executable may be `agentskills`; the tested validation command is `uvx --from skills-ref agentskills validate /path/to/skill`.
 - Keep core behavior in `SKILL.md`. References are for depth; if the agent must read a reference to perform the basic workflow, promote that content into `SKILL.md`.
 - Clean generated artifacts (`__pycache__/`, `*.pyc`, `evals/runs/`, temp run outputs) before sharing or packaging a skill.
 - When behavior evals still require human judgment, do not just say "review manually"; point to `review.md` and name the exact stdout/session/workspace/assertion evidence to inspect.
@@ -239,10 +238,9 @@ The human does not re-read everything — the AI already ran all automated check
 - [ ] **Use the interactive handoff when available.** If the `skill_review_human_handoff` tool exists, call it with the exact `skillDir` and eval `runDir`; it records human verdicts and links them from `LAST_REVIEW.md`.
 - [ ] **Do not edit the skill further until the human responds or the handoff tool returns verdicts.** Treat returned FAIL/ISSUE verdicts as evidence for the next edit pass.
 - [ ] **After human feedback, loop back to Phase 2.** Treat the human's answers as new evidence — edit the skill, rerun the static gate, then re-evaluate (Phase 3). Repeat until the human has no more corrections.
-- [ ] **When the human is satisfied**, run the final checks:
+- [ ] **When the human is satisfied**, run the final cleanup check:
 
   ```bash
-  uvx --from skills-ref agentskills validate /path/to/target-skill
   find /path/to/target-skill -name '__pycache__' -type d -prune -exec rm -rf {} +
   ```
 
@@ -473,5 +471,5 @@ This works because the description has concrete triggers, the workflow names def
 Source references:
 - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 - https://github.com/antfu/skills/blob/main/AGENTS.md
-- https://github.com/agentskills/agentskills (docs/skill-creation/, docs/specification.mdx, skills-ref/)
+- https://github.com/agentskills/agentskills (docs/skill-creation/, docs/specification.mdx)
 -->

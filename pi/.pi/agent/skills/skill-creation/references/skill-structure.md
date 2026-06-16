@@ -116,15 +116,13 @@ Keep `SKILL.md` body under 500 lines. Move detailed material to `references/`. R
 
 ## Validation
 
-Use the `skills-ref` package to validate. The package's CLI entrypoint is commonly `agentskills`:
+Use the local static gate from the `skill-creation` skill during development:
 
 ```bash
-uvx --from skills-ref agentskills validate ./my-skill
-# or
-pipx run --spec skills-ref agentskills validate ./my-skill
+python /path/to/skill-creation/scripts/test-skill.py ./my-skill
 ```
 
-If your environment provides a direct `skills-ref` executable, that older wrapper may also work. Pi performs its own validation on load, warning about most violations but still loading the skill. Skills with missing descriptions are not loaded.
+Pi also performs validation on load, warning about most violations but still loading the skill. Skills with missing descriptions are not loaded.
 
 <!--
 Source references:
