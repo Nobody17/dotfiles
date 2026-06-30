@@ -4,6 +4,11 @@ local.fish
 
 # pi local state/secrets
 pi/.pi/agent/auth.json
+pi/.pi/agent/settings.json
+pi/.pi/agent/trust.json
 pi/.pi/agent/run-history.jsonl
 pi/.pi/agent/sessions/
 evals/
+
+# machine-local helpers
+fish/.config/fish/functions/mount-nas.fish
