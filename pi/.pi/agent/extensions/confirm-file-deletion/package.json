@@ -1,0 +1,17 @@
+{
+  "name": "confirm-file-deletion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --test ../../tests/confirm-file-deletion/*.test.ts"
+  },
+  "dependencies": {
+    "unbash": "4.0.3"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.80.10",
+    "@types/node": "24.12.4",
+    "typescript": "5.9.3"
+  }
+}
