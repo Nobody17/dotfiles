@@ -136,6 +136,43 @@ test("blocks TUI execution when the UI is unavailable", async () => {
   assertUserBashBlocked(result, "File deletion blocked because confirmation is unavailable.");
 });
 
+for (const mode of ["rpc", "json", "print"] as const) {
+  test(`blocks user Bash in ${mode} without selecting`, async () => {
+    const handler = registeredEventHandler("user_bash");
+    let selectCalls = 0;
+
+    const result = await handler(
+      { command: "rm obsolete.txt" },
+      {
+        hasUI: mode === "rpc",
+        mode,
+        ui: {
+          select: async () => {
+            selectCalls += 1;
+            return "Yes, allow deletion";
+          },
+        },
+      },
+    );
+
+    assert.equal(selectCalls, 0);
+    assertUserBashBlocked(result, "File deletion blocked because confirmation is unavailable.");
+  });
+}
+
+test("blocks user Bash if selection throws", async () => {
+  const handler = registeredEventHandler("user_bash");
+
+  const result = await handler(
+    { command: "rm obsolete.txt" },
+    tuiContext(async () => {
+      throw new Error("UI failed");
+    }),
+  );
+
+  assertUserBashBlocked(result, "File deletion blocked because confirmation failed.");
+});
+
 test("does not prompt for safe Bash or unrelated tools", async () => {
   const handler = registeredEventHandler("tool_call");
   let selectCalls = 0;
@@ -149,6 +186,22 @@ test("does not prompt for safe Bash or unrelated tools", async () => {
 
   assert.equal(safeResult, undefined);
   assert.equal(otherToolResult, undefined);
+  assert.equal(selectCalls, 0);
+});
+
+test("does not prompt for safe user Bash", async () => {
+  const handler = registeredEventHandler("user_bash");
+  let selectCalls = 0;
+
+  const result = await handler(
+    { command: "printf safe" },
+    tuiContext(async () => {
+      selectCalls += 1;
+      return "Yes, allow deletion";
+    }),
+  );
+
+  assert.equal(result, undefined);
   assert.equal(selectCalls, 0);
 });
 

@@ -76,14 +76,18 @@ function updateAssignmentBuiltinState(
 ): void {
   if (["export", "readonly", "declare", "typeset", "local"].includes(commandName)) {
     for (const word of command.suffix) {
-      const text = literalWordValue(word);
-      const match = text === undefined ? undefined : /^([A-Za-z_][A-Za-z0-9_]*)(\+?=)(.*)$/.exec(text);
-      if (match === undefined || match === null) {
-        if (text !== undefined && /^[A-Za-z_][A-Za-z0-9_]*$/.test(text)) state.delete(text);
+      const literal = literalWordValue(word);
+      const text = literal ?? word.text;
+      const match = /^([A-Za-z_][A-Za-z0-9_]*)(\+?=)(.*)$/.exec(text);
+      if (match === null) {
+        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(text)) state.delete(text);
+        else if (literal === undefined) state.clear();
         continue;
       }
       const [, name, operator, value] = match;
-      if (operator === "+=") {
+      if (literal === undefined) {
+        state.delete(name);
+      } else if (operator === "+=") {
         const existing = state.get(name);
         if (existing === undefined) state.delete(name);
         else state.set(name, `${existing}${value}`);
@@ -97,7 +101,12 @@ function updateAssignmentBuiltinState(
   if (commandName === "unset") {
     for (const word of command.suffix) {
       const name = literalWordValue(word);
-      if (name !== undefined && /^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) state.delete(name);
+      if (name === undefined) {
+        state.clear();
+        return;
+      }
+      if (name.startsWith("-")) continue;
+      if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) state.delete(name);
     }
   }
 }

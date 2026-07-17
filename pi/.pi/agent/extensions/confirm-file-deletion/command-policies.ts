@@ -124,6 +124,7 @@ function skipWrapperOptions(
   argumentsList: Word[],
   optionsWithValues: ReadonlySet<string>,
   policy: string,
+  optionsWithoutValues: ReadonlySet<string> = new Set(),
 ): { words: Word[] } | PolicyDecision {
   let index = 0;
   while (index < argumentsList.length) {
@@ -133,6 +134,10 @@ function skipWrapperOptions(
     if (!value.startsWith("-") || value === "-") return { words: argumentsList.slice(index) };
     if (value === "--help" || value === "--version" || value === "-V") return { words: [] };
 
+    const option = value.includes("=") ? value.slice(0, value.indexOf("=")) : value;
+    if (!optionsWithValues.has(option) && !optionsWithoutValues.has(option)) {
+      return decision("unknown", policy, `Unsupported wrapper option ${value} makes command dispatch ambiguous`);
+    }
     const consumed = consumeOption(argumentsList, index, optionsWithValues);
     if ("error" in consumed) return decision("unknown", policy, "A wrapper option is missing its required value");
     index = consumed.nextIndex;
@@ -173,7 +178,20 @@ function wrapperDecision(command: string, argumentsList: Word[], context: Policy
         : command === "time"
           ? new Set(["-f", "-o", "--format", "--output"])
           : new Set<string>();
-  const skipped = skipWrapperOptions(argumentsList, optionsWithValues, "wrapper-options");
+  const optionsWithoutValues = command === "sudo"
+    ? new Set(["-A", "-b", "-E", "-H", "-K", "-k", "-l", "-n", "-S", "-s", "-v", "--askpass", "--background", "--bell", "--edit", "--list", "--non-interactive", "--preserve-env", "--reset-timestamp", "--shell", "--stdin", "--validate"])
+    : command === "doas"
+      ? new Set(["-L", "-n", "-s"])
+      : command === "exec"
+        ? new Set(["-c", "-l"])
+        : command === "time"
+          ? new Set(["-a", "-p", "-v"])
+          : command === "command"
+            ? new Set(["-p", "-v", "-V"])
+            : command === "setsid"
+              ? new Set(["-c", "-f", "-w"])
+              : new Set<string>();
+  const skipped = skipWrapperOptions(argumentsList, optionsWithValues, "wrapper-options", optionsWithoutValues);
   if ("kind" in skipped) return skipped;
 
   if (command === "command") {
@@ -435,6 +453,10 @@ function interpreterDecision(command: string, argumentsList: Word[], context: Po
         return decision("unknown", "interpreter-options", `${value} requires a value`);
       }
       index += 1;
+      continue;
+    }
+    if (value.startsWith("--") && !["--noprofile", "--norc", "--posix", "--restricted", "--verbose", "--debugger"].includes(value)) {
+      return decision("unknown", "interpreter-options", `Unsupported interpreter option ${value}`);
     }
   }
 

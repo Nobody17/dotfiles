@@ -48,6 +48,8 @@ const policyCases: PolicyCase[] = [
   { source: "sudo -u", kind: "unknown", policy: "wrapper-options" },
   { source: "env -S", kind: "unknown", policy: "env-options" },
   { source: "timeout -k rm obsolete.txt", kind: "unknown", policy: "timeout-options" },
+  { source: "sudo --unsupported", kind: "unknown", policy: "wrapper-options" },
+  { source: "bash --unsupported", kind: "unknown", policy: "interpreter-options" },
 ];
 
 for (const policyCase of policyCases) {
@@ -61,3 +63,13 @@ for (const policyCase of policyCases) {
     }
   });
 }
+
+test("invalidates constants through assignment builtins and unset options", () => {
+  const exportInvalidation = assessFileDeletion("program=printf; export program=$unknown; \"$program\" safe");
+  const unsetInvalidation = assessFileDeletion("program=printf; unset -v program; \"$program\" safe");
+  const prefixScope = assessFileDeletion("program=printf; program=rm \"$program\" obsolete.txt");
+
+  assert.equal(exportInvalidation.kind, "unknown");
+  assert.equal(unsetInvalidation.kind, "unknown");
+  assert.equal(prefixScope.kind, "safe");
+});
