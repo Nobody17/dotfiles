@@ -53,6 +53,17 @@ test("allows agent Bash only after an exact affirmative selection", async () => 
   assert.match(receivedPrompt, /direct/i);
 });
 
+test("allows agent Bash deletion of a temporary-directory entry without confirmation", async () => {
+  const handler = registeredEventHandler("tool_call");
+
+  const result = await handler(
+    { toolName: "bash", input: { command: "rm -rf /tmp/build-output" } },
+    { hasUI: false, mode: "print", ui: { select: async () => "Yes, allow deletion" } },
+  );
+
+  assert.equal(result, undefined);
+});
+
 for (const choice of [undefined, "No, block it", "yes", "unexpected value"]) {
   test(`blocks agent Bash when selector returns ${String(choice)}`, async () => {
     const handler = registeredEventHandler("tool_call");
@@ -101,6 +112,17 @@ test("allows user Bash after an exact affirmative selection", async () => {
   assert.equal(result, undefined);
 });
 
+test("allows user Bash deletion of a temporary-directory entry without confirmation", async () => {
+  const handler = registeredEventHandler("user_bash");
+
+  const result = await handler(
+    { command: "unlink /tmp/socket" },
+    { hasUI: false, mode: "print", ui: { select: async () => "Yes, allow deletion" } },
+  );
+
+  assert.equal(result, undefined);
+});
+
 for (const mode of ["rpc", "json", "print"] as const) {
   test(`blocks agent Bash in ${mode} without selecting`, async () => {
     const handler = registeredEventHandler("tool_call");
@@ -134,6 +156,17 @@ test("blocks TUI execution when the UI is unavailable", async () => {
   );
 
   assertUserBashBlocked(result, "File deletion blocked because confirmation is unavailable.");
+});
+
+test("does not automatically allow mixed temporary and non-temporary deletion targets", async () => {
+  const handler = registeredEventHandler("tool_call");
+
+  const result = await handler(
+    { toolName: "bash", input: { command: "rm /tmp/build-output /home/user/important-file" } },
+    { hasUI: false, mode: "print", ui: { select: async () => "Yes, allow deletion" } },
+  );
+
+  assertToolCallBlocked(result, "File deletion blocked because confirmation is unavailable");
 });
 
 for (const mode of ["rpc", "json", "print"] as const) {

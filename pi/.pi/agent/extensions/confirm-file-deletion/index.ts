@@ -1,6 +1,7 @@
 import { isToolCallEventType, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 import { assessFileDeletion, type DeletionAssessment } from "./assessment.ts";
+import { isDirectTemporaryDirectoryDeletion } from "./temporary-directory-policy.ts";
 
 const blockOption = "No, block it";
 const allowOption = "Yes, allow deletion";
@@ -23,6 +24,13 @@ function deletionBlockedResult(outcome: Exclude<ConfirmationOutcome, "approved">
       truncated: false,
     },
   };
+}
+
+function confirmationAssessment(command: string): Exclude<DeletionAssessment, { kind: "safe" }> | undefined {
+  const assessment = assessFileDeletion(command);
+  if (assessment.kind === "safe") return undefined;
+  if (assessment.kind === "deletion" && isDirectTemporaryDirectoryDeletion(command)) return undefined;
+  return assessment;
 }
 
 function findingsSummary(assessment: Exclude<DeletionAssessment, { kind: "safe" }>): string {
@@ -51,8 +59,8 @@ export default function (pi: ExtensionAPI) {
   pi.on("tool_call", async (event, ctx) => {
     if (!isToolCallEventType("bash", event)) return undefined;
 
-    const assessment = assessFileDeletion(event.input.command);
-    if (assessment.kind === "safe") return undefined;
+    const assessment = confirmationAssessment(event.input.command);
+    if (assessment === undefined) return undefined;
 
     if (ctx.mode !== "tui" || !ctx.hasUI) {
       return { block: true, reason: confirmationBlockedReason("unavailable") };
@@ -65,8 +73,8 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.on("user_bash", async (event, ctx) => {
-    const assessment = assessFileDeletion(event.command);
-    if (assessment.kind === "safe") return undefined;
+    const assessment = confirmationAssessment(event.command);
+    if (assessment === undefined) return undefined;
 
     if (ctx.mode !== "tui" || !ctx.hasUI) {
       return deletionBlockedResult("unavailable");
