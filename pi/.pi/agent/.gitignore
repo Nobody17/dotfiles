@@ -4,6 +4,7 @@ __pycache__/
 
 # Machine-local/sensitive/runtime pi data
 auth.json
+models.json
 run-history.jsonl
 sessions/
 

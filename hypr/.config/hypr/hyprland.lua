@@ -197,8 +197,8 @@ package.path = package.path
 local splitWorkspaces = require("plugins.split-monitor-workspaces")
 splitWorkspaces.setup({
     workspace_count = workspaceCount,
-    -- split-monitor-workspaces still matches these by Hyprland output name.
-    monitor_priority = { "DP-3", "DP-2" },
+    -- split-monitor-workspaces matches Hyprland output names, not desc: selectors.
+    monitor_priority = { "DP-1", "DP-2" },
     keep_focused = true,
     enable_notifications = false,
     enable_persistent_workspaces = true,
@@ -247,9 +247,9 @@ end
 -- hl.bind(mainMod .. " + S", splitWorkspaces.workspace("special:magic"))
 -- hl.bind(mainMod .. " + SHIFT + S", splitWorkspaces.move_to_workspace("special:magic"))
 
--- Scroll through existing workspaces.
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
+-- Scroll through workspaces on the focused monitor.
+hl.bind(mainMod .. " + mouse_down", splitWorkspaces.cycle_workspaces("next"))
+hl.bind(mainMod .. " + mouse_up", splitWorkspaces.cycle_workspaces("prev"))
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging.
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })

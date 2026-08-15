@@ -1,0 +1,7 @@
+[[plugin.deps]]
+use = "Jormala/relative-motions"
+rev = "d4f2003"
+hash = "e0017cae4c0772dd41b7e7c259a6e683"
+
+[flavor]
+deps = []

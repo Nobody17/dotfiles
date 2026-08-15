@@ -1,4 +1,5 @@
-local obsidian_vault_path = vim.fn.expand '~/Documents/ObsidianVaults/SecondBrain'
+local secondbrain_vault_path = vim.fn.expand '~/Documents/ObsidianVaults/SecondBrain'
+local writing_vault_path = vim.fn.expand '~/Documents/ObsidianVaults/Stories'
 
 return {
   {
@@ -63,8 +64,9 @@ return {
     'obsidian-nvim/obsidian.nvim',
     version = '*', -- recommended, use latest release instead of latest commit
     lazy = true,
+    cmd = 'Obsidian',
     cond = function()
-      return vim.fn.isdirectory(obsidian_vault_path) == 1
+      return vim.fn.isdirectory(secondbrain_vault_path) == 1 or vim.fn.isdirectory(writing_vault_path) == 1
     end,
     -- ft = 'markdown',
     -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
@@ -72,8 +74,10 @@ return {
       -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
       -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
       -- refer to `:h file-pattern` for more examples
-      'BufReadPre ' .. obsidian_vault_path .. '/*.md',
-      'BufNewFile ' .. obsidian_vault_path .. '/*.md',
+      'BufReadPre ' .. secondbrain_vault_path .. '/*.md',
+      'BufNewFile ' .. secondbrain_vault_path .. '/*.md',
+      'BufReadPre ' .. writing_vault_path .. '/*.md',
+      'BufNewFile ' .. writing_vault_path .. '/*.md',
     },
     dependencies = {
       'nvim-lua/plenary.nvim',
@@ -81,44 +85,41 @@ return {
       'nvim-telescope/telescope.nvim',
     },
     keys = {
-      { '<leader>on', '<cmd>ObsidianNew<cr>', desc = '[O]bsidian: Open [N]ew File' },
+      { '<leader>on', '<cmd>Obsidian new<cr>', desc = '[O]bsidian: Open [N]ew File' },
       {
         '<leader>oh',
-        '<cmd>ObsidianFollowLink hsplit<cr>',
+        '<cmd>Obsidian follow_link hsplit<cr>',
         desc = '[O]bsidian: Open File in [H]orizontal split',
       },
       {
         '<leader>ov',
-        '<cmd>ObsidianFollowLink vsplit<cr>',
+        '<cmd>Obsidian follow_link vsplit<cr>',
         desc = '[O]bsidian: Open File in [V]ertical split',
       },
-      { '<leader>ob', '<cmd>ObsidianBacklinks<cr>', desc = '[O]bsidian: Open a picker with [B]acklinks' },
-      { '<leader>os', '<cmd>ObsidianSearch<cr>', desc = '[O]bsidian: Open a picker to [S]earch' },
+      { '<leader>ob', '<cmd>Obsidian backlinks<cr>', desc = '[O]bsidian: Open a picker with [B]acklinks' },
+      { '<leader>os', '<cmd>Obsidian search<cr>', desc = '[O]bsidian: Open a picker to [S]earch' },
     },
     opts = {
+      legacy_commands = false,
       -- templates = {
       --   folder = '/templates',
       --   date_format = '%Y-%m-%d-%a',
       --   time_format = '%H:%M',
       -- },
-      completion = {
-        nvim_cmp = false,
-        blink = true,
-        min_chars = 2,
-      },
       workspaces = {
-        -- { name = 'oldvault', path = '~/SecondBrain/Second Brain/' },
-        { name = 'secondbrain', path = obsidian_vault_path },
+        { name = 'secondbrain', path = secondbrain_vault_path },
+        { name = 'writing', path = writing_vault_path },
       },
       callbacks = {
         -- Runs anytime you leave the buffer for a note.
-        ---@param client obsidian.Client
         ---@param note obsidian.Note
-        ---@diagnostic disable-next-line: unused-local
-        leave_note = function(client, note)
-          vim.api.nvim_buf_call(note.bufnr or 0, function()
-            vim.cmd 'silent w'
-          end)
+        leave_note = function(note)
+          local buffer_number = note.bufnr
+          if buffer_number and vim.bo[buffer_number].modified then
+            vim.api.nvim_buf_call(buffer_number, function()
+              vim.cmd 'silent write'
+            end)
+          end
         end,
       },
       ui = { enable = false },
@@ -142,7 +143,7 @@ return {
         return tostring(os.time()) .. '-' .. suffix
       end,
       attachments = {
-        img_folder = 'files/images/',
+        folder = 'files/images/',
       },
     },
   },
