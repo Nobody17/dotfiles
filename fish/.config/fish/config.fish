@@ -28,9 +28,7 @@ if test -f "$ASDF_DATA_DIR/asdf.fish"
     source "$ASDF_DATA_DIR/asdf.fish"
 end
 
-if type -q fnm
-    fnm env --use-on-cd | source
-end
+
 
 # Start SSH agent if not already running
 if not set -q SSH_AUTH_SOCK
@@ -91,3 +89,25 @@ end
 # bun
 set --export BUN_INSTALL "$HOME/.bun"
 set --export PATH $BUN_INSTALL/bin $PATH
+
+
+if type -q mise
+  mise activate fish | source
+end
+
+# Android SDK (React Native / Expo)
+if test -d "$HOME/Android/Sdk"
+    set -gx ANDROID_HOME "$HOME/Android/Sdk"
+    set -gx ANDROID_SDK_ROOT "$ANDROID_HOME"
+    for dir in platform-tools emulator cmdline-tools/latest/bin
+        if test -d "$ANDROID_HOME/$dir"
+            fish_add_path -g "$ANDROID_HOME/$dir"
+        end
+    end
+end
+
+# JDK 17 for Gradle (system default is 26, too new for Gradle 8.13 / Expo SDK 53).
+# JAVA_HOME only — `java` on PATH stays at the system default.
+if test -d /usr/lib/jvm/java-17-openjdk
+    set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
+end
