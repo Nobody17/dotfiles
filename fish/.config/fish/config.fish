@@ -20,8 +20,8 @@ enable_transience
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
 
 set -gx ASDF_DATA_DIR "$HOME/.asdf"
-fish_add_path "$ASDF_DATA_DIR/bin"
-fish_add_path "$ASDF_DATA_DIR/shims"
+fish_add_path -g "$ASDF_DATA_DIR/bin"
+fish_add_path -g "$ASDF_DATA_DIR/shims"
 
 # 4. Source asdf (Standard way for Fish)
 if test -f "$ASDF_DATA_DIR/asdf.fish"
@@ -37,6 +37,7 @@ if not set -q SSH_AUTH_SOCK
     eval (ssh-agent -c) > /dev/null
 end
 
+set -gx PYENV_ROOT "$HOME/.pyenv"
 pyenv init - | source
 
 #abbreviations
@@ -54,30 +55,34 @@ alias get_idf=". $HOME/esp/esp-idf/export.fish"
 #Linux
 #set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
 
-set -e -g fish_user_paths
 set -gxa PHP_INI_SCAN_DIR "$HOME/.config/herd-lite/bin"
 
 #path
-fish_add_path "$HOME/Programming/software/android-studio/bin/"
-fish_add_path "$HOME/Programming/software/platform-tools/"
-fish_add_path "/opt/nvim/bin"
-fish_add_path "$HOME/.local/share/nvim/mason/bin"
-fish_add_path "/usr/local/go/bin"
-fish_add_path "$HOME/go/bin"
-fish_add_path "$HOME/.config/herd-lite/bin"
-fish_add_path "$HOME/bin"
-fish_add_path "$HOME/.local/bin"
-fish_add_path $HOME/.cargo/bin
+fish_add_path -g "$HOME/Programming/software/android-studio/bin/"
+fish_add_path -g "$HOME/Programming/software/platform-tools/"
+fish_add_path -g "/opt/nvim/bin"
+fish_add_path -g "$HOME/.local/share/nvim/mason/bin"
+fish_add_path -g "/usr/local/go/bin"
+fish_add_path -g "$HOME/go/bin"
+fish_add_path -g "$HOME/.config/herd-lite/bin"
+fish_add_path -g "$HOME/bin"
+fish_add_path -g "$HOME/.local/bin"
+fish_add_path -g $HOME/.cargo/bin
+
+# fvm (Flutter Version Management)
+if command -v fvm > /dev/null
+    fish_add_path -g "$HOME/fvm/default/bin"
+end
 
 # pnpm global bin
 if command -v pnpm > /dev/null
-    fish_add_path (pnpm bin -g 2>/dev/null || echo "$HOME/.local/share/pnpm")
+    fish_add_path -g (pnpm bin -g 2>/dev/null || echo "$HOME/.local/share/pnpm")
 end
 
-fish_add_path -U --prepend /opt/ffmpeg/bin
+fish_add_path -g --prepend /opt/ffmpeg/bin
 
 # pnpm
-set -gx PNPM_HOME "/home/yorunai/.local/share/pnpm"
+set -gx PNPM_HOME "$HOME/.local/share/pnpm"
 if not string match -q -- "$PNPM_HOME/bin" $PATH
   set -gx PATH "$PNPM_HOME/bin" $PATH
 end
