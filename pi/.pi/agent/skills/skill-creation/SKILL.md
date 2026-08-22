@@ -400,7 +400,7 @@ Keep eval fixtures under `evals/fixtures/` when possible so output evals are rep
 
 ### Parallel evaluation with subagents
 
-Use the `pi-subagents` skill to run multiple test prompts concurrently:
+Use the builtin `subagent` tool to run multiple test prompts concurrently — launch each prompt as a separate async subagent run with a fresh context, then collect the results:
 
 ```
 Run these 5 test prompts with the skill active, each in a fresh context.

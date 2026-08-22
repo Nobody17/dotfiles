@@ -104,7 +104,7 @@ python scripts/run-skill-evals.py /path/to/skill --mode all
 
 It runs trigger queries in fresh sessions, detects whether the target `SKILL.md` was read, runs output evals with the skill and a no-skill baseline in isolated workspaces, captures session logs and changed files, and writes `review.md` with exact human-review instructions. Add `--llm-judge` to draft assertion grading, then verify subjective PASS grades manually.
 
-**Parallel execution:** Use a subagent system (such as `pi-subagents`) to run multiple test cases concurrently, each in a fresh context. This dramatically speeds up the test → observe → improve loop compared to sequential execution:
+**Parallel execution:** Use the builtin `subagent` tool to run multiple test cases concurrently, each in a fresh context. This dramatically speeds up the test → observe → improve loop compared to sequential execution:
 
 ```
 Run these 5 test prompts with the skill active, each in a separate

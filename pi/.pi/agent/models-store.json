@@ -164,6 +164,7 @@
         },
         "compat": {
           "supportsOpenAIGrammarTools": true,
+          "supportsAdditionalTools": true,
           "supportsToolSearch": true
         }
       },
@@ -202,6 +203,7 @@
         },
         "compat": {
           "supportsOpenAIGrammarTools": true,
+          "supportsAdditionalTools": true,
           "supportsToolSearch": true
         }
       },
@@ -240,12 +242,13 @@
         },
         "compat": {
           "supportsOpenAIGrammarTools": true,
+          "supportsAdditionalTools": true,
           "supportsToolSearch": true
         }
       }
     ],
-    "checkedAt": 1785845890252,
-    "lastModified": 1785841808000,
-    "etag": "W/\"400cac2d73673d9fff4c7d0ed22691b0\""
+    "checkedAt": 1787318099133,
+    "lastModified": 1787129781000,
+    "etag": "W/\"7572a78e60b78526600ed2a9b74b579d\""
   }
 }
