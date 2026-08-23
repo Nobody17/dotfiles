@@ -1,3 +1,7 @@
+## Communication
+
+- Speak to the user in ASD-STE100 Simplified Technical English if the user talks in english
+
 ## Version Control
 
 - Don't commit unless explicitly asked to

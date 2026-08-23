@@ -4,6 +4,7 @@
  * Asks for confirmation whenever the agent tries to download files
  * from the web via bash (curl, wget, aria2c, axel, yt-dlp, etc.).
  * Pipe-to-shell gets a more aggressive warning.
+ * Downloads from localhost / loopback addresses are always allowed.
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -61,6 +62,34 @@ function isAlwaysRisky(command: string): boolean {
   return alwaysRiskyPatterns.some((p) => p.test(command));
 }
 
+function isLocalHost(host: string): boolean {
+  const normalized = host.replace(/^\[|\]$/g, "").toLowerCase();
+  if (normalized === "localhost" || normalized.endsWith(".localhost")) return true;
+  if (normalized === "::1" || normalized === "0.0.0.0") return true;
+  return /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(normalized);
+}
+
+function isLocalDownload(command: string): boolean {
+  const urls = extractUrls(command);
+  if (urls.length > 0) {
+    return urls.every((url) => {
+      try {
+        return isLocalHost(new URL(url).hostname);
+      } catch {
+        return false;
+      }
+    });
+  }
+  // No scheme URLs: check for bare localhost / loopback references
+  return (
+    /\blocalhost\b/i.test(command) ||
+    /\b127\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/.test(command) ||
+    /\b0\.0\.0\.0\b/.test(command) ||
+    /\[::1\]/.test(command) ||
+    /(^|[^\w:])::1([^\w:]|$)/.test(command)
+  );
+}
+
 // ── Extension ───────────────────────────────────────────────────────
 
 export default function (pi: ExtensionAPI) {
@@ -81,6 +110,11 @@ export default function (pi: ExtensionAPI) {
 
     // For curl without output flags: skip (just API calls / viewing)
     if (matched.requireOutputFlag && !hasOutputFlag(command)) {
+      return undefined;
+    }
+
+    // Local downloads (localhost / loopback) are always allowed
+    if (isLocalDownload(command)) {
       return undefined;
     }
 
