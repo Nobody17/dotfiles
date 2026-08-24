@@ -20,6 +20,7 @@ return {
       sources = {
         default = { 'lazydev', 'lsp', 'path', 'snippets', 'buffer' },
         per_filetype = {
+          codecompanion = { 'codecompanion' },
           sql = { 'dadbod' },
           mysql = { 'dadbod' },
           plsql = { 'dadbod' },
