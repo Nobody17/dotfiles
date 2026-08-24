@@ -20,7 +20,7 @@ Pi discovers this directory extension at `agent/extensions/confirm-file-deletion
 - The selector puts **No, block it** first. Only the exact **Yes, allow deletion** selection approves.
 - `tool_call` blocks use Pi's normal `{ block, reason }` result. User `!bash` blocks preserve the normal failed Bash-result shape.
 - Prompts include deduplicated assessment findings, such as direct removal, parser failure, dynamic command names, and limits.
-- A narrow confirmation-free exception permits a single direct `rm`, `rmdir`, or `unlink` command when every literal operand is a lexically canonical descendant of `/tmp/`. It excludes `/tmp` itself, trailing slashes, `.` or `..` segments, shell patterns, wrappers, redirects, dynamic paths, and mixed targets; those still require confirmation.
+- A narrow confirmation-free exception permits a single direct `rm`, `rmdir`, or `unlink` command when every operand is a lexically canonical descendant of `/tmp/`. Shell glob patterns (`*`, `?`, `[...]`), brace expansions, and one trailing slash are allowed; every brace alternative must itself remain a canonical descendant of `/tmp/`. It excludes `/tmp` itself, `.` or `..` segments (including those introduced by brace alternatives such as `{a,..}`), empty brace alternatives, wrappers, redirects, dynamic paths, and mixed targets; those still require confirmation. The check is lexical — symlinks under `/tmp` are followed by the shell at runtime, so this is a convenience gate, not a filesystem security boundary.
 
 ## Detection scope
 
