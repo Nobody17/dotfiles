@@ -1,0 +1,49 @@
+# Single source of truth for language runtimes and CLI tools.
+# paru/pacman owns only the system layer: kernel, drivers, hyprland,
+# fish, stow, rustup, mise itself.
+#
+#   mise install   install everything listed here
+#   mise up        upgrade every tool to its newest matching version
+#
+# rust is deliberately absent: rustup owns it, because components
+# (clippy, rust-analyzer) and cross targets need rustup itself.
+#
+# java is deliberately absent too: paru installs jdk17-openjdk, reached only
+# through JAVA_HOME so Gradle gets JDK 17 while `java` on PATH stays at the
+# system default. mise only offers openjdk-17.0.2, unpatched since 2022.
+
+[tools]
+# language runtimes
+node = "lts"
+pnpm = "latest"
+python = "latest"
+uv = "latest"
+go = "latest"
+ruby = "latest"
+erlang = "latest"
+elixir = "latest"
+
+# shell and prompt
+starship = "latest"
+zoxide = "latest"
+fzf = "latest"
+usage = "latest"
+
+# file and text tools
+eza = "latest"
+bat = "latest"
+fd = "latest"
+ripgrep = "latest"
+yazi = "latest"
+yq = "latest"
+taplo = "latest"
+
+# git and containers
+gh = "latest"
+delta = "latest"
+lazygit = "latest"
+lazydocker = "latest"
+
+# editor and agents
+neovim = "latest"
+claude = "latest"

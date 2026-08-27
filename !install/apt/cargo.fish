@@ -1,15 +1,17 @@
 #!/usr/bin/env fish
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup update
-source "$HOME/.cargo/env.fish"
 
-cargo install fd-find
-if test -e /usr/bin/fdfind
-    mkdir -p ~/.local/bin
-    ln -s /usr/bin/fdfind ~/.local/bin/fd
+# rustup only. Every other tool this script used to cargo-install
+# (fd, taplo, eza, zoxide, delta, ripgrep) now comes from mise.
+# rust stays with rustup because components (clippy, rust-analyzer)
+# and cross-compilation targets need rustup itself.
+
+if not command -v rustup > /dev/null
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || exit 1
 end
-cargo install taplo-cli --locked
-cargo install eza
-cargo install zoxide --locked
-cargo install git-delta
-cargo install ripgrep
+
+if test -f "$HOME/.cargo/env.fish"
+    source "$HOME/.cargo/env.fish"
+end
+
+rustup default stable
+rustup update

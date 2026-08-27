@@ -1,59 +1,25 @@
-if grep -q cachyos /etc/os-release 2>/dev/null
-    source /usr/share/cachyos-fish-config/cachyos-config.fish
-end
-
-function y
-    set tmp (mktemp -t "yazi-cwd.XXXXXX")
-    command yazi $argv --cwd-file="$tmp"
-    if read -z cwd <"$tmp"; and [ "$cwd" != "$PWD" ]; and test -d "$cwd"
-        builtin cd -- "$cwd"
-    end
-    rm -f -- "$tmp"
-end
+# Everything above the `status is-interactive` block runs for scripts too:
+# every `fish -c` from nvim, git hooks and tooling pays for it. Keep it to
+# environment variables and PATH. No subprocesses, no `... | source`.
 
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
-
-# Start SSH agent if not already running
-if not set -q SSH_AUTH_SOCK
-    eval (ssh-agent -c) >/dev/null
-end
-
-#abbreviations
-abbr -a g -- lazygit
-abbr -a lzd -- lazydocker
-abbr -a l -- eza -lah --git --git-repos --group-directories-first
-abbr -a lts -- eza -lah --git --git-repos --group-directories-first --total-size
-abbr -a n -- nvim
-abbr -a wl --position anywhere -- --UseOzonePlatform --ozone-platform-hint=wayland
-
-alias get_idf=". $HOME/esp/esp-idf/export.fish"
-
-#WSL
-#set -gxa SSH_SK_HELPER "/mnt/c/bin/SSH/ssh-sk-helper.exe"
-#Linux
-#set -gxa SSH_ASKPASS "/usr/bin/ssh-askpass"
-
 set -gxa PHP_INI_SCAN_DIR "$HOME/.config/herd-lite/bin"
 
 #path
+# ~/.local/bin and ~/.cargo/bin are added by cachyos-config.fish below.
 fish_add_path -g "$HOME/Programming/software/android-studio/bin/"
 fish_add_path -g "$HOME/Programming/software/platform-tools/"
 fish_add_path -g "$HOME/.local/share/nvim/mason/bin"
 fish_add_path -g "$HOME/go/bin"
 fish_add_path -g "$HOME/.config/herd-lite/bin"
 fish_add_path -g "$HOME/bin"
-fish_add_path -g "$HOME/.local/bin"
-fish_add_path -g $HOME/.cargo/bin
+fish_add_path -g "$HOME/.local/share/pnpm/bin"
+fish_add_path -g --prepend /opt/ffmpeg/bin
 
 # fvm (Flutter Version Management)
-if command -v fvm >/dev/null
+if test -d "$HOME/fvm/default/bin"
     fish_add_path -g "$HOME/fvm/default/bin"
 end
-
-# pnpm global bin (pi lives here)
-fish_add_path -g "$HOME/.local/share/pnpm/bin"
-
-fish_add_path -g --prepend /opt/ffmpeg/bin
 
 # Android SDK (React Native / Expo)
 if test -d "$HOME/Android/Sdk"
@@ -66,20 +32,48 @@ if test -d "$HOME/Android/Sdk"
     end
 end
 
-# mise must be the last PATH modification
-if type -q mise
-    mise activate fish | source
-end
-
-fzf --fish | source
-if status is-interactive
-    zoxide init fish | source
-end
-starship init fish | source
-enable_transience
-
 # JDK 17 for Gradle (system default is 26, too new for Gradle 8.13 / Expo SDK 53).
 # JAVA_HOME only — `java` on PATH stays at the system default.
+# jdk17-openjdk comes from paru: mise only offers openjdk-17.0.2, which has
+# had no security patches since 2022.
 if test -d /usr/lib/jvm/java-17-openjdk
     set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
+end
+
+if status is-interactive
+    # Aliases, key bindings and the fastfetch greeting. Also adds
+    # ~/.local/bin and ~/.cargo/bin to PATH, and points MANPAGER at bat.
+    if test -f /usr/share/cachyos-fish-config/cachyos-config.fish
+        source /usr/share/cachyos-fish-config/cachyos-config.fish
+    end
+
+    #abbreviations
+    abbr -a g -- lazygit
+    abbr -a lzd -- lazydocker
+    abbr -a l -- eza -lah --git --git-repos --group-directories-first
+    abbr -a lts -- eza -lah --git --git-repos --group-directories-first --total-size
+    abbr -a n -- nvim
+    abbr -a wl --position anywhere -- --UseOzonePlatform --ozone-platform-hint=wayland
+
+    # Start SSH agent if not already running
+    if not set -q SSH_AUTH_SOCK
+        eval (ssh-agent -c) >/dev/null
+    end
+
+    fzf --fish | source
+    zoxide init fish | source
+    starship init fish | source
+    enable_transience
+
+    # mise must be the last PATH modification.
+    if type -q mise
+        mise activate fish | source
+    end
+else
+    # Scripts get the tool versions through the shims instead, which costs
+    # nothing at startup. Per-directory switching still works: each shim
+    # resolves the version itself when it runs.
+    if test -d "$HOME/.local/share/mise/shims"
+        fish_add_path -g --prepend "$HOME/.local/share/mise/shims"
+    end
 end

@@ -1,68 +1,60 @@
 #!/usr/bin/env fish
 
+# Order matters:
+#   1. system layer   paru (Arch) or apt (Debian) — compilers, libs, stow, mise
+#   2. stow           links this repo into $HOME, including the mise config
+#   3. mise           reads that config and installs every runtime and CLI tool
+#
+# Step 3 depends on step 2, so do not reorder these.
+
+cd (dirname (status filename))
+
 mkdir -p ~/.local/bin
-fish_add_path -m ~/.local/bin
+fish_add_path -g ~/.local/bin
 
-# 1. Check for apt and run scripts in apt/ directory
-if command -q apt
-    if test -d apt
-        if test -f apt/ubuntu.fish
-            apt/ubuntu.fish
-	end
-        echo "Apt detected. Running scripts in apt/..."
-        for file in apt/*.fish
-            # Ensure we don't try to run the directory if it's empty/glob fails
-            if test $file = apt/ubuntu.fish
-                continue
-            else
-                fish ./$file
-                if test $status -ne 0
-                    echo "Script $file failed"
-                    exit 1
-                end
-            end
-        end
+function run_step
+    set -l script $argv[1]
+    if not test -f $script
+        return 0
     end
-end
-
-if test -f ./paru.fish
-    ./paru.fish
-end
-
-
-# 2. Collect and run fish scripts in the current directory
-# Excluding install.fish and nvim.fish as per your original logic
-set scripts
-for file in *.fish
-    if test $file = install.fish -o $file = paru.fish
-        continue
-    else
-        set -a scripts $file
-    end
-end
-
-for file in $scripts
-    ./$file
-    echo "Executed: $file"
+    echo "==> $script"
+    fish $script
     if test $status -ne 0
-        echo "Script $file failed"
+        echo "Error: $script failed."
         exit 1
     end
 end
 
-# 3. Environment Setup
-if test -f ../stow.fish
-    ../stow.fish
+# 1. System layer
+if command -q pacman
+    run_step paru.fish
+else if command -q apt
+    run_step apt/ubuntu.fish
+    run_step apt/stow.fish
+    run_step apt/cargo.fish
+    run_step apt/less.fish
+    if not command -q fish
+        bash fish.sh; or exit 1
+    end
+else
+    echo "Error: neither pacman nor apt was found."
+    exit 1
 end
 
-# Rebuild bat cache
+# 2. Link the dotfiles, so ~/.config/mise/config.toml exists
+run_step ../stow.fish
+
+# 3. Every runtime and CLI tool
+run_step mise.fish
+
+# Rebuild bat cache against the stowed bat config
 if command -q bat
     bat cache --build
 end
 
 # Git credentials for WSL
-set wsl_file /proc/sys/fs/binfmt_misc/WSLInterop
-if test -e $wsl_file
+if test -e /proc/sys/fs/binfmt_misc/WSLInterop
     git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/libexec/git-core/git-credential-wincred.exe"
 end
 
+echo "Done."
