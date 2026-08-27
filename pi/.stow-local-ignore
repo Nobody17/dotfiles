@@ -1,5 +1,52 @@
-# Keep machine-local/sensitive/runtime pi data out of stow.
-^\.stow-local-ignore$
-^\.pi/agent/auth\.json$
-^\.pi/agent/run-history\.jsonl$
-^\.pi/agent/sessions(/.*)?$
+# Machine-local, secret and live pi data.
+#
+# WARNING: this file has no effect on a machine where ~/.pi is one symlink.
+# stow folds a whole folder into a single symlink when the target folder does
+# not exist yet. stow then never walks the single files, so it never reads this
+# file. Every file under pi/.pi is reachable through ~/.pi, and pi writes its
+# live data into this git repository. Only .gitignore keeps that data out of
+# your commits.
+#
+# This file becomes active if ~/.pi ever holds a real file, because stow then
+# makes one symlink for each file.
+#
+# Anchoring rule: stow matches a pattern that holds a "/" against the path
+# inside the package WITH a leading slash. Write "^/\.pi/agent/auth\.json$",
+# not "^\.pi/agent/auth\.json$" -- the second form can never match. A pattern
+# without a "/" is matched against each single name.
+#
+# This file also replaces the built-in ignore list of stow, so the useful parts
+# of that list are repeated at the end.
+
+# Secrets and machine-local settings
+^/\.pi/agent/auth\.json$
+^/\.pi/agent/settings\.json$
+^/\.pi/agent/trust\.json$
+^/\.pi/agent/models\.json$
+
+# Live output
+^/\.pi/agent/run-history\.jsonl$
+^/\.pi/agent/pi-debug\.log$
+^/\.pi/agent/sessions(/.*)?$
+^/\.pi/agent/npm(/.*)?$
+
+# Build output
+node_modules
+
+# Repeated from the built-in list of stow
+\.git
+\.gitignore
+\.gitmodules
+\.svn
+\.hg
+CVS
+RCS
+_darcs
+\.cvsignore
+.+~
+\#.*\#
+\.\#.+
+.+,v
+^/README.*
+^/LICENSE.*
+^/COPYING

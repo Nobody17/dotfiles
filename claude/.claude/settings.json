@@ -1,0 +1,18 @@
+{
+  "theme": "dark",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "c=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$c\" | grep -qE '(^|[;&|(]|[[:space:]])git([[:space:]]+-[^;&|]*)?[[:space:]]+commit([[:space:]]|$|[;&|])'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"AGENTS.md: do not commit unless the user explicitly asked. Approve only if you asked for this commit.\"}}'; fi",
+            "timeout": 10,
+            "statusMessage": "Checking for git commit"
+          }
+        ]
+      }
+    ]
+  }
+}

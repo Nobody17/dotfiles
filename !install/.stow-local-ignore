@@ -1,1 +1,12 @@
+# Second layer of protection for the bootstrap scripts.
+#
+# stow.fish never gives this folder to stow, because the folder name starts
+# with "!". This file also blocks the contents, for the case that somebody
+# types "stow */" by hand in the repository root.
+#
+# The line below is a Perl regex, not a file pattern. "." means any character
+# and "*" means any count, so the line matches every name in this folder.
+# Nothing here reaches your home folder.
+#
+# Keep this file, and keep the "!" in the folder name.
 .*

@@ -15,3 +15,27 @@ fish/.config/fish/functions/mount-nas.fish
 
 # pi debug log
 pi/.pi/agent/pi-debug.log
+
+# claude code: allow only the hand-written config, never the local state.
+# This is a whitelist, so a new file that claude code writes into the package
+# can never reach a commit by accident.
+claude/.claude/*
+!claude/.claude/CLAUDE.md
+!claude/.claude/settings.json
+!claude/.claude/plugins/
+claude/.claude/plugins/*
+!claude/.claude/plugins/known_marketplaces.json
+
+# machine-generated files of the new packages. ~/.config/hypr/monitors.lua
+# writes the kitty file, and btop and micro write their own folders.
+kitty/.config/kitty/hypr-background-opacity.conf
+btop/.config/btop/themes/
+micro/.config/micro/colorschemes/
+micro/.config/micro/syntax/
+micro/.config/micro/plug/
+micro/.config/micro/buffers/
+
+# hypr: these describe the hardware of one machine, so they stay local.
+hypr/.config/hypr/monitors.lua
+hypr/.config/hypr/devices.lua
+hypr/.config/hypr/plugins/
