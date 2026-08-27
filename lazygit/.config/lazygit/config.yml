@@ -1,5 +1,6 @@
 gui:
   nerdFontsVersion: "3"
+  sidePanelWidth: 0.15
   theme:
     activeBorderColor:
       - '#a6e3a1'
@@ -25,5 +26,5 @@ gui:
 git:
   diffRenderers:
     - colorArg: always
-      command: delta --dark --paging=never --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
+      command: delta --dark --paging=never --line-numbers --side-by-side --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
   autoFetch: false
