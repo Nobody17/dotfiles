@@ -12,3 +12,6 @@ evals/
 
 # machine-local helpers
 fish/.config/fish/functions/mount-nas.fish
+
+# pi debug log
+pi/.pi/agent/pi-debug.log
