@@ -1,0 +1,35 @@
+# Ghostty configuration.
+#
+# Linux and macOS both read $XDG_CONFIG_HOME/ghostty/config, which is
+# ~/.config/ghostty/config. One stowed file therefore serves both machines.
+# macOS reads ~/Library/Application Support/com.mitchellh.ghostty/config after
+# this file, but that file is not necessary.
+#
+# Ghostty ignores an option that its platform does not support, so the macOS
+# options and the Linux options can stay together in this file.
+#
+# Read the full option list with "ghostty +show-config --default --docs", or at
+# https://ghostty.org/docs/config/reference
+
+background-opacity = 0.7
+
+# Ghostty supplies JetBrains Mono itself, so both machines show the same font.
+font-family = JetBrains Mono
+
+# ssh-terminfo copies the Ghostty terminfo to a remote host at the first
+# connection. Without it the host does not know TERM=xterm-ghostty. ssh-env
+# sets TERM=xterm-256color for a host that refuses the copy.
+#
+# These two names are added to the default features. To switch a default off,
+# give its name with a "no-" prefix, for example "no-cursor".
+shell-integration-features = ssh-env,ssh-terminfo
+
+# macOS only. Linux ignores this line. It makes the Option key send Alt, so
+# the readline and fish word bindings work.
+macos-option-as-alt = true
+
+# hypr-background-opacity.conf is NOT in this repository. ~/.config/hypr/
+# monitors.lua writes that file, and monitors.lua stays out of the repository
+# because it describes the monitors of one machine. The "?" makes the file
+# optional, so this configuration also works on a machine without Hyprland.
+config-file = ?hypr-background-opacity.conf

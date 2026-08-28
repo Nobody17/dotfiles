@@ -31,7 +31,6 @@ return {
         'jinja',
         'jinja_inline',
         'json',
-        'kitty',
         'latex',
         'lua',
         'luadoc',

@@ -35,10 +35,11 @@ loadLocalConfig("devices.lua")
 ---- MY PROGRAMS ----
 ---------------------
 
-local terminal = "kitty"
+-- ghostty needs "-e" in front of a command, and its flags take an "=".
+local terminal = "ghostty"
 local terminalCurrentCWD =
-	[=[bash -c 'kitty --directory "$(readlink /proc/$(pgrep -P $(hyprctl activewindow -j | jq .pid) | tail -n 1)/cwd)"']=]
-local fileManager = terminal .. [=[ fish -i -c "y; fish"]=]
+	[=[bash -c 'ghostty --working-directory="$(readlink /proc/$(pgrep -P $(hyprctl activewindow -j | jq .pid) | tail -n 1)/cwd)"']=]
+local fileManager = terminal .. [=[ -e fish -i -c "y; fish"]=]
 local menu = "hyprlauncher"
 local browser = "firefox"
 local gaming = [=[pkill -0 steam && hyprctl clients | grep -q "steam" || (pkill -9 steam; steam)]=]

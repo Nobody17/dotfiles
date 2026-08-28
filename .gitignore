@@ -28,8 +28,8 @@ claude/.claude/plugins/*
 !claude/.claude/plugins/known_marketplaces.json
 
 # machine-generated files of the new packages. ~/.config/hypr/monitors.lua
-# writes the kitty file, and btop and micro write their own folders.
-kitty/.config/kitty/hypr-background-opacity.conf
+# writes the ghostty file, and btop and micro write their own folders.
+ghostty/.config/ghostty/hypr-background-opacity.conf
 btop/.config/btop/themes/
 micro/.config/micro/colorschemes/
 micro/.config/micro/syntax/

@@ -32,6 +32,10 @@ paru -S --needed rustup
 # mise only offers openjdk-17.0.2, unpatched since 2022.
 paru -S --needed jdk17-openjdk
 
+# Terminal. ghostty-terminfo and ghostty-shell-integration come with it as
+# hard dependencies. On macOS use "brew install --cask ghostty" instead.
+paru -S --needed ghostty
+
 # Bootstrap: stow links this repo, mise installs everything else.
 paru -S --needed stow mise
 

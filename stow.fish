@@ -27,10 +27,10 @@ set --local repository_root (path resolve (path dirname (status filename)))
 #   claude  writes .credentials.json, sessions/ and history.jsonl
 #   btop    writes btop.conf again when you quit, and makes themes/
 #   micro   writes settings.json again, and makes colorschemes/ and plug/
-#   kitty   reads hypr-background-opacity.conf, which monitors.lua writes
+#   ghostty reads hypr-background-opacity.conf, which monitors.lua writes
 #   hypr    keeps monitors.lua, devices.lua and plugins/ local, because they
 #           describe the hardware of one machine
-set --local no_folding_packages claude btop micro kitty hypr
+set --local no_folding_packages claude btop micro ghostty hypr
 
 function print_usage
     echo "Usage: stow.fish [options] [package ...]"
@@ -406,9 +406,12 @@ if command --query mise; and test -f $HOME/.config/mise/config.toml
     echo "      mise install"
 end
 
-if command --query kitty; and pgrep --exact kitty >/dev/null 2>&1
-    if pkill --signal SIGUSR1 --exact kitty >/dev/null 2>&1
-        echo "  • The script told kitty to read its configuration again."
+# ghostty reloads on SIGUSR2. Every other signal makes it crash, so name the
+# signal and never send a number. This block stays on Linux: macOS pkill knows
+# neither --signal nor --exact, and the macOS app reloads with cmd+shift+,
+if test (uname) = Linux; and command --query ghostty; and pgrep --exact ghostty >/dev/null 2>&1
+    if pkill --signal SIGUSR2 --exact ghostty >/dev/null 2>&1
+        echo "  • The script told ghostty to read its configuration again."
     end
 end
 
