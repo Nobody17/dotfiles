@@ -7,6 +7,7 @@ pi/.pi/agent/auth.json
 pi/.pi/agent/settings.json
 pi/.pi/agent/trust.json
 pi/.pi/agent/run-history.jsonl
+pi/.pi/agent/models-store.json
 pi/.pi/agent/sessions/
 evals/
 
