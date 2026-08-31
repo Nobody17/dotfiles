@@ -1,0 +1,39 @@
+# macOS system layer only, like paru.fish on Arch. Language runtimes and
+# CLI tools come from mise, so they are deliberately absent here: node,
+# python, go, ruby, erlang, elixir, delta, lazygit, lazydocker, eza, zoxide,
+# ripgrep, fd, fzf, bat, yazi, yq, taplo, starship, neovim, gh, uv.
+# See mise/.config/mise/config.toml.
+
+# Shell. macOS ships zsh; the dotfiles need fish.
+brew "fish"
+
+# Bootstrap: stow links this repo, mise installs everything else.
+brew "stow"
+brew "mise"
+
+# Erlang build dependencies. mise compiles Erlang from source, so these
+# must exist before `mise install` runs. make and the C compiler come
+# from the Xcode Command Line Tools, which the Homebrew installer adds.
+brew "autoconf"
+brew "openssl@3"
+brew "wxwidgets"
+brew "libxslt"
+brew "fop"
+brew "unixodbc"
+
+# rustup owns rust; mise defers to it.
+brew "rustup"
+
+# SSH security keys
+brew "libfido2"
+
+# JDK 17 for Gradle, reached through JAVA_HOME only. Not from mise:
+# mise only offers openjdk-17.0.2, unpatched since 2022.
+cask "temurin@17"
+
+# Terminal. On Arch this is "paru -S ghostty" instead.
+cask "ghostty"
+
+# Tiling window manager. The macOS counterpart of hyprland on Arch.
+tap "nikitabobko/tap"
+cask "nikitabobko/tap/aerospace"

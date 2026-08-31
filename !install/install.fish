@@ -1,11 +1,16 @@
 #!/usr/bin/env fish
 
 # Order matters:
-#   1. system layer   paru (Arch) or apt (Debian) — compilers, libs, stow, mise
+#   1. system layer   brew (macOS), paru (Arch) or apt (Debian) —
+#                     compilers, libs, stow, mise
 #   2. stow           links this repo into $HOME, including the mise config
 #   3. mise           reads that config and installs every runtime and CLI tool
 #
 # Step 3 depends on step 2, so do not reorder these.
+#
+# A fresh Mac has no fish, so this script cannot start there. Bootstrap first:
+#   bash '!install/brew.sh'
+# That installs fish. Then run this script with the new fish.
 
 cd (dirname (status filename))
 
@@ -26,7 +31,23 @@ function run_step
 end
 
 # 1. System layer
-if command -q pacman
+if test (uname) = Darwin
+    # bash, not run_step: brew.sh must also work on a Mac without fish.
+    echo "==> brew.sh"
+    bash brew.sh
+    if test $status -ne 0
+        echo "Error: brew.sh failed."
+        exit 1
+    end
+    # On the first run the fish configuration is not stowed yet, so this
+    # process does not know the Homebrew PATH. Without it, step 2 cannot
+    # find stow and step 3 cannot find mise.
+    for homebrew_bin_directory in /opt/homebrew/bin /usr/local/bin
+        if test -x $homebrew_bin_directory/brew
+            fish_add_path -g $homebrew_bin_directory
+        end
+    end
+else if command -q pacman
     run_step paru.fish
 else if command -q apt
     run_step apt/ubuntu.fish

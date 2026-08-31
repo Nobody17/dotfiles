@@ -32,6 +32,18 @@ set --local repository_root (path resolve (path dirname (status filename)))
 #           describe the hardware of one machine
 set --local no_folding_packages claude btop micro ghostty hypr
 
+# Packages that belong to one platform only. A run with no package names
+# skips the packages of the other platform. A package that you name on the
+# command line always wins, so a deliberate cross-platform link stays
+# possible.
+set --local linux_only_packages hypr
+set --local macos_only_packages aerospace
+
+set --local foreign_packages $macos_only_packages
+if test (uname) = Darwin
+    set foreign_packages $linux_only_packages
+end
+
 function print_usage
     echo "Usage: stow.fish [options] [package ...]"
     echo
@@ -99,7 +111,9 @@ end
 
 if not command --query stow
     echo "❌ Stop: GNU Stow is not installed, so the script can link nothing."
-    if command --query paru
+    if command --query brew
+        echo "   Install it:  brew install stow"
+    else if command --query paru
         echo "   Install it:  paru -S stow"
     else if command --query pacman
         echo "   Install it:  sudo pacman -S stow"
@@ -148,12 +162,23 @@ end
 if set --query _flag_list
     echo "Packages in $repository_root:"
     for name in $available_packages
+        set --local notes
         if contains -- $name $no_folding_packages
-            echo "  • $name   (one symlink for each file)"
+            set --append notes "one symlink for each file"
+        end
+        if contains -- $name $linux_only_packages
+            set --append notes "Linux only"
+        else if contains -- $name $macos_only_packages
+            set --append notes "macOS only"
+        end
+        if test (count $notes) -gt 0
+            echo "  • $name   ("(string join "; " $notes)")"
         else
             echo "  • $name"
         end
     end
+    echo
+    echo "A run with no package names skips the packages of the other platform."
     if test (count $non_packages) -gt 0
         echo
         echo "Not packages, so never linked into your home folder:"
@@ -164,10 +189,9 @@ if set --query _flag_list
     exit 0
 end
 
-set --local selected_packages $available_packages
+set --local selected_packages
 
 if test (count $argv) -gt 0
-    set selected_packages
     for raw_name in $argv
         set --local name (string trim --right --chars=/ -- $raw_name)
         if not contains -- $name $available_packages
@@ -175,7 +199,18 @@ if test (count $argv) -gt 0
             echo "   See the list:  $repository_root/stow.fish --list"
             exit 1
         end
+        if contains -- $name $foreign_packages
+            echo "ℹ️  \"$name\" is a package for the other platform. You named it, so it stays in."
+        end
         contains -- $name $selected_packages; or set --append selected_packages $name
+    end
+else
+    for name in $available_packages
+        if contains -- $name $foreign_packages
+            echo "ℹ️  Skipping \"$name\": it is a package for the other platform."
+        else
+            set --append selected_packages $name
+        end
     end
 end
 
@@ -420,6 +455,19 @@ if set --query HYPRLAND_INSTANCE_SIGNATURE; and command --query hyprctl; and tes
         echo "  • The script reloaded the Hyprland configuration."
     else
         echo "  • ⚠️  \"hyprctl reload\" failed. Run it yourself to see the error."
+    end
+end
+
+if test (uname) = Darwin
+    if command --query ghostty; or test -d /Applications/Ghostty.app
+        echo "  • Reload the ghostty configuration inside ghostty with cmd+shift+,"
+    end
+    if command --query aerospace; and test -e $HOME/.config/aerospace/aerospace.toml
+        if aerospace reload-config >/dev/null 2>&1
+            echo "  • The script reloaded the AeroSpace configuration."
+        else
+            echo "  • ⚠️  \"aerospace reload-config\" failed. Run it yourself to see the error."
+        end
     end
 end
 

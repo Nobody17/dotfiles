@@ -5,6 +5,25 @@
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
 set -gxa PHP_INI_SCAN_DIR "$HOME/.config/herd-lite/bin"
 
+# Homebrew on macOS: /opt/homebrew on Apple Silicon, /usr/local on Intel.
+# Static values instead of `brew shellenv | source`, because the rule above
+# forbids subprocesses here. cachyos-config.fish does not exist on macOS,
+# so ~/.local/bin and ~/.cargo/bin are added here too.
+set -l homebrew_prefix
+if test -x /opt/homebrew/bin/brew
+    set homebrew_prefix /opt/homebrew
+    set -gx HOMEBREW_REPOSITORY /opt/homebrew
+else if test -x /usr/local/bin/brew
+    set homebrew_prefix /usr/local
+    set -gx HOMEBREW_REPOSITORY /usr/local/Homebrew
+end
+if set -q homebrew_prefix[1]
+    set -gx HOMEBREW_PREFIX $homebrew_prefix
+    set -gx HOMEBREW_CELLAR $homebrew_prefix/Cellar
+    fish_add_path -g --prepend $homebrew_prefix/bin $homebrew_prefix/sbin
+    fish_add_path -g "$HOME/.local/bin" "$HOME/.cargo/bin"
+end
+
 #path
 # ~/.local/bin and ~/.cargo/bin are added by cachyos-config.fish below.
 fish_add_path -g "$HOME/Programming/software/android-studio/bin/"
@@ -38,6 +57,9 @@ end
 # had no security patches since 2022.
 if test -d /usr/lib/jvm/java-17-openjdk
     set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
+else if test -d /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
+    # macOS: the temurin@17 cask from the Brewfile installs to this path.
+    set -gx JAVA_HOME /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
 end
 
 if status is-interactive
