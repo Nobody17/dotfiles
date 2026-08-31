@@ -1,6 +1,6 @@
 [[mgr.prepend_keymap]]
 on   = [ "c", "p" ]
-run  = "shell -- 'wl-copy < \"$1\"'"
+run  = "shell -- 'wl-copy < %s1'"
 desc = "Copy image to clipboard"
 
 [[mgr.prepend_keymap]]
