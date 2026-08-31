@@ -1,5 +1,4 @@
 {
-  "theme": "dark",
   "hooks": {
     "PreToolUse": [
       {
@@ -14,5 +13,9 @@
         ]
       }
     ]
+  },
+  "theme": "dark",
+  "enabledPlugins": {
+    "mattpocock-skills@claude-plugins-official": true
   }
 }

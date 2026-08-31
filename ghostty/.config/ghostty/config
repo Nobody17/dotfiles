@@ -11,6 +11,25 @@
 # Read the full option list with "ghostty +show-config --default --docs", or at
 # https://ghostty.org/docs/config/reference
 
+# Ghostty has its own default colors: a #282c34 background, a #ffffff
+# foreground and a palette with low saturation. kitty had a #000000 background
+# and strong colors. This difference makes Ghostty look pale, and the wallpaper
+# behind the 0.7 opacity makes it look paler again.
+#
+# Catppuccin Mocha is also the theme of Neovim (nvim/lua/plugins/color.lua) and
+# of starship, so this line gives the three programs the same colors.
+#
+# The value must be the exact file name in /usr/share/ghostty/themes, together
+# with the capital letters and the space. Read the list of names with
+# "ghostty +list-themes".
+theme = Catppuccin Mocha
+
+# Catppuccin Mocha uses #1e1e2e ("base") for the background. Behind the 0.7
+# opacity a bright wallpaper still makes that color pale. #11111b ("crust") is
+# the darkest color of the theme and keeps the window dark. Remove this line to
+# get the standard background of the theme.
+background = #11111b
+
 background-opacity = 0.7
 
 # Ghostty supplies JetBrains Mono itself, so both machines show the same font.
