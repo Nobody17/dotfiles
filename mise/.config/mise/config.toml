@@ -28,6 +28,7 @@ starship = "latest"
 zoxide = "latest"
 fzf = "latest"
 usage = "latest"
+herdr = "latest"
 
 # file and text tools
 eza = "latest"
@@ -47,6 +48,7 @@ lazydocker = "latest"
 # editor and agents
 neovim = "latest"
 claude = "latest"
+codex = "latest"
 
 # Idiomatic version files (.ruby-version, .nvmrc, go.mod-era files, ...).
 # mise ignores these unless the tool is named here, so a repo pinning
