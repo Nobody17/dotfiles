@@ -26,5 +26,5 @@ gui:
 git:
   diffRenderers:
     - colorArg: always
-      command: delta --dark --paging=never --line-numbers --side-by-side --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
+      command: ~/.config/lazygit/delta-adaptive-columns.sh
   autoFetch: false

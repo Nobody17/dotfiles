@@ -37,3 +37,8 @@ cask "ghostty"
 # Tiling window manager. The macOS counterpart of hyprland on Arch.
 tap "nikitabobko/tap"
 cask "nikitabobko/tap/aerospace"
+
+# Window borders for AeroSpace. Hyprland draws borders itself on Arch.
+# The service reads ~/.config/borders/bordersrc (the borders package).
+tap "FelixKratz/formulae"
+brew "FelixKratz/formulae/borders"

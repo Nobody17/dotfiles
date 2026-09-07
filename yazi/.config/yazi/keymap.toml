@@ -5,8 +5,8 @@ desc = "Copy image to clipboard"
 
 [[mgr.prepend_keymap]]
 on = ["g","n"]
-run = "cd /mnt/nas-hdd/"
-desc = "Go to nas"
+run = "plugin goto-network-storage"
+desc = "Go to the network storage (Nextcloud on macOS, nas on Linux)"
 
 [[mgr.prepend_keymap]]
 on = ["g","m"]

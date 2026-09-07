@@ -47,3 +47,30 @@ lazydocker = "latest"
 # editor and agents
 neovim = "latest"
 claude = "latest"
+
+# Idiomatic version files (.ruby-version, .nvmrc, go.mod-era files, ...).
+# mise ignores these unless the tool is named here, so a repo pinning
+# ruby 3.4.9 silently got the global `ruby = "latest"` instead.
+# Every tool below was verified to read its file with this mise version;
+# erlang, scala, sbt and yarn have no idiomatic file support at all.
+#
+# java and rust are listed for completeness but contradict the notes above:
+# rustup owns rust and paru owns the JDK. Drop them from the list if a repo
+# with rust-toolchain.toml or .java-version starts nagging about installs.
+[settings]
+idiomatic_version_file_enable_tools = [
+  "bun",       # .bun-version
+  "crystal",   # .crystal-version
+  "deno",      # .deno-version
+  "dotnet",    # global.json  -> sdk.version
+  "elixir",    # .exenv-version
+  "go",        # .go-version
+  "java",      # .java-version
+  "node",      # .node-version, .nvmrc
+  "python",    # .python-version, .python-versions
+  "ruby",      # .ruby-version, Gemfile -> ruby directive
+  "rust",      # rust-toolchain.toml -> toolchain.channel
+  "swift",     # .swift-version
+  "terraform", # .terraform-version
+  "zig",       # .zig-version
+]

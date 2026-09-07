@@ -4,6 +4,20 @@
 # Reload after an edit:  aerospace reload-config
 # All commands:          https://nikitabobko.github.io/AeroSpace/commands
 # Full guide:            https://nikitabobko.github.io/AeroSpace/guide
+#
+# The modifier is ctrl-alt. Karabiner turns the Super key of the Dygma Defy
+# into Ctrl+Alt (see ~/.config/karabiner/generate-defy-rules.py). So the
+# bindings match the Hyprland bindings: Super = window manager key.
+# Plain Alt cannot work here: in terminals, Karabiner turns left Option
+# into an ESC prefix (Meta), which would eat the window manager keys.
+
+# Config format version. Version 2 does not infer persistent workspaces
+# from the key bindings, so they are listed explicitly below.
+# See: https://nikitabobko.github.io/AeroSpace/guide#config-version
+config-version = 2
+
+# These workspaces always exist, also when they are empty.
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
 # Start AeroSpace when you log in.
 start-at-login = true
@@ -25,6 +39,46 @@ accordion-padding = 30
 # Move the mouse to the focused monitor when the focus changes monitors.
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
+# The window under the mouse gets the focus, without a click (like
+# Hyprland). AeroSpace does not focus while a mouse button is down, so
+# drag and drop still works. The key bindings below move the mouse to the
+# focused window after each focus change, so the mouse and the keyboard
+# focus stay together. Without that, the next mouse movement would give
+# the focus back to the window under the resting mouse.
+focus-follows-mouse.enabled = true
+
+# on-focus-changed.sh runs two scripts in this order:
+#
+#   float-macos-tabs.sh    takes the hidden windows of a macOS native tab
+#                          group out of the tiling tree, so a new tab does
+#                          not resize the other windows
+#   dwindle-autotiling.sh  dwindle autotiling, like the Hyprland dwindle
+#                          layout: when a new window appears, the script
+#                          joins it with the window that had the focus,
+#                          in the opposite direction, so the new window
+#                          splits the focused window and the splits
+#                          alternate. A focus change to an existing
+#                          window does nothing.
+#
+# on-focus-changed.sh also records the focused window, so the next new
+# window can be placed next to it, and it holds a lock so two runs never
+# change the tree at the same time.
+on-focus-changed = ['exec-and-forget ~/.config/aerospace/on-focus-changed.sh']
+
+# Each tab of a Ghostty window is a window of its own for macOS, and
+# AeroSpace would give it a tile. This rule makes every new Ghostty window
+# floating first, so no tile appears and the layout stays still.
+# float-macos-tabs.sh then tiles the windows that are not tabs.
+#
+# Windows that already exist when AeroSpace starts keep their layout.
+#
+# Add a block like this for each other program with native tabs, for
+# example com.apple.finder or com.apple.Terminal.
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+if.during-aerospace-startup = false
+run = ['layout floating']
+
 [gaps]
 inner.horizontal = 8
 inner.vertical = 8
@@ -37,59 +91,91 @@ outer.right = 8
 # alt (option), cmd, ctrl, shift.
 [mode.main.binding]
 
-# Terminal
-alt-enter = 'exec-and-forget open -na Ghostty'
+# Terminal (Super+A on Hyprland)
+ctrl-alt-a = 'exec-and-forget open -na Ghostty'
+
+# Close the focused window (Super+D on Hyprland)
+ctrl-alt-d = ['close --quit-if-last-window', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+
+# Fullscreen (Super+F on Hyprland)
+ctrl-alt-f = 'fullscreen'
+
+# File manager (Super+E on Hyprland)
+ctrl-alt-e = 'exec-and-forget open -a Finder ~'
+
+# Browser (Super+G on Hyprland; Safari is the only installed browser)
+ctrl-alt-g = 'exec-and-forget open -a Safari'
+
+# Search (Super+R on Hyprland opened the launcher; here it opens Spotlight).
+# 'open -a Spotlight' does not show the search window on macOS 26, so send
+# the Spotlight hotkey Cmd+Space (key code 49) instead.
+ctrl-alt-r = 'exec-and-forget osascript -e "tell application \"System Events\" to key code 49 using {command down}"'
 
 # Layouts
-alt-slash = 'layout tiles horizontal vertical'
-alt-comma = 'layout accordion horizontal vertical'
+ctrl-alt-slash = 'layout tiles horizontal vertical'
+ctrl-alt-comma = 'layout accordion horizontal vertical'
 
-# Focus
-alt-h = 'focus left'
-alt-j = 'focus down'
-alt-k = 'focus up'
-alt-l = 'focus right'
+# Focus (Super+h/j/k/l on Hyprland). At the edge of a monitor the focus
+# continues on the next monitor in that direction, and wraps around at the
+# outer edge of all monitors. The mouse follows the focus (see
+# focus-follows-mouse above). The window positions do not change here, so
+# move-mouse can run directly in the same list.
+ctrl-alt-h = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left', 'move-mouse window-lazy-center']
+ctrl-alt-j = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors down', 'move-mouse window-lazy-center']
+ctrl-alt-k = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors up', 'move-mouse window-lazy-center']
+ctrl-alt-l = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right', 'move-mouse window-lazy-center']
 
-# Move the focused window
-alt-shift-h = 'move left'
-alt-shift-j = 'move down'
-alt-shift-k = 'move up'
-alt-shift-l = 'move right'
+# Move the focused window. The mouse follows the window. The window gets
+# its new position only after the binding, so the mouse move runs in a
+# script with a short delay (move-mouse-to-focused-window.sh). The same
+# applies to every binding below that changes window positions.
+ctrl-alt-shift-h = ['move left', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-j = ['move down', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-k = ['move up', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-l = ['move right', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+
+# Move the focused window to an other monitor (Super+Ctrl+h/l on Hyprland).
+# On the Defy, outside terminals, the Ctrl key acts as Cmd. So the physical
+# keys Super+Ctrl+h/l give ctrl-alt-cmd-h/l here.
+ctrl-alt-cmd-h = ['move-node-to-monitor --wrap-around --focus-follows-window left', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-cmd-l = ['move-node-to-monitor --wrap-around --focus-follows-window right', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
 
 # Resize
-alt-minus = 'resize smart -50'
-alt-equal = 'resize smart +50'
+ctrl-alt-minus = 'resize smart -50'
+ctrl-alt-equal = 'resize smart +50'
 
-# Workspaces
-alt-1 = 'workspace 1'
-alt-2 = 'workspace 2'
-alt-3 = 'workspace 3'
-alt-4 = 'workspace 4'
-alt-5 = 'workspace 5'
-alt-6 = 'workspace 6'
-alt-7 = 'workspace 7'
-alt-8 = 'workspace 8'
-alt-9 = 'workspace 9'
+# Workspaces (Super+[0-9] on Hyprland; 0 = workspace 10)
+ctrl-alt-1 = ['workspace 1', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-2 = ['workspace 2', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-3 = ['workspace 3', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-4 = ['workspace 4', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-5 = ['workspace 5', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-6 = ['workspace 6', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-7 = ['workspace 7', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-8 = ['workspace 8', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-9 = ['workspace 9', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-0 = ['workspace 10', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
 
-# Move the focused window to a workspace
-alt-shift-1 = 'move-node-to-workspace 1'
-alt-shift-2 = 'move-node-to-workspace 2'
-alt-shift-3 = 'move-node-to-workspace 3'
-alt-shift-4 = 'move-node-to-workspace 4'
-alt-shift-5 = 'move-node-to-workspace 5'
-alt-shift-6 = 'move-node-to-workspace 6'
-alt-shift-7 = 'move-node-to-workspace 7'
-alt-shift-8 = 'move-node-to-workspace 8'
-alt-shift-9 = 'move-node-to-workspace 9'
+# Move the focused window to a workspace (Super+Shift+[0-9] on Hyprland)
+ctrl-alt-shift-1 = ['move-node-to-workspace 1', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-2 = ['move-node-to-workspace 2', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-3 = ['move-node-to-workspace 3', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-4 = ['move-node-to-workspace 4', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-5 = ['move-node-to-workspace 5', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-6 = ['move-node-to-workspace 6', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-7 = ['move-node-to-workspace 7', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-8 = ['move-node-to-workspace 8', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-9 = ['move-node-to-workspace 9', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
+ctrl-alt-shift-0 = ['move-node-to-workspace 10', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
 
 # Jump between the two most recent workspaces
-alt-tab = 'workspace-back-and-forth'
+ctrl-alt-tab = ['workspace-back-and-forth', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
 
 # Move the whole workspace to the next monitor
-alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+ctrl-alt-shift-tab = ['move-workspace-to-monitor --wrap-around next', 'exec-and-forget ~/.config/aerospace/move-mouse-to-focused-window.sh']
 
 # Enter the service mode below
-alt-shift-semicolon = 'mode service'
+ctrl-alt-shift-semicolon = 'mode service'
 
 # The service mode holds the rare commands, so they cannot fire by accident.
 [mode.service.binding]
@@ -98,7 +184,7 @@ r = ['flatten-workspace-tree', 'mode main'] # reset the layout
 f = ['layout floating tiling', 'mode main'] # toggle floating
 backspace = ['close-all-windows-but-current', 'mode main']
 
-alt-shift-h = ['join-with left', 'mode main']
-alt-shift-j = ['join-with down', 'mode main']
-alt-shift-k = ['join-with up', 'mode main']
-alt-shift-l = ['join-with right', 'mode main']
+ctrl-alt-shift-h = ['join-with left', 'mode main']
+ctrl-alt-shift-j = ['join-with down', 'mode main']
+ctrl-alt-shift-k = ['join-with up', 'mode main']
+ctrl-alt-shift-l = ['join-with right', 'mode main']

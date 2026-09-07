@@ -30,14 +30,16 @@ set --local repository_root (path resolve (path dirname (status filename)))
 #   ghostty reads hypr-background-opacity.conf, which monitors.lua writes
 #   hypr    keeps monitors.lua, devices.lua and plugins/ local, because they
 #           describe the hardware of one machine
-set --local no_folding_packages claude btop micro ghostty hypr
+#   karabiner writes karabiner.json and automatic_backups/ itself; only the
+#           generator script generate-defy-rules.py lives in this repository
+set --local no_folding_packages claude btop micro ghostty hypr karabiner
 
 # Packages that belong to one platform only. A run with no package names
 # skips the packages of the other platform. A package that you name on the
 # command line always wins, so a deliberate cross-platform link stays
 # possible.
 set --local linux_only_packages hypr
-set --local macos_only_packages aerospace
+set --local macos_only_packages aerospace borders karabiner
 
 set --local foreign_packages $macos_only_packages
 if test (uname) = Darwin

@@ -1,7 +1,10 @@
-[user]
-	name = Nobody17
-	email = 24973487+Nobody17@users.noreply.github.com
-	signingKey = /home/yorunai/.ssh/id_github_sk
+# Name, email and signing key stay out of this repository.
+# Put them into ~/.gitconfig.local on each machine:
+#   [user]
+#       name = Your Name
+#       email = you@example.com
+[include]
+	path = ~/.gitconfig.local
 [core]
     pager = delta
 	autocrlf = input
@@ -10,7 +13,7 @@
     diffFilter = delta --color-only
 
 [include]
-    path = /home/yorunai/.config/delta/themes/catppuccin.gitconfig
+    path = ~/.config/delta/themes/catppuccin.gitconfig
 [delta]
     navigate = true    # use n and N to move between diff sections
     features = catppuccin-mocha
@@ -29,13 +32,11 @@
 	process = git-lfs filter-process
 	required = true
 [pull]
-	rebase = false
+  rebase = true
 [gpg]
 	format = ssh
 [init]
 	defaultBranch = main
-[http "https://git.hci.uni-hannover.de/"]
-	sslCAInfo = /etc/ssl/certs/ca-certificates.crt
 [credential]
 	helper = store
 [rerere]

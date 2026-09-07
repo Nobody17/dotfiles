@@ -1,4 +1,5 @@
 {
+  "model": "fable",
   "hooks": {
     "PreToolUse": [
       {
@@ -14,8 +15,17 @@
       }
     ]
   },
-  "theme": "dark",
   "enabledPlugins": {
-    "mattpocock-skills@claude-plugins-official": true
-  }
+    "mattpocock-skills@claude-plugins-official": true,
+    "impeccable@impeccable": true
+  },
+  "extraKnownMarketplaces": {
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
+    }
+  },
+  "theme": "dark"
 }

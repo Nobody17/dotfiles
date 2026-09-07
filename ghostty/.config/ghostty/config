@@ -43,9 +43,53 @@ font-family = JetBrains Mono
 # give its name with a "no-" prefix, for example "no-cursor".
 shell-integration-features = ssh-env,ssh-terminfo
 
+# Ghostty shows a confirmation before it closes a terminal that still runs a
+# process. On macOS that confirmation is a native dialog, and the dialog takes
+# the focus away from the keyboard. Ghostty has no option to draw the question
+# in the terminal window, so "false" is the only way to remove the dialog.
+#
+# The other permitted values are "true" (the default: ask when shell
+# integration reports a running process) and "always" (ask every time).
+confirm-close-surface = false
+
+# macOS keeps an application running after its last window closes, and Ghostty
+# follows that rule: "exit" closes the window, but Ghostty stays in the Dock.
+# This line makes Ghostty quit when the last terminal closes, so "exit" ends
+# the program. Linux quits after the last window without this option, and so
+# ignores it.
+#
+# quit-after-last-window-closed-delay (for example "5s") keeps Ghostty alive
+# for a short time, so that a new window opens faster. This file does not set
+# it, so Ghostty quits at once.
+quit-after-last-window-closed = true
+
 # macOS only. Linux ignores this line. It makes the Option key send Alt, so
 # the readline and fish word bindings work.
-macos-option-as-alt = true
+#
+# "left", not "true": "true" takes both Option keys, and then Ghostty eats
+# the right Option as well. The Defy needs the right one as AltGr, because
+# Karabiner builds the Linux symbol layer on it (@ { } [ ] \ | ~, see
+# ~/.config/karabiner/generate-defy-rules.py). With "true" those characters
+# do not reach the terminal.
+#
+# The left Option keeps its Alt behaviour for the MacBook keyboard. On the
+# Defy, Karabiner already turns the left Option into an ESC prefix, so this
+# line only matters for the built-in keyboard.
+macos-option-as-alt = left
+
+# Shift+Enter makes a new line in Claude Code instead of sending the input.
+# ESC CR is what Alt+Enter sends, and "text:" writes both bytes at once.
+#
+# Ghostty sends only CR for Shift+Enter by default, which submits the line.
+# This line must be the ONLY handler of the key. Karabiner must not remap
+# Shift+Enter (see generate-defy-rules.py, TERM_SHORTCUTS): Karabiner sends
+# key events, so its Escape becomes "CSI 27 u" under the Kitty keyboard
+# protocol, which Claude Code reads as the Escape key and then submits.
+# "text:" writes the two raw bytes, and it works on both keyboards.
+#
+# The left Option key also works, through macos-option-as-alt above. The
+# right Option does NOT, because it is the AltGr key for @ { } [ ] \ | ~.
+keybind = shift+enter=text:\x1b\r
 
 # hypr-background-opacity.conf is NOT in this repository. ~/.config/hypr/
 # monitors.lua writes that file, and monitors.lua stays out of the repository

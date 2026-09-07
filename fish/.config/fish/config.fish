@@ -41,8 +41,8 @@ if test -d "$HOME/fvm/default/bin"
 end
 
 # Android SDK (React Native / Expo)
-if test -d "$HOME/Android/Sdk"
-    set -gx ANDROID_HOME "$HOME/Android/Sdk"
+if test -d "/opt/homebrew/share/android-commandlinetools"
+    set -gx ANDROID_HOME "/opt/homebrew/share/android-commandlinetools"
     set -gx ANDROID_SDK_ROOT "$ANDROID_HOME"
     for dir in platform-tools emulator cmdline-tools/latest/bin
         if test -d "$ANDROID_HOME/$dir"

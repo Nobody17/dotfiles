@@ -30,7 +30,7 @@ end
 config.background = {
 	{
 		source = {
-			File = "/home/yorunai/Pictures/Wallpaper/miku_lying.png",
+			File = wezterm.home_dir .. "/Pictures/Wallpaper/miku_lying.png",
 		},
 		opacity = 1,
 		height = "Cover",

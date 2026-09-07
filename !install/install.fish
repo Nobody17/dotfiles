@@ -68,6 +68,16 @@ run_step ../stow.fish
 # 3. Every runtime and CLI tool
 run_step mise.fish
 
+# The AeroSpace tab helper. float-macos-tabs.sh needs it to see which
+# windows share one macOS tab group. swiftc comes with the Xcode Command
+# Line Tools, which the Homebrew installer already put in place.
+if test (uname) = Darwin; and command -q swiftc
+    echo "==> aerospace-window-frames"
+    swiftc -O -o ~/.local/bin/aerospace-window-frames \
+        ../aerospace/.config/aerospace/window-frames.swift
+    or echo "Warning: aerospace-window-frames did not build. AeroSpace then tiles macOS tabs."
+end
+
 # Rebuild bat cache against the stowed bat config
 if command -q bat
     bat cache --build
