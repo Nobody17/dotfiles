@@ -77,7 +77,22 @@ if status is-interactive
     abbr -a n -- nvim
     abbr -a wl --position anywhere -- --UseOzonePlatform --ozone-platform-hint=wayland
 
-    # Start SSH agent if not already running
+    # SSH agent. On macOS launchd sets SSH_AUTH_SOCK to the Apple agent, which
+    # cannot hold FIDO (sk) keys from the YubiKey. Replace it with one shared
+    # Homebrew agent on a fixed socket, so `ssh-add -K` is needed only once
+    # after login, not in every terminal.
+    if string match -q '/var/run/com.apple.launchd.*' -- "$SSH_AUTH_SOCK"
+        set -l shared_agent_socket "$HOME/.ssh/agent/shared.sock"
+        set -gx SSH_AUTH_SOCK $shared_agent_socket
+        # Exit code 2 means "cannot connect to the agent"; 0 and 1 mean it runs.
+        ssh-add -l >/dev/null 2>&1
+        if test $status -eq 2
+            mkdir -p -m 700 (dirname $shared_agent_socket)
+            rm -f $shared_agent_socket
+            ssh-agent -a $shared_agent_socket >/dev/null
+        end
+    end
+    # Linux: start an agent if the session did not provide one.
     if not set -q SSH_AUTH_SOCK
         eval (ssh-agent -c) >/dev/null
     end
