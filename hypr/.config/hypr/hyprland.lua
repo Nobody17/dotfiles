@@ -237,10 +237,15 @@ hl.bind(mainMod .. " + P", function()
 end)
 
 -- Move focus with mainMod + vim keys.
-hl.bind(mainMod .. " + h", hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + l", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + k", hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + j", hl.dsp.focus({ direction = "down" }))
+-- Inside a Herdr window the script moves between Herdr panes first and only
+-- hands over to Hyprland at the pane boundary (script lives in ~/.local/bin).
+local function focusHerdrOrHyprland(direction)
+	return hl.dsp.exec_cmd(home .. "/.local/bin/herdr-or-hyprland-focus " .. direction)
+end
+hl.bind(mainMod .. " + h", focusHerdrOrHyprland("left"))
+hl.bind(mainMod .. " + l", focusHerdrOrHyprland("right"))
+hl.bind(mainMod .. " + k", focusHerdrOrHyprland("up"))
+hl.bind(mainMod .. " + j", focusHerdrOrHyprland("down"))
 
 -- Move the active window between monitors.
 hl.bind(mainMod .. " + CTRL + h", hl.dsp.window.move({ monitor = "-1", follow = true }))

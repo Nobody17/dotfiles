@@ -13,10 +13,21 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/home/yorunai/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
-    "mattpocock-skills@claude-plugins-official": true,
     "impeccable@impeccable": true
   },
   "extraKnownMarketplaces": {

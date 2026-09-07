@@ -68,6 +68,10 @@ run_step ../stow.fish
 # 3. Every runtime and CLI tool
 run_step mise.fish
 
+# 4. Third-party agent skills for Claude Code, Codex and pi. Downloaded from
+# their sources into ~/.agents/skills; needs npx from step 3.
+run_step agent-skills.fish
+
 # The AeroSpace tab helper. float-macos-tabs.sh needs it to see which
 # windows share one macOS tab group. swiftc comes with the Xcode Command
 # Line Tools, which the Homebrew installer already put in place.

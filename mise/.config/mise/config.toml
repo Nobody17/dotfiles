@@ -49,6 +49,7 @@ lazydocker = "latest"
 neovim = "latest"
 claude = "latest"
 codex = "latest"
+pi = "latest"
 
 # Idiomatic version files (.ruby-version, .nvmrc, go.mod-era files, ...).
 # mise ignores these unless the tool is named here, so a repo pinning
