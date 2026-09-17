@@ -1,1 +1,2 @@
-@~/.pi/agent/AGENTS.md
+@~/.agents/AGENTS.md
+@~/.agents/local.md

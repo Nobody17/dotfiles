@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Focus a Herdr neighbor, then let Hyprland handle windows and monitors."""
+
+import json
+import os
+from pathlib import Path
+import socket
+import subprocess
+import sys
+
+
+def hypr(*args):
+    return subprocess.check_output(["hyprctl", *args], text=True, timeout=2)
+
+
+def session_socket(argv, env):
+    config = Path(env.get("HERDR_CONFIG_PATH") or
+                  str(Path(env.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))) /
+                      "herdr" / "config.toml")).parent
+    name = None
+    for i, arg in enumerate(argv):
+        if arg == "--session" and i + 1 < len(argv):
+            name = argv[i + 1]
+        elif arg.startswith("--session="):
+            name = arg.split("=", 1)[1]
+    if len(argv) > 3 and argv[1:3] == ["session", "attach"]:
+        name = argv[3]
+    if name is None and env.get("HERDR_SOCKET_PATH"):
+        return env["HERDR_SOCKET_PATH"]
+    name = name or env.get("HERDR_SESSION", "default")
+    if name != "default":
+        config = config / "sessions" / name
+    return str(config / "herdr.sock")
+
+
+def processes(root=Path("/proc")):
+    result = {}
+    for path in root.glob("[0-9]*"):
+        try:
+            stat = (path / "stat").read_text().rsplit(")", 1)[1].split()
+            argv = (path / "cmdline").read_bytes().decode().strip("\0").split("\0")
+            result[int(path.name)] = (int(stat[1]), argv, path, stat)
+        except (OSError, ValueError, UnicodeError):
+            continue
+    return result
+
+
+def find_socket(active, clients, procs):
+    pid = active.get("pid")
+    # A shared terminal PID cannot identify a surface. Dedicated windows from
+    # herdr-window use separate Ghostty processes, independent of their title.
+    if sum(c.get("pid") == pid for c in clients) != 1:
+        return None
+    candidates = []
+    for child, (parent, argv, path, stat) in procs.items():
+        if not argv or Path(argv[0]).name != "herdr":
+            continue
+        if len(argv) > 1 and argv[1] == "server":
+            continue
+        # Only a foreground Herdr TUI, never a suspended/background client.
+        if stat[4] == "0" or stat[2] != stat[5]:
+            continue
+        ancestor, seen = child, set()
+        while ancestor in procs and ancestor not in seen and ancestor != pid:
+            seen.add(ancestor)
+            ancestor = procs[ancestor][0]
+        if ancestor != pid:
+            continue
+        try:
+            env = dict(item.split("=", 1) for item in
+                       (path / "environ").read_bytes().decode().split("\0") if "=" in item)
+            candidates.append(session_socket(argv, env))
+        except (OSError, UnicodeError):
+            continue
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def focus_pane(path, direction):
+    request = {"id": "hypr-focus", "method": "pane.focus_direction",
+               "params": {"direction": direction}}
+    with socket.socket(socket.AF_UNIX) as connection:
+        connection.settimeout(0.5)
+        connection.connect(path)
+        connection.sendall(json.dumps(request).encode() + b"\n")
+        with connection.makefile("rb") as stream:
+            response = json.loads(stream.readline(1024 * 1024))
+    return response.get("result", {}).get("focus", {}).get("changed") is True
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] not in ("left", "right", "up", "down"):
+        sys.exit("usage: herdr-or-hyprland-focus left|right|up|down")
+    direction = sys.argv[1]
+    active = json.loads(hypr("activewindow", "-j"))
+    try:
+        path = find_socket(active, json.loads(hypr("clients", "-j")), processes())
+        if path and focus_pane(path, direction):
+            return
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+    # Avoid moving an unrelated window if focus changed during the API call.
+    if json.loads(hypr("activewindow", "-j")).get("address") == active.get("address"):
+        hypr("dispatch", 'hl.dsp.focus({ direction = "' + direction + '" })')
+
+
+if __name__ == "__main__":
+    main()

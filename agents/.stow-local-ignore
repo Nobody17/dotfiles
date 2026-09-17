@@ -1,0 +1,8 @@
+^/\.agents/local\.md$
+\.gitignore
+__pycache__
+.+\.pyc
+^/README.*
+^/\.agents/skills/homeassistant/evals(/.*)?$
+^/\.agents/skills/.*/evals/runs(/.*)?$
+LAST_REVIEW\.md

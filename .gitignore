@@ -9,6 +9,7 @@ pi/.pi/agent/trust.json
 pi/.pi/agent/run-history.jsonl
 pi/.pi/agent/models-store.json
 pi/.pi/agent/sessions/
+pi/.pi/agent/APPEND_SYSTEM.md
 evals/
 
 # machine-local helpers
@@ -27,6 +28,10 @@ claude/.claude/*
 claude/.claude/plugins/*
 !claude/.claude/plugins/known_marketplaces.json
 
+# Codex: track only the shared instruction link.
+codex/.codex/*
+!codex/.codex/AGENTS.md
+
 # machine-generated files of the new packages. ~/.config/hypr/monitors.lua
 # writes the ghostty file, and btop and micro write their own folders.
 ghostty/.config/ghostty/hypr-background-opacity.conf
@@ -40,3 +45,10 @@ micro/.config/micro/buffers/
 hypr/.config/hypr/monitors.lua
 hypr/.config/hypr/devices.lua
 hypr/.config/hypr/plugins/
+
+# Repo-owned shared skills exposed to Claude.
+!claude/.claude/skills/
+claude/.claude/skills/*
+!claude/.claude/skills/homeassistant
+!claude/.claude/skills/skill-creation
+!claude/.claude/skills/testing-principles

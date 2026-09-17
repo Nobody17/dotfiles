@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# A dedicated process lets Hyprland associate each window with its Herdr client.
+# Usage: herdr-window [--session name] (other Herdr launch options also work).
+exec ghostty --gtk-single-instance=false -e herdr "$@"

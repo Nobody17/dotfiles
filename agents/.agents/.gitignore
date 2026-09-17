@@ -1,0 +1,6 @@
+local.md
+__pycache__/
+*.pyc
+!skills/skill-creation/**/evals/
+!skills/skill-creation/evals/**
+skills/*/evals/runs/

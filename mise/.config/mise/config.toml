@@ -61,6 +61,15 @@ pi = "latest"
 # rustup owns rust and paru owns the JDK. Drop them from the list if a repo
 # with rust-toolchain.toml or .java-version starts nagging about installs.
 [settings]
+# mise-versions.jdx.dev serves ready-made version lists, so `latest` resolves
+# without a call to GitHub. Its codex list stopped on 2026-09-01 at
+# 0.153.0-alpha.2. Thus `latest` stayed 0.152.0, `mise outdated` reported
+# "up to date" while 0.153.4 was installed, and the minimum_release_age
+# warning blamed the 24 h hold for a gap of 10 days.
+# With the host off, each backend asks its own source. The 1 h
+# fetch_remote_versions_cache keeps the cost of that low.
+use_versions_host = false
+
 idiomatic_version_file_enable_tools = [
   "bun",       # .bun-version
   "crystal",   # .crystal-version
@@ -77,3 +86,6 @@ idiomatic_version_file_enable_tools = [
   "terraform", # .terraform-version
   "zig",       # .zig-version
 ]
+
+[settings.github]
+credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'

@@ -155,6 +155,10 @@ hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "a
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 7, bezier = "quick" })
 
 hl.config({
+	binds = {
+		window_direction_monitor_fallback = true,
+	},
+
 	dwindle = {
 		preserve_split = true,
 	},
@@ -240,7 +244,13 @@ end)
 -- Inside a Herdr window the script moves between Herdr panes first and only
 -- hands over to Hyprland at the pane boundary (script lives in ~/.local/bin).
 local function focusHerdrOrHyprland(direction)
-	return hl.dsp.exec_cmd(home .. "/.local/bin/herdr-or-hyprland-focus " .. direction)
+	local helper = home .. "/.local/bin/herdr-or-hyprland-focus"
+	local file = io.open(helper, "r")
+	if file then
+		file:close()
+		return hl.dsp.exec_cmd(helper .. " " .. direction)
+	end
+	return hl.dsp.focus({ direction = direction })
 end
 hl.bind(mainMod .. " + h", focusHerdrOrHyprland("left"))
 hl.bind(mainMod .. " + l", focusHerdrOrHyprland("right"))

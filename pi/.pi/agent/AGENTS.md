@@ -1,4 +1,1 @@
-- Speak to the user in ASD-STE100 Simplified Technical English if the user talks in english
-- Don't commit unless explicitly asked to
-- Prefer pure functions
-- Use descriptive names; no single letters or abbreviations
+../../../agents/.agents/AGENTS.md

@@ -19,6 +19,7 @@
 # of that list are repeated at the end.
 
 # Secrets and machine-local settings
+^/\.pi/agent/APPEND_SYSTEM\.md$
 ^/\.pi/agent/auth\.json$
 ^/\.pi/agent/settings\.json$
 ^/\.pi/agent/trust\.json$
