@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/home/yorunai/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
           }
         ]
@@ -38,5 +38,39 @@
       }
     }
   },
-  "theme": "dark"
+  "theme": "dark",
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(sqlite3:*) writes/deletes against production database dumps or files matching *_production* or *_prod* in this repo",
+      "Bash(git:*) push --force to master on git.abwplus.de/abwplus/zeit"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: abwplus (git.abwplus.de) — inferred from this repo's origin remote",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Not queryable via gh (unsupported/GHE host) — assume private (git.abwplus.de/abwplus/zeit is a self-hosted GitLab-style host, not a known public host pattern)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: config/master.key and config/credentials.yml.enc (Rails encrypted credentials), .env* files — all gitignored, treat as local secrets not for commit",
+      "**Default / protected branches**: master (default branch); protection status not queryable via gh for this host — treat master as protected by convention",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: The trusted repo (git.abwplus.de/abwplus/zeit) and its remote only — no additional orgs configured",
+      "**Trusted internal domains**: git.abwplus.de",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: .env*, config/master.key, config/credentials.yml.enc, and database backup/dump files (e.g. matching *_abw_db_backup.sql) — contain credentials and production data; share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment (e.g. abw_production database referenced in README)",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (Rails app 'Abw' / 'zeit', German-language user-facing docs)",
+      "**Trusted repo**: /Users/eric/programmieren/zeit (git.abwplus.de/abwplus/zeit) — assume private; confidential material OK, secrets/PII never cleared by visibility",
+      "**Org-specific CLIs**: herdr, glab, mise (seen repeatedly in this project's transcripts and shell history)",
+      "routine under /Users/eric/programmieren/zeit/ prefix"
+    ]
+  }
 }
