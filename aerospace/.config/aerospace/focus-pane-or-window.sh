@@ -17,34 +17,15 @@
 #      monitor, and it wraps around at the outer edge, like the bindings
 #      did before.
 #
-# Herdr can run several sessions (herdr --session NAME), each with its own
-# server. The script finds the session of the focused window in two steps:
+# The public Herdr API has session-wide focus, while attached clients can
+# display different tabs. Never use an untargeted pane focus request here.
+# AeroSpace writes a reserved F13-F16 terminal sequence to focused Ghostty. Herdr's
+# custom key command calls this script with --from-herdr and supplies
+# HERDR_ACTIVE_PANE_ID, HERDR_SOCKET_PATH, and HERDR_BIN_PATH for that client.
+# See herdr/.config/herdr/config.toml for the matching bindings.
 #
-#   a. Process tree. It looks for Herdr client processes below the process
-#      that owns the window. A client started with "--session NAME" or
-#      "session attach NAME" belongs to that session, every other client
-#      to the default session. When exactly one session is found, that is
-#      the session of the window. This is the precise way, and it covers
-#      "ghostty --command=herdr" and Herdr started in a shell.
-#   b. Window title. Herdr writes "<hostname>: <workspace>" to the outer
-#      terminal (window_title in ~/.config/herdr/config.toml). The script
-#      asks each running session for its focused workspace and takes the
-#      session whose title matches. This is the fallback when one terminal
-#      process owns several windows with different sessions, or when the
-#      process tree shows no client.
-#
-# A window with a remote client (herdr --remote) gets the plain AeroSpace
-# focus, because the local CLI cannot reach that server.
-#
-# mise installs Herdr (see ~/.config/mise/config.toml). AeroSpace starts
-# this script with a small PATH without the mise shims, so the script asks
-# mise for the Herdr binary. The client must have the same version as the
-# server, or it refuses to talk ("protocol_mismatch"); one install through
-# mise keeps them equal. Without mise, the script uses "herdr" in PATH.
-#
-# The mouse follows the focus (focus-follows-mouse in aerospace.toml). A
-# pane change inside Herdr keeps the same window, so the mouse can stay
-# where it is. A window change moves the mouse to the new window.
+# Session discovery below only identifies Herdr windows; it does not choose
+# the pane to operate on. Errors must not masquerade as layout boundaries.
 
 direction="$1"
 case "$direction" in
@@ -182,24 +163,57 @@ herdr_session_of_focused_window() {
     printf '%s\n' "$client_sessions" | session_matching_title "$focused_window_title"
 }
 
-# True when Herdr moved the focus to a pane. False at the edge of the
-# layout, when the server is not running, or when the CLI and the server do
-# not match: the answer is then not "true", and AeroSpace takes over.
-herdr_focused_a_pane() {
-    session_name="$1"
-    focus_result="$("$herdr" --session "$session_name" pane focus --direction "$direction" 2>/dev/null)" || return 1
-    changed="$(printf '%s' "$focus_result" | jq -r '.result.focus.changed // false' 2>/dev/null)"
-    [ "$changed" = "true" ]
+# Move between macOS windows only if the originating window still has focus.
+focus_window() {
+    current_window_id="$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" || return 1
+    [ -n "$origin_window_id" ] && [ "$current_window_id" = "$origin_window_id" ] || return 1
+    aerospace focus --boundaries all-monitors-outer-frame \
+        --boundaries-action wrap-around-all-monitors "$direction" >/dev/null 2>&1 || return 1
+    aerospace move-mouse window-lazy-center >/dev/null 2>&1 ||
+        aerospace move-mouse monitor-lazy-center >/dev/null 2>&1
 }
+
+origin_window_id="$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" || origin_window_id=""
+if [ -z "$origin_window_id" ]; then
+    # Empty workspaces have no focused window, but must still allow navigation.
+    # A delayed pane callback must not navigate after losing its source window.
+    [ "${2:-}" != "--from-herdr" ] || exit 1
+    origin_workspace="$(aerospace list-workspaces --focused 2>/dev/null)" || exit 1
+    [ -n "$origin_workspace" ] || exit 1
+    aerospace focus --boundaries all-monitors-outer-frame \
+        --boundaries-action wrap-around-all-monitors "$direction" >/dev/null 2>&1 || exit 1
+    aerospace move-mouse window-lazy-center >/dev/null 2>&1 ||
+        aerospace move-mouse monitor-lazy-center >/dev/null 2>&1
+    exit $?
+fi
+
+if [ "${2:-}" = "--from-herdr" ]; then
+    # Herdr sets these when handling the key in the requesting client. Do not
+    # substitute this script's inherited caller pane or the API's global focus.
+    [ -n "${HERDR_ACTIVE_PANE_ID:-}" ] && [ -x "${HERDR_BIN_PATH:-}" ] || exit 1
+    focus_result="$("$HERDR_BIN_PATH" pane focus --pane "$HERDR_ACTIVE_PANE_ID" \
+        --direction "$direction" 2>/dev/null)" || exit 1
+    outcome="$(printf '%s' "$focus_result" | jq -r '
+        if .result.focus.changed == true then "changed"
+        elif .result.focus.changed == false and .result.focus.reason == "no_neighbor"
+        then "edge" else "error" end' 2>/dev/null)" || exit 1
+    case "$outcome" in
+        changed) exit 0 ;;
+        edge) focus_window; exit $? ;;
+        *) exit 1 ;;
+    esac
+fi
 
 herdr="$(herdr_binary)"
 if [ -n "$herdr" ]; then
     session_of_window="$(herdr_session_of_focused_window)"
-    if [ -n "$session_of_window" ] && herdr_focused_a_pane "$session_of_window"; then
-        exit 0
+    if [ -n "$session_of_window" ]; then
+        focused_pid="$(aerospace list-windows --focused --format '%{app-pid}' 2>/dev/null)" || exit 1
+        [ "$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" = "$origin_window_id" ] || exit 1
+        # Direct terminal bytes preserve the user's held Super/Ctrl/Option keys.
+        # Synthetic key events can disturb those modifiers and produce Escape.
+        exec osascript -l JavaScript "$(dirname "$0")/send-herdr-focus.js" "$focused_pid" "$direction"
     fi
 fi
 
-aerospace focus --boundaries all-monitors-outer-frame \
-    --boundaries-action wrap-around-all-monitors "$direction" >/dev/null 2>&1
-exec aerospace move-mouse window-lazy-center >/dev/null 2>&1
+focus_window

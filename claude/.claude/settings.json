@@ -1,5 +1,5 @@
 {
-  "model": "opus",
+  "model": "fable",
   "hooks": {
     "PreToolUse": [
       {
@@ -72,5 +72,9 @@
       "**Org-specific CLIs**: herdr, glab, mise (seen repeatedly in this project's transcripts and shell history)",
       "routine under /Users/eric/programmieren/zeit/ prefix"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
   }
 }

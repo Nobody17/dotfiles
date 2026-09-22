@@ -30,18 +30,19 @@ set --local repository_root (path resolve (path dirname (status filename)))
 #   btop    writes btop.conf again when you quit, and makes themes/
 #   micro   writes settings.json again, and makes colorschemes/ and plug/
 #   ghostty reads hypr-background-opacity.conf, which monitors.lua writes
+#   herdr   writes sessions, sockets, and logs beside config.toml
 #   hypr    keeps monitors.lua, devices.lua and plugins/ local, because they
 #           describe the hardware of one machine
 #   karabiner writes karabiner.json and automatic_backups/ itself; only the
 #           generator script generate-defy-rules.py lives in this repository
-set --local no_folding_packages agents codex claude btop micro ghostty hypr karabiner
+set --local no_folding_packages agents codex claude btop micro ghostty herdr hypr karabiner
 
 # Packages that belong to one platform only. A run with no package names
 # skips the packages of the other platform. A package that you name on the
 # command line always wins, so a deliberate cross-platform link stays
 # possible.
 set --local linux_only_packages hypr
-set --local macos_only_packages aerospace borders karabiner
+set --local macos_only_packages aerospace borders herdr karabiner
 
 set --local foreign_packages $macos_only_packages
 if test (uname) = Darwin
