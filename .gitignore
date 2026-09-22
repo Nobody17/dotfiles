@@ -2,6 +2,13 @@ runtime/
 .undodir/
 local.fish
 
+# Python caches
+__pycache__/
+*.py[cod]
+
+# macOS metadata
+.DS_Store
+
 # pi local state/secrets
 pi/.pi/agent/auth.json
 pi/.pi/agent/settings.json
