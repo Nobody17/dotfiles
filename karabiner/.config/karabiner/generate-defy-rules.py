@@ -7,8 +7,15 @@ import json, os, copy
 
 HOME = os.path.expanduser("~")
 DEFY = {"type": "device_if", "identifiers": [{"vendor_id": 13807, "product_id": 18}]}
-MOUSE = {"type": "device_if", "identifiers": [{"vendor_id": 1149, "product_id": 32792}]}
+MOUSE = {"type": "device_if", "identifiers": [
+    {"vendor_id": 1149, "product_id": 32792},
+    {"vendor_id": 1149, "product_id": 32793},  # ExpertBT5.0 over Bluetooth
+]}
 BUILTIN = {"type": "device_if", "identifiers": [{"is_built_in_keyboard": True}]}
+KEYCHRON = {"type": "device_if", "identifiers": [
+    {"vendor_id": 1452, "product_id": 592},  # Keychron K8 wired, Mac mode
+    {"vendor_id": 13364, "product_id": 53288},  # Keychron Ultra-Link 8K receiver
+]}
 
 # Karabiner ignores pointing devices by DEFAULT. Both of these must opt in explicitly:
 # the Defy because it also presents a mouse interface, the trackball to see buttons 4/5.
@@ -18,6 +25,8 @@ DEVICES = [
      "ignore": False, "manipulate_caps_lock_led": True,
      "disable_built_in_keyboard_if_exists": False},
     {"identifiers": {"is_pointing_device": True, "vendor_id": 1149, "product_id": 32792},
+     "ignore": False},
+    {"identifiers": {"is_pointing_device": True, "vendor_id": 1149, "product_id": 32793},
      "ignore": False},
 ]
 TERMS = ["^com\\.apple\\.Terminal$", "^com\\.googlecode\\.iterm2$", "^com\\.mitchellh\\.ghostty$",
@@ -142,6 +151,14 @@ rules = [
           "to": [{"key_code": "escape"}],
           "conditions": [BUILTIN]}]},
 
+    {"description": "Keychron: swap Caps Lock <-> Escape",
+     "manipulators": [
+         {"type": "basic",
+          "from": {"key_code": source, "modifiers": {"optional": ["any"]}},
+          "to": [{"key_code": target}],
+          "conditions": [KEYCHRON]}
+         for source, target in [("caps_lock", "escape"), ("escape", "caps_lock")]]},
+
     {"description": "Defy: swap Control <-> Command (outside terminals)",
      "manipulators": [mod_swap(a, b, NOT_TERM) for a, b in
                       [("left_control", "left_command"), ("right_control", "right_command"),
@@ -154,6 +171,27 @@ rules = [
      "manipulators": [combo(k, ["left_option"],
                             [{"key_code": "escape"}, {"key_code": k}], IN_TERM)
                       for k in META_KEYS]},
+
+    # Defy Ctrl becomes Command outside terminals; accept both logical modifiers.
+    # Mandatory modifiers are consumed so Safari receives plain Cmd+Right.
+    {"description": "Kensington trackball: Ctrl/Command + buttons 4/5 = Forward in Safari",
+     "manipulators": [
+         {"type": "basic",
+          "from": {"pointing_button": button,
+                   "modifiers": {"mandatory": [modifier], "optional": ["caps_lock"]}},
+          "to": [{"key_code": "right_arrow", "modifiers": ["left_command"]}],
+          "conditions": [MOUSE, {"type": "frontmost_application_if",
+                                 "bundle_identifiers": ["^com\\.apple\\.Safari$"]}]}
+         for button in ["button4", "button5"]
+         for modifier in ["control", "command"]
+     ]},
+
+    {"description": "Kensington trackball: button 5 = Back in Safari",
+     "manipulators": [
+         pbtn("button5", [{"key_code": "left_arrow", "modifiers": ["left_command"]}],
+              {"type": "frontmost_application_if",
+               "bundle_identifiers": ["^com\\.apple\\.Safari$"]}),
+     ]},
 
     # Cmd+Left/Right rather than Cmd+[ : on the German layout "[" is Option+5, so the
     # bracket shortcut is awkward/unreliable, while Cmd+arrow is layout-independent.
