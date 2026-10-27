@@ -18,6 +18,7 @@
 # tabs. Without that order the layout would jump once and come back.
 
 handled_windows_file="${TMPDIR:-/tmp}/aerospace-handled-windows"
+tab_floated_windows_file="${TMPDIR:-/tmp}/aerospace-tab-floated-windows"
 last_focused_window_file="${TMPDIR:-/tmp}/aerospace-last-focused-window"
 window_frames_helper="$HOME/.local/bin/aerospace-window-frames"
 
@@ -65,8 +66,10 @@ tile_next_to_last_focused_window() {
     focused_window_id="$(aerospace list-windows --focused --format '%{window-id}')"
     aerospace focus --window-id "$last_focused_window_id" >/dev/null 2>&1
     aerospace layout tiling --window-id "$window_identifier" >/dev/null 2>&1
+    layout_status=$?
     [ -n "$focused_window_id" ] &&
         aerospace focus --window-id "$focused_window_id" >/dev/null 2>&1
+    return "$layout_status"
 }
 
 visible_windows="$(aerospace list-windows --monitor all --workspace visible \
@@ -88,18 +91,21 @@ if [ ! -f "$handled_windows_file" ]; then
     exit 0
 fi
 
-# A window is "handled" when a previous run already gave it a layout. Only
-# an unhandled window may be tiled automatically, so a window that you made
-# floating yourself stays floating.
+# Track automatic tab floats separately from handled windows. When a tab
+# loses its anchor or becomes an independent window, it needs its tile back.
+# Existing manual floats are not owned by this helper.
 layout_commands="$(
     {
         sed 's/^/handled /' "$handled_windows_file"
+        [ ! -f "$tab_floated_windows_file" ] ||
+            sed 's/^/tab-floated /' "$tab_floated_windows_file"
         printf '%s\n' "$visible_windows" | sed 's/^/visible /'
         if [ -n "$window_frames" ]; then
             printf '%s\n' "$window_frames" | sed 's/^/frame /'
         fi
     } | awk '
 $1 == "handled" { handled_windows[$2] = 1; next }
+$1 == "tab-floated" { tab_floated_windows[$2] = 1; next }
 
 $1 == "visible" {
     split($2, fields, "|")
@@ -119,7 +125,15 @@ $1 == "frame" {
 END {
     for (position = 1; position <= visible_count; position++) {
         identifier = visible_identifiers[position]
-        key = (identifier in frame_key) ? frame_key[identifier] : ("alone:" identifier)
+        if (identifier in frame_key && is_on_screen[identifier] == 1)
+            on_screen_count[frame_key[identifier]]++
+    }
+    for (position = 1; position <= visible_count; position++) {
+        identifier = visible_identifiers[position]
+        # Covered independent windows are also on screen. Equal bounds
+        # alone are not evidence of tabs; exactly one member must be visible.
+        key = (identifier in frame_key && on_screen_count[frame_key[identifier]] == 1) \
+            ? frame_key[identifier] : ("alone:" identifier)
         group_members[key] = group_members[key] " " identifier
     }
 
@@ -130,6 +144,7 @@ END {
         smallest_identifier = ""
         on_screen_identifier = ""
         group_has_unhandled_window = 0
+        group_has_orphaned_tab = 0
 
         for (position = 1; position <= member_count; position++) {
             identifier = members[position]
@@ -143,6 +158,8 @@ END {
                 on_screen_identifier = identifier
             if (!(identifier in handled_windows))
                 group_has_unhandled_window = 1
+            if (identifier in tab_floated_windows && is_on_screen[identifier] == 1)
+                group_has_orphaned_tab = 1
         }
 
         # Keep the window that already holds the tile. It never changes
@@ -150,9 +167,9 @@ END {
         anchor_identifier = smallest_tiled_identifier
 
         # No member holds a tile. A group of tabs always needs an anchor.
-        # A single window gets one only when it is new, because otherwise
-        # the script would undo a float that you made yourself.
-        if (anchor_identifier == "" && (member_count > 1 || group_has_unhandled_window)) {
+        # Restore a single visible tab that lost its anchor. Without frame
+        # evidence, leave known floating tabs alone until the helper recovers.
+        if (anchor_identifier == "" && (member_count > 1 || group_has_unhandled_window || group_has_orphaned_tab)) {
             anchor_identifier = (on_screen_identifier != "") \
                 ? on_screen_identifier : smallest_identifier
             print "tiling", anchor_identifier
@@ -160,21 +177,45 @@ END {
 
         for (position = 1; position <= member_count; position++) {
             identifier = members[position]
-            if (identifier != anchor_identifier && window_layout[identifier] != "floating")
-                print "floating", identifier
+            if (identifier == anchor_identifier) {
+                if (window_layout[identifier] != "floating")
+                    print "forget", identifier
+            } else if (member_count > 1) {
+                if (window_layout[identifier] != "floating")
+                    print "floating", identifier
+                else if (!(identifier in handled_windows) || identifier in tab_floated_windows)
+                    print "remember", identifier
+            }
         }
     }
 }
 ')"
 
+# on-focus-changed.sh serializes callers. Commit state only after successful
+# layout changes, so a failed restore can be retried on the next focus event.
+if [ -f "$tab_floated_windows_file" ]; then
+    cat "$tab_floated_windows_file" >"$tab_floated_windows_file.new"
+else
+    : >"$tab_floated_windows_file.new"
+fi
+forget_tab_float() {
+    sed "/^$window_identifier\$/d" "$tab_floated_windows_file.new" >"$tab_floated_windows_file.next" &&
+        mv "$tab_floated_windows_file.next" "$tab_floated_windows_file.new"
+}
 printf '%s\n' "$layout_commands" | while read -r target_layout window_identifier; do
     [ -n "$window_identifier" ] || continue
     if [ "$target_layout" = "tiling" ]; then
-        tile_next_to_last_focused_window "$window_identifier"
-    else
-        aerospace layout "$target_layout" --window-id "$window_identifier" >/dev/null 2>&1
+        tile_next_to_last_focused_window "$window_identifier" && forget_tab_float
+    elif [ "$target_layout" = "forget" ]; then
+        forget_tab_float
+    elif [ "$target_layout" = "remember" ]; then
+        printf '%s\n' "$window_identifier" >>"$tab_floated_windows_file.new"
+    elif aerospace layout "$target_layout" --window-id "$window_identifier" >/dev/null 2>&1; then
+        printf '%s\n' "$window_identifier" >>"$tab_floated_windows_file.new"
     fi
 done
+sort -u "$tab_floated_windows_file.new" >"$tab_floated_windows_file" &&
+    rm "$tab_floated_windows_file.new"
 
 # Remember every window that has a layout now, as a union with the old list.
 # A window on a hidden workspace must not lose its entry, or a float that you

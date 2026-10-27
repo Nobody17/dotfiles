@@ -39,7 +39,7 @@ if sys.argv[1:] == ['move-mouse', 'window-lazy-center']:
         result, calls = self.run_helper()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(['focus', '--boundaries', 'all-monitors-outer-frame',
-                       '--boundaries-action', 'wrap-around-all-monitors', 'right'], calls)
+                       '--boundaries-action', 'stop', 'right'], calls)
         self.assertIn(['move-mouse', 'monitor-lazy-center'], calls)
 
     def test_late_pane_callback_does_not_navigate_without_originating_window(self):

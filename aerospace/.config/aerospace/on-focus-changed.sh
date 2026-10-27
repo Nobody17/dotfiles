@@ -15,6 +15,12 @@
 # reads that record: it is the window that had the focus BEFORE the new
 # window appeared, and the new window is placed next to it.
 
+callback_directory="$(dirname "$0")"
+
+# Release native keyboard focus on empty workspaces before waiting for layout
+# work. Otherwise macOS keeps typing into the app on the previous monitor.
+osascript -l JavaScript "$callback_directory/focus-empty-workspace.js" "$(command -v aerospace)"
+
 lock_directory="${TMPDIR:-/tmp}/aerospace-on-focus-changed.lock"
 last_focused_window_file="${TMPDIR:-/tmp}/aerospace-last-focused-window"
 
@@ -37,8 +43,6 @@ until mkdir "$lock_directory" 2>/dev/null; do
     sleep 0.1
 done
 trap 'rmdir "$lock_directory" 2>/dev/null' EXIT
-
-callback_directory="$(dirname "$0")"
 
 "$callback_directory/float-macos-tabs.sh"
 "$callback_directory/dwindle-autotiling.sh"

@@ -14,8 +14,7 @@
 #   2. Otherwise, or when the focused pane sits at the edge of the Herdr
 #      layout ("changed": false, "reason": "no_neighbor"), run the normal
 #      AeroSpace focus. It continues on the next window, then on the next
-#      monitor, and it wraps around at the outer edge, like the bindings
-#      did before.
+#      monitor, and stops at the outer edge of all monitors.
 #
 # The public Herdr API has session-wide focus, while attached clients can
 # display different tabs. Never use an untargeted pane focus request here.
@@ -168,7 +167,7 @@ focus_window() {
     current_window_id="$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" || return 1
     [ -n "$origin_window_id" ] && [ "$current_window_id" = "$origin_window_id" ] || return 1
     aerospace focus --boundaries all-monitors-outer-frame \
-        --boundaries-action wrap-around-all-monitors "$direction" >/dev/null 2>&1 || return 1
+        --boundaries-action stop "$direction" >/dev/null 2>&1 || return 1
     aerospace move-mouse window-lazy-center >/dev/null 2>&1 ||
         aerospace move-mouse monitor-lazy-center >/dev/null 2>&1
 }
@@ -181,7 +180,7 @@ if [ -z "$origin_window_id" ]; then
     origin_workspace="$(aerospace list-workspaces --focused 2>/dev/null)" || exit 1
     [ -n "$origin_workspace" ] || exit 1
     aerospace focus --boundaries all-monitors-outer-frame \
-        --boundaries-action wrap-around-all-monitors "$direction" >/dev/null 2>&1 || exit 1
+        --boundaries-action stop "$direction" >/dev/null 2>&1 || exit 1
     aerospace move-mouse window-lazy-center >/dev/null 2>&1 ||
         aerospace move-mouse monitor-lazy-center >/dev/null 2>&1
     exit $?
