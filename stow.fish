@@ -42,7 +42,7 @@ set --local no_folding_packages agents codex claude btop micro ghostty herdr hyp
 # command line always wins, so a deliberate cross-platform link stays
 # possible.
 set --local linux_only_packages hypr
-set --local macos_only_packages aerospace borders herdr karabiner
+set --local macos_only_packages aerospace borders herdr karabiner monitors
 
 set --local foreign_packages $macos_only_packages
 if test (uname) = Darwin
