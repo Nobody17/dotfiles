@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+export PATH="$PATH:/Users/eric/.docker/bin"
+# End of Docker Desktop section.
+
 # Everything above the `status is-interactive` block runs for scripts too:
 # every `fish -c` from nvim, git hooks and tooling pays for it. Keep it to
 # environment variables and PATH. No subprocesses, no `... | source`.
