@@ -2,3 +2,4 @@
 - Don't commit unless explicitly asked to
 - Prefer pure functions
 - Use descriptive names; no single letters or abbreviations
+- When you drive another agent through Herdr, send a slash command (`/implement`, `/code-review`, ...) as its own `herdr agent prompt` and wait for it to load. Send the task text in a second prompt. A prompt that starts with the slash command and continues with text arrives as one bracketed paste; the agent reads it as plain text, not as a command, and skills marked `disable-model-invocation` cannot be loaded by the agent itself.
