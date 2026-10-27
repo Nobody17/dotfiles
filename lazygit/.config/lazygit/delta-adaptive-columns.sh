@@ -17,7 +17,15 @@ render_chunk() {
   shift
   local delta_arguments=("${base_delta_arguments[@]}")
 
-  if ! grep -q -E '^(new|deleted) file mode ' "$chunk_file"; then
+  if ! awk '
+    {
+      gsub(/\033\[[0-9;]*m/, "")
+      if (/^(new|deleted) file mode / || /^(---|\+\+\+) \/dev\/null$/) {
+        single_column = 1
+      }
+    }
+    END { exit !single_column }
+  ' "$chunk_file"; then
     delta_arguments+=(--side-by-side)
   fi
 
@@ -30,12 +38,16 @@ trap 'rm -rf "$chunk_directory"' EXIT
 # Chunk 0000 holds possible preamble text (for example a commit header).
 awk -v chunk_directory="$chunk_directory" '
   BEGIN { chunk_path = chunk_directory "/chunk-0000" }
-  /^diff --git / {
-    close(chunk_path)
-    chunk_number += 1
-    chunk_path = sprintf("%s/chunk-%04d", chunk_directory, chunk_number)
+  {
+    header = $0
+    gsub(/\033\[[0-9;]*m/, "", header)
+    if (header ~ /^diff --git /) {
+      close(chunk_path)
+      chunk_number += 1
+      chunk_path = sprintf("%s/chunk-%04d", chunk_directory, chunk_number)
+    }
+    print > chunk_path
   }
-  { print > chunk_path }
 '
 
 for chunk_file in "$chunk_directory"/chunk-*; do
