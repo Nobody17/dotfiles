@@ -1,5 +1,5 @@
 {
-  "model": "fable",
+  "model": "claude-opus-5-5",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,9 +7,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "c=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$c\" | grep -qE '(^|[;&|(]|[[:space:]])git([[:space:]]+-[^;&|]*)?[[:space:]]+commit([[:space:]]|$|[;&|])'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"AGENTS.md: do not commit unless the user explicitly asked. Approve only if you asked for this commit.\"}}'; fi",
+            "command": "c=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$c\" | grep -qE '(^|[;&|(]|[[:space:]])(git([[:space:]]+-[^;&|]*)?[[:space:]]+push|gh[[:space:]]+pr[[:space:]]+(create|merge)|glab[[:space:]]+mr[[:space:]]+(create|merge))([[:space:]]|$|[;&|])'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"Pushes and PRs/MRs are outward-facing. Approve only if you asked for this push or PR.\"}}'; fi",
             "timeout": 10,
-            "statusMessage": "Checking for git commit"
+            "statusMessage": "Checking for git push / PR"
           }
         ]
       }
@@ -27,8 +27,13 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
-    "impeccable@impeccable": true
+    "impeccable@impeccable": true,
+    "ruby-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -39,6 +44,7 @@
     }
   },
   "theme": "dark",
+  "switchModelsOnFlag": true,
   "autoMode": {
     "soft_deny": [
       "$defaults",
@@ -72,9 +78,5 @@
       "**Org-specific CLIs**: herdr, glab, mise (seen repeatedly in this project's transcripts and shell history)",
       "routine under /Users/eric/programmieren/zeit/ prefix"
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
   }
 }
