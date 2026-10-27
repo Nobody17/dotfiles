@@ -60,3 +60,5 @@ claude/.claude/skills/*
 !claude/.claude/skills/skill-creation
 !claude/.claude/skills/testing-principles
 !claude/.claude/skills/ruby-testing
+!claude/.claude/skills/codex-review-code
+!claude/.claude/skills/codex-review-plan
