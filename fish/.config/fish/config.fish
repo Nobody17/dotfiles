@@ -51,17 +51,6 @@ if test -d "/opt/homebrew/share/android-commandlinetools"
     end
 end
 
-# JDK 17 for Gradle (system default is 26, too new for Gradle 8.13 / Expo SDK 53).
-# JAVA_HOME only — `java` on PATH stays at the system default.
-# jdk17-openjdk comes from paru: mise only offers openjdk-17.0.2, which has
-# had no security patches since 2022.
-if test -d /usr/lib/jvm/java-17-openjdk
-    set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
-else if test -d /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
-    # macOS: the temurin@17 cask from the Brewfile installs to this path.
-    set -gx JAVA_HOME /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
-end
-
 if status is-interactive
     # Aliases, key bindings and the fastfetch greeting. Also adds
     # ~/.local/bin and ~/.cargo/bin to PATH, and points MANPAGER at bat.
@@ -102,7 +91,7 @@ if status is-interactive
     starship init fish | source
     enable_transience
 
-    # mise must be the last PATH modification.
+    # mise selects JAVA_HOME and must be the last PATH modification.
     if type -q mise
         mise activate fish | source
     end
@@ -110,6 +99,7 @@ else
     # Scripts get the tool versions through the shims instead, which costs
     # nothing at startup. Per-directory switching still works: each shim
     # resolves the version itself when it runs.
+    # Use mise exec for scripts that also need JAVA_HOME, such as Gradle.
     if test -d "$HOME/.local/share/mise/shims"
         fish_add_path -g --prepend "$HOME/.local/share/mise/shims"
     end

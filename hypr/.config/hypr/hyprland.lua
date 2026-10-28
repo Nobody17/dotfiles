@@ -234,6 +234,7 @@ hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen())
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + G", hl.dsp.exec_cmd(browser))
 hl.bind(mainMod .. " + O", hl.dsp.exec_cmd(gaming))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only"))
 
 -- Force the monitors on. The Samsung G7 sometimes does not wake from standby.
 hl.bind(mainMod .. " + P", function()

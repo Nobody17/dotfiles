@@ -25,12 +25,8 @@ paru -S --needed cmake cpio meson unzip
 # must exist before `mise install` runs.
 paru -S --needed ncurses glu mesa wxwidgets-gtk3 libpng libssh unixodbc libxslt fop
 
-# rustup owns rust; mise defers to it.
+# Provide rustup for mise to install and update Rust toolchains.
 paru -S --needed rustup
-
-# JDK 17 for Gradle, reached through JAVA_HOME only. Not from mise:
-# mise only offers openjdk-17.0.2, unpatched since 2022.
-paru -S --needed jdk17-openjdk
 
 # Terminal. ghostty-terminfo and ghostty-shell-integration come with it as
 # hard dependencies. On macOS use "brew install --cask ghostty" instead.

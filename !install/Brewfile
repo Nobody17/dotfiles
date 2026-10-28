@@ -21,15 +21,11 @@ brew "libxslt"
 brew "fop"
 brew "unixodbc"
 
-# rustup owns rust; mise defers to it.
+# Provide rustup for mise to install and update Rust toolchains.
 brew "rustup"
 
 # SSH security keys
 brew "libfido2"
-
-# JDK 17 for Gradle, reached through JAVA_HOME only. Not from mise:
-# mise only offers openjdk-17.0.2, unpatched since 2022.
-cask "temurin@17"
 
 # Terminal. On Arch this is "paru -S ghostty" instead.
 cask "ghostty"

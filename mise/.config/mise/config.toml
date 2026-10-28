@@ -5,12 +5,11 @@
 #   mise install   install everything listed here
 #   mise up        upgrade every tool to its newest matching version
 #
-# rust is deliberately absent: rustup owns it, because components
-# (clippy, rust-analyzer) and cross targets need rustup itself.
+# mise manages Rust through rustup, including components and cross targets.
+# The system layer provides rustup; mise installs and updates the toolchains.
 #
-# java is deliberately absent too: paru installs jdk17-openjdk, reached only
-# through JAVA_HOME so Gradle gets JDK 17 while `java` on PATH stays at the
-# system default. mise only offers openjdk-17.0.2, unpatched since 2022.
+# Temurin provides maintained Java 17 builds for Gradle and Expo projects.
+# Projects can select another JDK in mise.toml or .java-version.
 
 [tools]
 # language runtimes
@@ -20,8 +19,13 @@ python = "latest"
 uv = "latest"
 go = "latest"
 ruby = "latest"
+rust = "stable"
 erlang = "latest"
 elixir = "latest"
+java = "temurin-17"
+# Preserve the Lua 5.1 series from Debian, using its latest patch release.
+# "5.1" selects the original release rather than the newest 5.1.x version.
+lua = "5.1.5"
 
 # shell and prompt
 starship = "latest"
@@ -38,6 +42,7 @@ ripgrep = "latest"
 yazi = "latest"
 yq = "latest"
 taplo = "latest"
+sqlite = "latest"
 
 # git and containers
 gh = "latest"
@@ -57,9 +62,9 @@ pi = "latest"
 # Every tool below was verified to read its file with this mise version;
 # erlang, scala, sbt and yarn have no idiomatic file support at all.
 #
-# java and rust are listed for completeness but contradict the notes above:
-# rustup owns rust and paru owns the JDK. Drop them from the list if a repo
-# with rust-toolchain.toml or .java-version starts nagging about installs.
+# Keep rust enabled so a project's rust-toolchain.toml takes precedence over
+# the global stable channel. Java is enabled so .java-version can override
+# the global Temurin 17 default.
 [settings]
 # mise-versions.jdx.dev serves ready-made version lists, so `latest` resolves
 # without a call to GitHub. Its codex list stopped on 2026-09-01 at

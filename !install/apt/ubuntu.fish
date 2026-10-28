@@ -6,8 +6,9 @@
 sudo apt update
 sudo apt install -y build-essential libreadline-dev
 sudo apt install -y git curl unzip xclip
-sudo apt install -y lua5.1 liblua5.1-dev
-sudo apt install -y sqlite3
+# Lua and the SQLite CLI come from mise. Keep Lua headers and libraries for
+# native builds that use the system development package.
+sudo apt install -y liblua5.1-dev
 sudo apt install -y perl latexmk
 sudo apt install -y gettext
 sudo apt install -y zathura

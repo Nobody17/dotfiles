@@ -1,9 +1,8 @@
 #!/usr/bin/env fish
 
-# rustup only. Every other tool this script used to cargo-install
-# (fd, taplo, eza, zoxide, delta, ripgrep) now comes from mise.
-# rust stays with rustup because components (clippy, rust-analyzer)
-# and cross-compilation targets need rustup itself.
+# Install rustup before mise. Keep a default toolchain for commands that run
+# outside mise. mise.fish installs the configured Rust toolchain afterward;
+# use mise up to update it along with the other tools.
 
 if not command -v rustup > /dev/null
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || exit 1
@@ -13,5 +12,6 @@ if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
 end
 
-rustup default stable
-rustup update
+if not rustup default > /dev/null 2>&1
+    rustup default stable; or exit 1
+end

@@ -7,8 +7,8 @@
 # system interpreter, or it writes the package files into the mise prefix. Only
 # the system layer belongs in a pacman package.
 #
-# Everything that mise does not manage stays on PATH, so rustup keeps supplying
-# cargo to AUR packages that need it.
+# The rustup proxies stay on PATH, so cargo remains available to AUR builds.
+# Rust toolchains live outside the mise directory, even when mise manages them.
 
 function _mise_root --description "Directory that holds the mise installs and shims"
     if test -n "$MISE_DATA_DIR"
