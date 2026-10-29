@@ -35,9 +35,12 @@ claude/.claude/*
 claude/.claude/plugins/*
 !claude/.claude/plugins/known_marketplaces.json
 
-# Codex: track only the shared instruction link.
+# Codex: track shared instructions and explicit skill links.
 codex/.codex/*
 !codex/.codex/AGENTS.md
+!codex/.codex/skills/
+codex/.codex/skills/*
+!codex/.codex/skills/orchestrate-tickets
 
 # machine-generated files of the new packages. ~/.config/hypr/monitors.lua
 # writes the ghostty file, and btop and micro write their own folders.
@@ -62,3 +65,4 @@ claude/.claude/skills/*
 !claude/.claude/skills/ruby-testing
 !claude/.claude/skills/codex-review-code
 !claude/.claude/skills/codex-review-plan
+!claude/.claude/skills/orchestrate-tickets
