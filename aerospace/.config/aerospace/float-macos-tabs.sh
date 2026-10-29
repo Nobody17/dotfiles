@@ -178,7 +178,10 @@ END {
         for (position = 1; position <= member_count; position++) {
             identifier = members[position]
             if (identifier == anchor_identifier) {
-                if (window_layout[identifier] != "floating")
+                # Ordinary tiles have no automatic float to forget. Emitting
+                # this for every tile caused a sed + mv pair per window on
+                # every focus change, even when the layout never changed.
+                if (window_layout[identifier] != "floating" && identifier in tab_floated_windows)
                     print "forget", identifier
             } else if (member_count > 1) {
                 if (window_layout[identifier] != "floating")

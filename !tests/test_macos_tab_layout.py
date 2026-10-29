@@ -64,6 +64,17 @@ for w in json.loads(Path(os.environ['WINDOW_FIXTURE']).read_text()):
         self.handled.write_text('1\n')
         return self.run_helper([self.window(1), self.window(2, 'floating', 0)])
 
+    def test_ordinary_tiles_do_not_rewrite_tab_ownership_for_each_window(self):
+        moves = self.root / 'moves'
+        move = self.root / 'mv'
+        move.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >>"' + str(moves) +
+                        '"\nexec /bin/mv "$@"\n')
+        move.chmod(0o755)
+        self.handled.write_text(''.join(f'{i}\n' for i in range(1, 21)))
+        self.run_helper([self.window(i) for i in range(1, 21)])
+        calls = moves.read_text().splitlines() if moves.exists() else []
+        self.assertFalse(any('aerospace-tab-floated-windows' in call for call in calls))
+
     def test_two_visible_windows_with_equal_frames_keep_their_tiles(self):
         self.handled.write_text('1\n2\n')
         windows = self.run_helper([self.window(1), self.window(2)])
