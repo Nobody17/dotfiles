@@ -1,5 +1,5 @@
 {
-  "model": "claude-opus-5-5",
+  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -41,6 +41,11 @@
         "source": "github",
         "repo": "pbakaus/impeccable"
       }
+    }
+  },
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
     }
   },
   "theme": "dark",
