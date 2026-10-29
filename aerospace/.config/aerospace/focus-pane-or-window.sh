@@ -130,6 +130,9 @@ session_matching_title() {
     esac
     workspace_label_in_title="${window_title#"$host_name: "}"
 
+    # Resolve the CLI only after the title looks like a local Herdr client.
+    herdr="$(herdr_binary)"
+    [ -n "$herdr" ] || return 1
     candidate_sessions="$(cat)"
     [ -n "$candidate_sessions" ] || candidate_sessions="$(running_sessions)"
 
@@ -146,19 +149,16 @@ session_matching_title() {
 # Print the Herdr session of the focused window. Print nothing when the
 # focused window is not a local Herdr window.
 herdr_session_of_focused_window() {
-    focused_window="$(aerospace list-windows --focused \
-        --format '%{app-pid}|%{window-title}' 2>/dev/null)" || return 1
-    [ -n "$focused_window" ] || return 1
-    focused_process_id="${focused_window%%|*}"
-    focused_window_title="${focused_window#*|}"
-
     client_sessions="$(descendant_command_lines "$focused_process_id" | herdr_client_sessions)"
-    if [ "$(printf '%s\n' "$client_sessions" | grep -c .)" -eq 1 ]; then
-        [ "$client_sessions" = "remote" ] && return 1
-        printf '%s\n' "$client_sessions"
-        return 0
-    fi
+    case "$client_sessions" in
+        remote) return 1 ;;
+        *'
+'*) ;; # More than one session needs title disambiguation below.
+        ?*) printf '%s\n' "$client_sessions"; return 0 ;;
+    esac
 
+    # Most presses need no Herdr CLI at all. Only resolve the binary when
+    # multiple clients (or no discoverable client) require a title lookup.
     printf '%s\n' "$client_sessions" | session_matching_title "$focused_window_title"
 }
 
@@ -172,7 +172,15 @@ focus_window() {
         aerospace move-mouse monitor-lazy-center >/dev/null 2>&1
 }
 
-origin_window_id="$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" || origin_window_id=""
+# One snapshot for routing, instead of four separate AeroSpace round trips.
+focused_window="$(aerospace list-windows --focused \
+    --format '%{window-id}|%{app-pid}|%{app-bundle-id}|%{window-title}' 2>/dev/null)" || focused_window=""
+origin_window_id="${focused_window%%|*}"
+window_details="${focused_window#*|}"
+focused_process_id="${window_details%%|*}"
+window_details="${window_details#*|}"
+focused_bundle_id="${window_details%%|*}"
+focused_window_title="${window_details#*|}"
 if [ -z "$origin_window_id" ]; then
     # Empty workspaces have no focused window, but must still allow navigation.
     # A delayed pane callback must not navigate after losing its source window.
@@ -203,15 +211,20 @@ if [ "${2:-}" = "--from-herdr" ]; then
     esac
 fi
 
-herdr="$(herdr_binary)"
-if [ -n "$herdr" ]; then
+# Only Ghostty supports our terminal-input AppleEvent. Ordinary apps should
+# pay for neither process-tree discovery nor mise/Herdr session queries.
+if [ "$focused_bundle_id" = "com.mitchellh.ghostty" ]; then
     session_of_window="$(herdr_session_of_focused_window)"
     if [ -n "$session_of_window" ]; then
-        focused_pid="$(aerospace list-windows --focused --format '%{app-pid}' 2>/dev/null)" || exit 1
         [ "$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" = "$origin_window_id" ] || exit 1
         # Direct terminal bytes preserve the user's held Super/Ctrl/Option keys.
         # Synthetic key events can disturb those modifiers and produce Escape.
-        exec osascript -l JavaScript "$(dirname "$0")/send-herdr-focus.js" "$focused_pid" "$direction"
+        native_sender="$(command -v aerospace-send-herdr-focus)" || native_sender="$HOME/.local/bin/aerospace-send-herdr-focus"
+        if [ -x "$native_sender" ]; then
+            exec "$native_sender" "$focused_process_id" "$direction"
+        fi
+        # A fresh checkout still works before the native helper is built.
+        exec osascript -l JavaScript "$(dirname "$0")/send-herdr-focus.js" "$focused_process_id" "$direction"
     fi
 fi
 

@@ -80,6 +80,10 @@ if test (uname) = Darwin; and command -q swiftc
     swiftc -O -o ~/.local/bin/aerospace-window-frames \
         ../aerospace/.config/aerospace/window-frames.swift
     or echo "Warning: aerospace-window-frames did not build. AeroSpace then tiles macOS tabs."
+    echo "==> aerospace-send-herdr-focus"
+    swiftc -O -o ~/.local/bin/aerospace-send-herdr-focus \
+        ../aerospace/.config/aerospace/send-herdr-focus.swift
+    or echo "Warning: aerospace-send-herdr-focus did not build. Focus uses the slower AppleScript fallback."
 end
 
 # Rebuild bat cache against the stowed bat config
