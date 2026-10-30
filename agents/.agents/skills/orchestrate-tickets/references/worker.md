@@ -25,9 +25,9 @@ Return a concise handoff containing:
 - Ticket reference, starting SHA, submitted SHA, and tree SHA.
 - Changed scope and acceptance-criteria results.
 - Test commands/results, including failures or skips.
-- Reviewer identity, reviewed scope/tree, and its explicit final finding status.
+- Reviewer identity and pane/tab IDs, whether the session was created or borrowed, reviewed scope/tree, and its explicit final finding status.
 - Remaining risks and any repository-required changelog text.
 
-Report through the normal Herdr conversation; the orchestrator persists the handoff. Follow Herdr's file-output fallback only if it cannot retrieve the complete response. Remain idle after submission. Implement source fixes when requested; history operations stay with the integrator.
+Report through the normal Herdr conversation; the orchestrator persists the handoff. Follow Herdr's file-output fallback only if it cannot retrieve the complete response. Remain available for source fixes until integration succeeds, then let the orchestrator close your session and remove the unused worktree. Report completed review sessions for cleanup once their verdicts are captured. History operations stay with the integrator.
 
 **Done:** the submitted tree is clean, ticket checks pass, and a complete review confirms no open findings for that tree.

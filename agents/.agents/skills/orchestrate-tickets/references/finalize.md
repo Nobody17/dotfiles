@@ -20,4 +20,4 @@ If no rewrite was needed, validate the existing integration tip the same way. If
 
 If later validation reveals changes requiring another rewrite, hand off the evidence and recovery refs. A fresh finalizer takes the next rewrite job. Review findings, test failures, and incomplete checks keep the run unfinished.
 
-Return the final integration/tree SHAs, complete ticket mapping, reviewer conclusion, full validation results, and recovery refs. Confirm there is no unfinished Git operation, then exit when the orchestrator ends the session.
+Return the final integration/tree SHAs, complete ticket mapping, reviewer conclusion, full validation results, and recovery refs. Include candidate worktree paths, every run-created branch with its current tip, and reviewer pane/tab IDs with their ownership so the orchestrator can retire them. Confirm there is no unfinished Git operation, then exit when the orchestrator ends the session.
