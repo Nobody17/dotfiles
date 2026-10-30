@@ -10,7 +10,7 @@ The invoking Claude or Codex session is the **orchestrator**. Execute an existin
 
 ## 1. Prepare the run
 
-Read the repository instructions, tracker configuration, spec, and all tickets. Resolve missing references and dependency cycles before dispatch. Use existing tickets from Matt Pocock's spec/ticket workflow; keep their acceptance criteria authoritative.
+Read the repository instructions, tracker configuration, spec, and all tickets. Resolve missing references and dependency cycles before dispatch. Use existing tickets from Matt Pocock's spec/ticket workflow; keep their acceptance criteria authoritative. Check the spec and referenced code for models and interfaces shared across tickets. Record one owning ticket and its consumers for each in the ledger, and resolve their implementation dependencies before dispatching the affected tickets.
 
 Read the installed `herdr` skill and satisfy its environment check before controlling panes. Discover commands from the installed CLI. Resolve the installed `codex-review-code` skill and record its absolute path. If either dependency is unavailable, report the missing dependency and pause launch. When the `herdr-pane-mute` skill is installed, mute each pane you create for a delegated agent before that agent starts, as the skill describes.
 
@@ -34,7 +34,7 @@ Create a persistent run directory outside tracked source, reachable by absolute 
 
 Use `pending → working → reviewed → integrating → integrated`, with `blocked` retaining its reason and previous stage. Each assignment names a handoff path under `<run>/handoffs/`; the delegated job writes its complete handoff there and replies with the path. Herdr lifecycle states tell you when to inspect results; validate evidence before advancing the ledger. On resume, reconcile the ledger with Git and live sessions first.
 
-**Ready:** every ticket is readable, dependencies resolve, launch settings are known, and the ledger identifies the integration branch and validation policy.
+**Ready:** every ticket is readable, dependencies resolve, shared model and interface ownership is assigned, launch settings are known, and the ledger identifies the integration branch and validation policy.
 
 ## 2. Dispatch the frontier
 

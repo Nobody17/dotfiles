@@ -13,6 +13,31 @@ Lies vor dem ersten Pane-Steuerbefehl das installierte Skill `herdr`. Prüfe dor
 die Voraussetzung `HERDR_ENV=1` und befolge die Regeln für CLI, Agentenstart,
 blockierte Zustände und das Lesen vollständiger Antworten.
 
+## Werkzeug für Gegenproben wählen
+
+Prüfe vor dem Reviewer-Start die Projektanweisungen, Build-/Testkonfiguration
+und bereits getroffene Nutzerentscheidungen auf Mutation Testing oder einen
+vereinbarten Gegenproben-Befehl. Verwende die vorhandene Einrichtung und beachte
+Sprache, Compiler, Testframework und betroffenen Teil des Projekts.
+
+Fehlt eine nutzbare Einrichtung und ist die Werkzeugwahl noch offen, frage den
+Nutzer gezielt, welches Mutation-Testing-Werkzeug dieses Projekt verwenden soll.
+Nenne passende Kandidaten mit einer Empfehlung und dem jeweiligen Aufwand;
+prüfe dafür aktuelle Kompatibilität, Lizenz, Pflege und Projekthistorie.
+Bevorzuge passende Open-Source-Werkzeuge. Frage auch nach einem möglicherweise
+vorhandenen, noch nicht dokumentierten Werkzeug oder Befehl. Falls kein geeigneter
+Kandidat gefunden wird, benenne die Lücke und frage, ob für diesen Umfang
+gezielte manuelle Gegenproben verwendet werden sollen.
+
+Warte mit werkzeugabhängigen Schritten auf die Antwort. Installiere in dieser
+Situation weder selbst ein Ersatzwerkzeug noch baue einen eigenen Runner.
+Unabhängige Prüfung und Vorbereitung können weitergehen. Ein delegierter Agent
+meldet die Frage an den Orchestrator; dieser bündelt sie für den Nutzer.
+Halte die getroffene Wahl und, sobald eingerichtet, Version, Konfiguration und
+Befehl im projektspezifischen Testhinweis fest. Frage bei späteren Reviews nicht
+erneut, solange die Entscheidung noch passt; erläutere eine Unverträglichkeit,
+bevor du eine neue Wahl anforderst.
+
 ## Reviewer wählen
 
 Ermittle den absoluten Pfad des Ziel-Worktrees mit `git rev-parse --show-toplevel`
@@ -34,10 +59,15 @@ herdr agent rename <pane-id> reviewer
 
 ## Vor der ersten Runde
 
-Belege jede neue Zusage mit einer Gegenprobe, bevor du sie zum Review gibst:
-brich die Eigenschaft im Produktivcode absichtlich, lass den Test laufen,
-stelle den Code wieder her. Die Gegenprobe muss fehlschlagen, der wiederhergestellte
-Stand muss bestehen.
+Belege jede neue Zusage mit einer Gegenprobe über das gewählte Werkzeug oder
+das vereinbarte manuelle Verfahren. Die Gegenprobe verändert das Verhalten des
+Produktivcodes; der zugehörige Test muss den eingebauten Fehler erkennen.
+Ordne den Nachweis der Zusage und dem geprüften Code-Stand zu. Ein Gesamtwert
+für Mutationsabdeckung ersetzt diese Zuordnung nicht. Compilerfehler,
+Werkzeugfehler, Zeitüberschreitungen und Unterbrechungen sind kein solcher Nachweis.
+Der unveränderte Stand muss bestehen. Stelle bei Quelltextmutationen den
+ursprünglichen Stand wieder her und prüfe ihn erneut; bewahre die Ergebnisse
+abgeschlossener Gegenproben für eine Fortsetzung auf.
 
 **Nicht committen.** Wähle in Runde 1 den Preset für den festgelegten Umfang.
 
