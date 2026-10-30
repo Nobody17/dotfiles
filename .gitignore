@@ -41,6 +41,7 @@ codex/.codex/*
 !codex/.codex/skills/
 codex/.codex/skills/*
 !codex/.codex/skills/orchestrate-tickets
+!codex/.codex/skills/herdr-pane-mute
 
 # machine-generated files of the new packages. ~/.config/hypr/monitors.lua
 # writes the ghostty file, and btop and micro write their own folders.
@@ -66,3 +67,4 @@ claude/.claude/skills/*
 !claude/.claude/skills/codex-review-code
 !claude/.claude/skills/codex-review-plan
 !claude/.claude/skills/orchestrate-tickets
+!claude/.claude/skills/herdr-pane-mute
