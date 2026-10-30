@@ -6,7 +6,10 @@
 #   2. stow           links this repo into $HOME, including the mise config
 #   3. mise           reads that config and installs every runtime and CLI tool
 #
-# Step 3 depends on step 2, so do not reorder these.
+# Step 3 depends on step 2, so do not reorder these. Step 3 also builds herdr
+# from source with the local patch (mise/.config/mise/herdr-local/). That
+# build needs rustup, git, curl, and a C compiler from step 1, and zig, which
+# mise installs before herdr.
 #
 # A fresh Mac has no fish, so this script cannot start there. Bootstrap first:
 #   bash '!install/brew.sh'

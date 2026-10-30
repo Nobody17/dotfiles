@@ -28,7 +28,12 @@ starship = "latest"
 zoxide = "latest"
 fzf = "latest"
 usage = "latest"
-herdr = "latest"
+# herdr gets the local pane-mute patch: the postinstall hook rebuilds the
+# release that mise selected from source. A failed hook keeps the previous
+# version selected. See herdr-local/README.md. zig is the build dependency;
+# keep it at the series that the Herdr release asks for.
+zig = "0.16"
+herdr = { version = "latest", depends = ["zig"], postinstall = 'sh "${MISE_CONFIG_FILE%/*}/herdr-local/postinstall.sh"' }
 
 # file and text tools
 eza = "latest"
