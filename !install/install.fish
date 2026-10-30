@@ -68,6 +68,9 @@ end
 # 2. Link the dotfiles, so ~/.config/mise/config.toml exists
 run_step ../stow.fish
 
+# The repository's own commit checks (.githooks/pre-commit)
+git -C .. config core.hooksPath .githooks
+
 # 3. Every runtime and CLI tool
 run_step mise.fish
 
