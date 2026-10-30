@@ -12,7 +12,7 @@ The invoking Claude or Codex session is the **orchestrator**. Execute an existin
 
 Read the repository instructions, tracker configuration, spec, and all tickets. Resolve missing references and dependency cycles before dispatch. Use existing tickets from Matt Pocock's spec/ticket workflow; keep their acceptance criteria authoritative.
 
-Read the installed `herdr` skill and satisfy its environment check before controlling panes. Discover commands from the installed CLI. Resolve the installed `codex-review-code` skill and record its absolute path. If either dependency is unavailable, report the missing dependency and pause launch.
+Read the installed `herdr` skill and satisfy its environment check before controlling panes. Discover commands from the installed CLI. Resolve the installed `codex-review-code` skill and record its absolute path. If either dependency is unavailable, report the missing dependency and pause launch. When the `herdr-pane-mute` skill is installed, mute each pane you create for a delegated agent before that agent starts, as the skill describes.
 
 Use these defaults unless the user supplies an override:
 

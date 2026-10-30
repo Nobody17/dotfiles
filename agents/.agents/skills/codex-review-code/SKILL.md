@@ -23,6 +23,8 @@ Prüfe vorhandene bereite Codex-Agenten mit `herdr agent list`. Lass einen
 Kandidaten vor dem Review sein Arbeitsverzeichnis und seine Ausgabe von
 `git rev-parse --show-toplevel` nennen. Verwende ihn nur, wenn der Worktree
 dem Ziel entspricht; sonst starte nach `herdr` einen Reviewer im Ziel-Worktree.
+Ist das Skill `herdr-pane-mute` installiert, schalte den neuen Pane vor dem
+Start des Reviewers so stumm, wie es das Skill beschreibt.
 Gib ihm einen eindeutigen Namen und behalte ihn über alle Runden; `reviewer`
 ist in den Beispielen dieser Name:
 
