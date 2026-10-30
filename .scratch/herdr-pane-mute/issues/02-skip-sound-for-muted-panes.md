@@ -30,11 +30,11 @@ A pane is muted when its token `dotfiles_pane_mute` is present with any value.
 
 Copy the source before you patch it, or build in your own scratch directory. Keep build outputs outside the repository. In ticket 01, Claude Code auto mode blocked a build of the downloaded source, because the build runs downloaded build scripts. The worker for this ticket may need the user's permission to build.
 
-- [ ] A pane with the mute token plays neither completion nor needs-input sound. A pane without it, including one with the same agent type, keeps its existing behavior.
-- [ ] Unmute (clearing the token) restores the existing policy and does not override a global or agent-type sound disable.
-- [ ] Toasts, notification navigation, agent status, wait behavior, and terminal bells do not change. A muted pane is not marked seen or complete.
-- [ ] Ordering test: the test starts unmuted. It delivers the snapshot with the token through the same path Herdr uses for a received snapshot (`src/client/shell_runtime.rs:641-660`): `ClientShellState::set_endpoint_snapshot_for_generation` for the active endpoint with an active surface and no pending projection, otherwise `cache_endpoint_snapshot_inactive_for_generation`. Cover both paths, because background endpoints also deliver notifications. Then the test delivers the notification for that pane (`receive_notification`), and expects no sound. The accepted race (notification before the snapshot) is a known limitation, not a tested guarantee.
-- [ ] The patch touches only the sound decision. No new CLI commands, no rendering changes, no server or wire changes.
-- [ ] The behavioral tests can run on their own (one documented command), because ticket 04 runs them during each install.
-- [ ] Tests at the existing client notification-policy boundary cover the cases above with deterministic notification inputs. No real models, no audible speakers.
-- [ ] Relevant upstream checks and compatibility fixtures pass without changed protocol expectations.
+- [x] A pane with the mute token plays neither completion nor needs-input sound. A pane without it, including one with the same agent type, keeps its existing behavior.
+- [x] Unmute (clearing the token) restores the existing policy and does not override a global or agent-type sound disable.
+- [x] Toasts, notification navigation, agent status, wait behavior, and terminal bells do not change. A muted pane is not marked seen or complete.
+- [x] Ordering test: the test starts unmuted. It delivers the snapshot with the token through the same path Herdr uses for a received snapshot (`src/client/shell_runtime.rs:641-660`): `ClientShellState::set_endpoint_snapshot_for_generation` for the active endpoint with an active surface and no pending projection, otherwise `cache_endpoint_snapshot_inactive_for_generation`. Cover both paths, because background endpoints also deliver notifications. Then the test delivers the notification for that pane (`receive_notification`), and expects no sound. The accepted race (notification before the snapshot) is a known limitation, not a tested guarantee.
+- [x] The patch touches only the sound decision. No new CLI commands, no rendering changes, no server or wire changes.
+- [x] The behavioral tests can run on their own (one documented command), because ticket 04 runs them during each install.
+- [x] Tests at the existing client notification-policy boundary cover the cases above with deterministic notification inputs. No real models, no audible speakers.
+- [x] Relevant upstream checks and compatibility fixtures pass without changed protocol expectations.

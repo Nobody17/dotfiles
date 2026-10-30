@@ -1,0 +1,564 @@
+Local dotfiles patch for Herdr 0.9.5: skip completion and needs-input sounds for
+panes that carry the dotfiles_pane_mute metadata token. See README.md.
+
+diff --git a/src/client/shell/notification_policy.rs b/src/client/shell/notification_policy.rs
+index 10ab3d4ba32b0f99e29041c16685744b7ea4fa21..5b174fa6c6896ab203ede528492d93c431a49216 100644
+--- a/src/client/shell/notification_policy.rs
++++ b/src/client/shell/notification_policy.rs
+@@ -4,6 +4,9 @@ const MAX_QUEUED_NOTIFICATIONS: usize = 8;
+ const COMPLETION_EVIDENCE_GRACE: std::time::Duration = std::time::Duration::from_secs(1);
+ pub(super) const COMPLETION_RECHECK_INTERVAL: std::time::Duration =
+     std::time::Duration::from_millis(50);
++/// Local dotfiles patch: a pane whose agent carries this metadata token gets no
++/// completion or needs-input sound. Any value counts as muted.
++const PANE_MUTE_TOKEN: &str = "dotfiles_pane_mute";
+
+ #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+ enum NotificationValidation {
+@@ -197,7 +200,9 @@ impl ClientShellState {
+             if let Some(sound) = pending.event.sound {
+                 let suppress_sound =
+                     pending.event.kind == SemanticNotificationKind::Finished && suppress_external;
+-                if !suppress_sound {
++                if !suppress_sound
++                    && !self.notification_pane_is_muted(&pending.endpoint_id, &pending.event)
++                {
+                     effects.push(ClientShellNotificationEffect::Sound {
+                         sound: match sound {
+                             SemanticNotificationSound::Done => crate::sound::Sound::Done,
+@@ -316,6 +321,34 @@ impl ClientShellState {
+         })
+     }
+
++    /// Reads only the snapshot this client already has. A pane without an agent entry
++    /// counts as unmuted.
++    fn notification_pane_is_muted(
++        &self,
++        endpoint_id: &ClientEndpointId,
++        event: &SemanticNotification,
++    ) -> bool {
++        let Some(pane_id) = event.pane_id.as_deref() else {
++            return false;
++        };
++        self.endpoints
++            .iter()
++            .find(|endpoint| &endpoint.endpoint_id == endpoint_id)
++            .and_then(|endpoint| endpoint.snapshot.as_deref())
++            .and_then(|snapshot| {
++                snapshot
++                    .agents
++                    .iter()
++                    .find(|agent| agent.pane_id == pane_id)
++            })
++            .is_some_and(|agent| {
++                agent
++                    .tokens
++                    .iter()
++                    .any(|(name, _)| name == PANE_MUTE_TOKEN)
++            })
++    }
++
+     fn notification_validation(
+         &self,
+         endpoint_id: &ClientEndpointId,
+@@ -369,3 +402,7 @@ impl ClientShellState {
+         }
+     }
+ }
++
++#[cfg(test)]
++#[path = "tests/pane_mute.rs"]
++mod pane_mute_tests;
+diff --git a/src/client/shell/tests/pane_mute.rs b/src/client/shell/tests/pane_mute.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..9479cd1b9adedd5172f3ac639a285042c2247914
+--- /dev/null
++++ b/src/client/shell/tests/pane_mute.rs
+@@ -0,0 +1,487 @@
++//! Local dotfiles patch: behavioral tests for the pane mute token.
++//!
++//! Agents mute a pane with
++//! `herdr pane report-metadata <pane> --source dotfiles:pane-mute --token dotfiles_pane_mute=1`
++//! and unmute it with `--clear-token dotfiles_pane_mute`.
++
++use super::super::tests::snapshot;
++use super::*;
++use crate::api::schema::AgentStatus;
++use crate::client::endpoint::ProfileId;
++use crate::config::ToastDelivery;
++use crate::protocol::ClientShellAgent;
++
++const MUTED_PANE: &str = "pane_2";
++const NEIGHBOR_PANE: &str = "pane_3";
++
++fn shell_config(delivery: ToastDelivery, delay_seconds: u64) -> ClientShellConfig {
++    let mut config = ClientShellConfig::from_config(&Config::default());
++    config.toast_delivery = delivery;
++    config.toast_delay_seconds = delay_seconds;
++    config
++}
++
++/// The client projects Done only after it saw the pane Working, so each turn reports
++/// Working at sequence 1 and its final status at sequence 2.
++fn codex_agent(pane_id: &str, tab_id: &str, status: AgentStatus, muted: bool) -> ClientShellAgent {
++    let mut tokens = vec![("summary".to_owned(), "build".to_owned())];
++    if muted {
++        tokens.push(("dotfiles_pane_mute".to_owned(), "1".to_owned()));
++    }
++    ClientShellAgent {
++        pane_id: pane_id.into(),
++        workspace_id: "ws_1".into(),
++        tab_id: tab_id.into(),
++        name: None,
++        display_agent: Some("codex".into()),
++        agent: Some("codex".into()),
++        title: None,
++        terminal_title: None,
++        terminal_title_stripped: None,
++        agent_status: status,
++        state_change_seq: if status == AgentStatus::Working { 1 } else { 2 },
++        state_labels: Vec::new(),
++        tokens,
++        focused: false,
++    }
++}
++
++fn projected_snapshot(
++    boot_id: &str,
++    revision: u64,
++    agents: Vec<ClientShellAgent>,
++) -> Box<ClientShellSnapshot> {
++    let mut projected = snapshot();
++    projected.boot_id = boot_id.into();
++    projected.revision = revision;
++    projected.agents = agents;
++    Box::new(projected)
++}
++
++fn agent_status_for(kind: SemanticNotificationKind) -> AgentStatus {
++    match kind {
++        SemanticNotificationKind::NeedsAttention => AgentStatus::Blocked,
++        _ => AgentStatus::Done,
++    }
++}
++
++fn agent_notification(
++    kind: SemanticNotificationKind,
++    pane_id: &str,
++    tab_id: &str,
++) -> SemanticNotification {
++    SemanticNotification {
++        kind,
++        title: format!("codex {pane_id}"),
++        body: Some("worker".into()),
++        sound: Some(match kind {
++            SemanticNotificationKind::NeedsAttention => SemanticNotificationSound::Request,
++            _ => SemanticNotificationSound::Done,
++        }),
++        agent: Some("codex".into()),
++        workspace_id: Some("ws_1".into()),
++        tab_id: Some(tab_id.into()),
++        pane_id: Some(pane_id.into()),
++        position: None,
++    }
++}
++
++/// Delivers a notification the way the client loop does: receive it, then tick once the
++/// configured toast delay has passed.
++fn deliver(
++    state: &mut ClientShellState,
++    endpoint_id: &ClientEndpointId,
++    event: SemanticNotification,
++) -> Vec<ClientShellNotificationEffect> {
++    let now = std::time::Instant::now();
++    let delay = std::time::Duration::from_secs(state.config.toast_delay_seconds);
++    let (mut effects, _) = state.receive_notification(endpoint_id, event, now);
++    effects.extend(state.tick_notifications(now + delay).0);
++    effects
++}
++
++fn describe(effects: &[ClientShellNotificationEffect]) -> Vec<String> {
++    effects
++        .iter()
++        .map(|effect| match effect {
++            ClientShellNotificationEffect::Sound { sound, agent } => {
++                format!("sound {sound:?} {agent:?}")
++            }
++            ClientShellNotificationEffect::Terminal { title, body } => {
++                format!("terminal {title} {body:?}")
++            }
++            ClientShellNotificationEffect::System { title, body, .. } => {
++                format!("system {title} {body:?}")
++            }
++        })
++        .collect()
++}
++
++fn sounds(effects: &[ClientShellNotificationEffect]) -> Vec<(crate::sound::Sound, Option<String>)> {
++    effects
++        .iter()
++        .filter_map(|effect| match effect {
++            ClientShellNotificationEffect::Sound { sound, agent } => Some((*sound, agent.clone())),
++            _ => None,
++        })
++        .collect()
++}
++
++fn without_sounds(effects: &[ClientShellNotificationEffect]) -> Vec<String> {
++    describe(effects)
++        .into_iter()
++        .filter(|description| !description.starts_with("sound "))
++        .collect()
++}
++
++fn endpoint_snapshot(
++    state: &ClientShellState,
++    endpoint_id: &ClientEndpointId,
++) -> Option<ClientShellSnapshot> {
++    state
++        .endpoints
++        .iter()
++        .find(|endpoint| &endpoint.endpoint_id == endpoint_id)
++        .and_then(|endpoint| endpoint.snapshot.as_deref())
++        .cloned()
++}
++
++fn visible_toast(state: &ClientShellState) -> Option<(ClientEndpointId, SemanticNotification)> {
++    state
++        .visible_notification
++        .as_ref()
++        .map(|visible| (visible.endpoint_id.clone(), visible.event.clone()))
++}
++
++fn remote_profile() -> SavedSshEndpoint {
++    SavedSshEndpoint {
++        id: ProfileId::parse("0123456789abcdef0123456789abcdef").unwrap(),
++        label: "Build".into(),
++        target: "dev@build.example".into(),
++        session: "agents".into(),
++        enabled: true,
++    }
++}
++
++/// Delivers one notification for the same pane to a muted state and to an otherwise equal
++/// unmuted state, and checks that only the sound differs.
++fn assert_mute_only_removes_the_sound(
++    kind: SemanticNotificationKind,
++    delivery: ToastDelivery,
++    delay_seconds: u64,
++    tab_id: &str,
++) {
++    let case = format!("{kind:?} {delivery:?} delay {delay_seconds} {tab_id}");
++    let state_for = |muted: bool| {
++        let mut state = ClientShellState::new(shell_config(delivery, delay_seconds));
++        for (revision, status) in [(1, AgentStatus::Working), (2, agent_status_for(kind))] {
++            state.set_snapshot(projected_snapshot(
++                "boot-1",
++                revision,
++                vec![
++                    codex_agent(MUTED_PANE, tab_id, status, muted),
++                    codex_agent(NEIGHBOR_PANE, "tab_3", status, false),
++                ],
++            ));
++        }
++        state
++    };
++    let mut muted_state = state_for(true);
++    let mut control_state = state_for(false);
++    let snapshot_before = endpoint_snapshot(&muted_state, &ClientEndpointId::Local);
++
++    let muted_effects = deliver(
++        &mut muted_state,
++        &ClientEndpointId::Local,
++        agent_notification(kind, MUTED_PANE, tab_id),
++    );
++    let control_effects = deliver(
++        &mut control_state,
++        &ClientEndpointId::Local,
++        agent_notification(kind, MUTED_PANE, tab_id),
++    );
++
++    let target_is_active = tab_id == "tab_1";
++    let upstream_suppresses_sound = kind == SemanticNotificationKind::Finished && target_is_active;
++    assert_eq!(
++        sounds(&control_effects).len(),
++        usize::from(!upstream_suppresses_sound),
++        "{case}: unmuted control"
++    );
++    assert!(sounds(&muted_effects).is_empty(), "{case}: muted sound");
++    assert_eq!(
++        without_sounds(&muted_effects),
++        without_sounds(&control_effects),
++        "{case}: other effects"
++    );
++    assert_eq!(
++        visible_toast(&muted_state),
++        visible_toast(&control_state),
++        "{case}: toast"
++    );
++    assert_eq!(
++        muted_state.pending_notifications.len(),
++        control_state.pending_notifications.len(),
++        "{case}: pending"
++    );
++    assert_eq!(
++        endpoint_snapshot(&muted_state, &ClientEndpointId::Local),
++        snapshot_before,
++        "{case}: agent state must not be marked seen or complete"
++    );
++
++    let neighbor_effects = deliver(
++        &mut muted_state,
++        &ClientEndpointId::Local,
++        agent_notification(kind, NEIGHBOR_PANE, "tab_3"),
++    );
++    assert_eq!(
++        sounds(&neighbor_effects).len(),
++        1,
++        "{case}: same agent type in another pane stays audible"
++    );
++}
++
++#[test]
++fn muted_pane_skips_its_sound_and_keeps_every_other_notification_effect() {
++    let kinds = [
++        SemanticNotificationKind::NeedsAttention,
++        SemanticNotificationKind::Finished,
++    ];
++    let deliveries = [
++        ToastDelivery::Herdr,
++        ToastDelivery::Terminal,
++        ToastDelivery::System,
++        ToastDelivery::Off,
++    ];
++    for kind in kinds {
++        for delivery in deliveries {
++            for delay_seconds in [0, 1] {
++                // tab_1 is the focused tab, so it covers a notification for the active target.
++                for tab_id in ["tab_1", "tab_2"] {
++                    assert_mute_only_removes_the_sound(kind, delivery, delay_seconds, tab_id);
++                }
++            }
++        }
++    }
++}
++
++#[test]
++fn muted_pane_toast_still_opens_its_pane() {
++    let mut state = ClientShellState::new(shell_config(ToastDelivery::Herdr, 0));
++    state.set_snapshot(projected_snapshot(
++        "boot-1",
++        1,
++        vec![codex_agent(MUTED_PANE, "tab_2", AgentStatus::Blocked, true)],
++    ));
++    let effects = deliver(
++        &mut state,
++        &ClientEndpointId::Local,
++        agent_notification(
++            SemanticNotificationKind::NeedsAttention,
++            MUTED_PANE,
++            "tab_2",
++        ),
++    );
++    assert!(sounds(&effects).is_empty());
++    assert!(state.visible_notification.is_some());
++
++    let mut keybind = ClientShellInput::default();
++    state.record_binding(
++        crate::input::KeybindMatch::Action(crate::input::KeybindAction::OpenNotificationTarget),
++        &mut keybind,
++    );
++    assert!(keybind.actions.iter().any(|action| matches!(
++        action,
++        ClientShellAction::Endpoint { request, .. }
++            if matches!(
++                &request.method,
++                crate::api::schema::Method::PaneFocus(params)
++                    if params.pane_id == MUTED_PANE
++            )
++    )));
++    assert!(state.visible_notification.is_none());
++}
++
++/// The entry point that `install_client_shell_snapshot` (src/client/shell_runtime.rs)
++/// selects for a received snapshot.
++#[derive(Clone, Copy, Debug)]
++enum SnapshotPath {
++    /// Active endpoint with an active surface and no pending projection.
++    ActiveProjected,
++    /// Active endpoint that waits for its projection.
++    ActivePendingProjection,
++    /// Background endpoint; it still delivers notifications.
++    Background,
++}
++
++fn receive_snapshot(
++    state: &mut ClientShellState,
++    path: SnapshotPath,
++    endpoint_id: &ClientEndpointId,
++    snapshot: Box<ClientShellSnapshot>,
++) {
++    let generation = 3;
++    match path {
++        SnapshotPath::ActiveProjected => {
++            state.set_endpoint_snapshot_for_generation(endpoint_id, generation, snapshot);
++        }
++        SnapshotPath::ActivePendingProjection | SnapshotPath::Background => {
++            state.cache_endpoint_snapshot_inactive_for_generation(
++                endpoint_id,
++                generation,
++                snapshot,
++            );
++        }
++    }
++}
++
++/// Starts unmuted, receives the snapshot with the token, then receives the notification.
++fn assert_mute_snapshot_precedes_the_notification(
++    path: SnapshotPath,
++    kind: SemanticNotificationKind,
++    delay_seconds: u64,
++) {
++    let case = format!("{path:?} {kind:?} delay {delay_seconds}");
++    let mut state = ClientShellState::new(shell_config(ToastDelivery::Herdr, delay_seconds));
++    let profile = remote_profile();
++    let remote = ClientEndpointId::Ssh(profile.id.clone());
++    state.set_endpoint_catalog(&[profile]);
++    state.set_endpoint_status(&remote, ClientEndpointStatus::Online);
++    let (endpoint_id, boot_id) = match path {
++        SnapshotPath::Background => {
++            state.set_endpoint_snapshot_for_generation(
++                &ClientEndpointId::Local,
++                1,
++                projected_snapshot("boot-1", 1, Vec::new()),
++            );
++            (remote, "remote-boot")
++        }
++        SnapshotPath::ActiveProjected | SnapshotPath::ActivePendingProjection => {
++            (ClientEndpointId::Local, "boot-1")
++        }
++    };
++    let final_status = agent_status_for(kind);
++
++    for (revision, status) in [(1, AgentStatus::Working), (2, final_status)] {
++        let agents = vec![codex_agent(MUTED_PANE, "tab_2", status, false)];
++        let snapshot = projected_snapshot(boot_id, revision, agents);
++        receive_snapshot(&mut state, path, &endpoint_id, snapshot);
++    }
++    let unmuted = deliver(
++        &mut state,
++        &endpoint_id,
++        agent_notification(kind, MUTED_PANE, "tab_2"),
++    );
++    assert_eq!(sounds(&unmuted).len(), 1, "{case}: starts unmuted");
++
++    let agents = vec![codex_agent(MUTED_PANE, "tab_2", final_status, true)];
++    let snapshot = projected_snapshot(boot_id, 3, agents);
++    receive_snapshot(&mut state, path, &endpoint_id, snapshot);
++    let muted = deliver(
++        &mut state,
++        &endpoint_id,
++        agent_notification(kind, MUTED_PANE, "tab_2"),
++    );
++    assert!(sounds(&muted).is_empty(), "{case}: muted");
++    let toast = visible_toast(&state)
++        .map(|(endpoint, event)| (endpoint, event.pane_id));
++    assert_eq!(
++        toast,
++        Some((endpoint_id, Some(MUTED_PANE.to_owned()))),
++        "{case}: toast stays"
++    );
++}
++
++#[test]
++fn mute_snapshot_received_before_the_notification_skips_the_sound() {
++    let paths = [
++        SnapshotPath::ActiveProjected,
++        SnapshotPath::ActivePendingProjection,
++        SnapshotPath::Background,
++    ];
++    let kinds = [
++        SemanticNotificationKind::NeedsAttention,
++        SemanticNotificationKind::Finished,
++    ];
++    for path in paths {
++        for kind in kinds {
++            for delay_seconds in [0, 1] {
++                assert_mute_snapshot_precedes_the_notification(path, kind, delay_seconds);
++            }
++        }
++    }
++}
++
++#[test]
++fn unmute_restores_the_unpatched_sound_and_its_config_filters() {
++    let unmuted_agent = || codex_agent(MUTED_PANE, "tab_2", AgentStatus::Blocked, false);
++    let needs_input = || {
++        agent_notification(
++            SemanticNotificationKind::NeedsAttention,
++            MUTED_PANE,
++            "tab_2",
++        )
++    };
++    let mut state = ClientShellState::new(shell_config(ToastDelivery::Herdr, 1));
++    state.set_endpoint_snapshot_for_generation(
++        &ClientEndpointId::Local,
++        1,
++        projected_snapshot(
++            "boot-1",
++            1,
++            vec![codex_agent(MUTED_PANE, "tab_2", AgentStatus::Blocked, true)],
++        ),
++    );
++    assert!(sounds(&deliver(&mut state, &ClientEndpointId::Local, needs_input())).is_empty());
++
++    state.set_endpoint_snapshot_for_generation(
++        &ClientEndpointId::Local,
++        1,
++        projected_snapshot("boot-1", 2, vec![unmuted_agent()]),
++    );
++    let restored = deliver(&mut state, &ClientEndpointId::Local, needs_input());
++
++    let mut never_muted = ClientShellState::new(shell_config(ToastDelivery::Herdr, 1));
++    never_muted.set_snapshot(projected_snapshot("boot-1", 1, vec![unmuted_agent()]));
++    let baseline = deliver(&mut never_muted, &ClientEndpointId::Local, needs_input());
++    assert_eq!(describe(&restored), describe(&baseline));
++
++    // Mute only removes Sound effects. The restored effect still goes through the
++    // global and agent-type sound settings before playback.
++    let restored_sounds = sounds(&restored);
++    let [(crate::sound::Sound::Request, agent_label)] = restored_sounds.as_slice() else {
++        panic!("unmute must restore the request sound");
++    };
++    let agent = agent_label
++        .as_deref()
++        .and_then(crate::detect::parse_agent_label);
++    assert!(agent.is_some());
++    let sound_config = |toml: &str| toml::from_str::<Config>(toml).unwrap().ui.sound;
++    assert!(sound_config("").allows(agent));
++    assert!(!sound_config("[ui.sound]\nenabled = false").allows(agent));
++    assert!(!sound_config("[ui.sound.agents]\ncodex = \"off\"").allows(agent));
++}
++
++#[test]
++fn pane_without_agent_entry_counts_as_unmuted() {
++    let mut state = ClientShellState::new(shell_config(ToastDelivery::Herdr, 0));
++    state.set_snapshot(projected_snapshot(
++        "boot-1",
++        1,
++        vec![codex_agent(NEIGHBOR_PANE, "tab_3", AgentStatus::Blocked, true)],
++    ));
++    let effects = deliver(
++        &mut state,
++        &ClientEndpointId::Local,
++        agent_notification(
++            SemanticNotificationKind::NeedsAttention,
++            MUTED_PANE,
++            "tab_2",
++        ),
++    );
++    assert_eq!(
++        sounds(&effects),
++        vec![(crate::sound::Sound::Request, Some("codex".to_owned()))]
++    );
++}
