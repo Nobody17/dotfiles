@@ -1,6 +1,6 @@
 ## Checks
 
-Tests: `python3 -m unittest discover -s '!tests'` (about 40 s). `.githooks/pre-commit` checks whitespace and sh, fish, and TOML syntax of staged files.
+Tests: `python3 -m unittest discover -s '!tests'` (about 40 s; on a busy machine up to 75 s, so give it a 120 s budget). `.githooks/pre-commit` checks whitespace and sh, fish, and TOML syntax of staged files.
 
 ## Agent skills
 
