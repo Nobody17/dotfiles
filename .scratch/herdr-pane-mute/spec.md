@@ -25,7 +25,7 @@ A tool-specific mise postinstall hook builds the exact upstream release with the
 ## User Stories
 
 1. As a parent agent, I want to mute a pane by its ID, so that routine worker activity does not interrupt the user.
-2. As a parent agent, I want the mute to be in effect when the mute command returns, so that starting the worker afterward cannot outrun it.
+2. As a parent agent, I want the mute to be in effect on the server when the mute command returns, so that a worker started afterward does not outrun it. A state change within one render interval of the mute can still play a sound (accepted limitation, ticket 01).
 3. As a parent agent, I want to unmute a pane, so that it can notify the user when its role changes.
 4. As a parent agent, I want mute to leave agent state and wait behavior intact, so that orchestration still detects completion and blocked workers.
 5. As a parent agent, I want installed instructions for the split → mute → run workflow, so that I do not need to rediscover the commands.
@@ -50,8 +50,8 @@ A tool-specific mise postinstall hook builds the exact upstream release with the
 
 - Mute is a metadata token on the server pane, written through the existing `report-metadata` command. Herdr keeps tokens in one flat map by token name for each pane; `--source` does not separate token names. So the token name carries a unique prefix, for example `dotfiles_pane_mute`. Ticket 01 confirms the exact command, that the name is valid, that the token stays until it is cleared, and that no other integration writes the same name.
 - Do not add new CLI commands. Agents mute and unmute with the documented `report-metadata` command.
-- Do not add a `--muted` option to `pane split`. The ordered split → mute → run workflow gives the same guarantee without patching split.
-- The client patch filters automatic completion and needs-input sounds at the client notification boundary, before playback. It reads the token from pane state that the client already has. Clients receive tokens through snapshots, and the existing sound decision does not wait for a fresh snapshot. If ticket 01 shows that clients do not receive tokens, or that a notification can reach the sound decision before the snapshot with a new token, the client queries the pane through the existing API before it plays a sound.
+- Do not add a `--muted` option to `pane split`. The ordered split → mute → run workflow gives the same server-side guarantee (the mute is on the server before the worker starts) without patching split.
+- The client patch filters automatic completion and needs-input sounds at the client notification boundary, before playback. It reads the token from pane state that the client already has. Clients receive tokens through snapshots, and the existing sound decision does not wait for a fresh snapshot. Ticket 01 showed that a notification can reach the sound decision before the snapshot with a new token. The user accepted this race: the client reads the token only from the snapshot it already has, with no API lookup and no snapshot wait. A sound can leak when the state change comes within one render interval of the mute.
 - Pane mute only adds suppression. Toasts, notification navigation, agent state, badges, and terminal bells do not change.
 - No visible mute indicator in this version. `herdr pane get` and `herdr pane list` show the mute state if they already show metadata tokens.
 - The mise postinstall hook builds in a temporary directory. It runs the patch's behavioral tests on the patched source, builds the release, checks that the binary starts (`herdr --version`), and replaces the executable only after all of this succeeds. The binary itself does not need a feature proof. It records the upstream version and patch hash in a stamp file next to the executable. It does not keep its own build cache, locking, or repair command.
@@ -60,7 +60,7 @@ A tool-specific mise postinstall hook builds the exact upstream release with the
 
 ## Testing Decisions
 
-- Herdr side: a few behavioral tests at the existing client notification-policy boundary, stored in the patch. One test proves the ordering guarantee; an already-muted fixture does not. If a notification can arrive before the snapshot with the token, the test keeps the client snapshot unmuted while the server has the token, and expects no sound through the API lookup. Ticket 02 gives the exact order for both cases. Muted pane gets no completion or needs-input sound. Unmuted pane with the same agent type still gets sound. Toasts and status do not change. Unmute does not override a global or agent-type sound disable.
+- Herdr side: a few behavioral tests at the existing client notification-policy boundary, stored in the patch. One ordering test starts unmuted, delivers the snapshot with the token through the same path Herdr uses, then delivers the notification, and expects no sound; an already-muted fixture does not replace it. The accepted race is a known limitation, not a tested guarantee. Ticket 02 gives the exact path. Muted pane gets no completion or needs-input sound. Unmuted pane with the same agent type still gets sound. Toasts and status do not change. Unmute does not override a global or agent-type sound disable.
 - Installer side: standard-library unittest that runs the hook as a process with temporary directories and stubbed download and compilation. Cover success, patch conflict, and build failure. Assert that the previous executable stays intact after a failure.
 - Manual checks: one real mise check that a failed postinstall leaves the version incomplete and not selected. Build/install smoke checks on macOS and Linux, including a fresh setup without GitHub credentials and a checkout path with spaces.
 
