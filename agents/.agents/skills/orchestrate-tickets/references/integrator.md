@@ -26,7 +26,7 @@ python3 <skill>/scripts/verify-history.py --repo <candidate-worktree> \
 
 This verifies one linear commit above the assigned tip. Verify the candidate worktree is clean and the integration tip is unchanged, then fast-forward integration to that exact candidate. The checks ran on the resulting tree before moving the branch; a separate identical post-merge run adds no evidence. If the tip changed, stop and report the ownership mismatch.
 
-Return ticket ID, submitted-to-integrated SHA mapping, resulting integration/tree SHAs, check commands/results, review evidence if renewed, and recovery refs. Include candidate worktree paths, every run-created branch with its current tip, and reviewer pane/tab IDs with their ownership so the orchestrator can retire them. Confirm no Git operation remains in progress, then exit when the orchestrator ends the session.
+Write the handoff to the handoff path in your assignment, then reply with that path and a one-line status. The handoff gives ticket ID, submitted-to-integrated SHA mapping, resulting integration/tree SHAs, check commands/results, review evidence if renewed, and recovery refs. Include candidate worktree paths, every run-created branch with its current tip, and reviewer pane/tab IDs with their ownership so the orchestrator can retire them. Confirm no Git operation remains in progress, then exit when the orchestrator ends the session.
 
 ## Recover an interrupted job
 

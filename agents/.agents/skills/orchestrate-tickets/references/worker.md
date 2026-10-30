@@ -20,7 +20,7 @@ After a correction, rerun affected ticket checks and the review's required count
 
 After review succeeds, commit the reviewed work with ticket identity in the message and leave the worktree clean. Any earlier implementation commits remain available for the integrator to squash. Code changes after review require another review round; committing an unchanged reviewed tree preserves its evidence.
 
-Return a concise handoff containing:
+Write a concise handoff to the handoff path in your assignment. A later handoff for the same ticket, after a fix, goes to a numbered file next to it (`-2`, `-3`). The handoff contains:
 
 - Ticket reference, starting SHA, submitted SHA, and tree SHA.
 - Changed scope and acceptance-criteria results.
@@ -28,6 +28,6 @@ Return a concise handoff containing:
 - Reviewer identity and pane/tab IDs, whether the session was created or borrowed, reviewed scope/tree, and its explicit final finding status.
 - Remaining risks and any repository-required changelog text.
 
-Report through the normal Herdr conversation; the orchestrator persists the handoff. Follow Herdr's file-output fallback only if it cannot retrieve the complete response. Remain available for source fixes until integration succeeds, then let the orchestrator close your session and remove the unused worktree. Report completed review sessions for cleanup once their verdicts are captured. History operations stay with the integrator.
+Then reply with the handoff path and a one-line status. Remain available for source fixes until integration succeeds, then let the orchestrator close your session and remove the unused worktree. Report completed review sessions for cleanup once their verdicts are captured. History operations stay with the integrator.
 
 **Done:** the submitted tree is clean, ticket checks pass, and a complete review confirms no open findings for that tree.
