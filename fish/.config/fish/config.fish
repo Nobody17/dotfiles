@@ -9,6 +9,11 @@ export PATH="$PATH:/Users/eric/.docker/bin"
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
 set -gxa PHP_INI_SCAN_DIR "$HOME/.config/herd-lite/bin"
 
+# rustup installs a missing toolchain only on `rustup toolchain install`.
+# Without this, any rustup call in a folder with rust-toolchain.toml, or with
+# Homebrew's fallback default "stable", downloads about 1.3 GB on its own.
+set -gx RUSTUP_AUTO_INSTALL 0
+
 # Homebrew on macOS: /opt/homebrew on Apple Silicon, /usr/local on Intel.
 # Static values instead of `brew shellenv | source`, because the rule above
 # forbids subprocesses here. cachyos-config.fish does not exist on macOS,
