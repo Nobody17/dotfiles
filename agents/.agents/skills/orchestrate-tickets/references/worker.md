@@ -4,7 +4,7 @@ Read your assignment file and repository instructions, verify the assigned workt
 
 ## Implement and validate
 
-Implement the ticket's acceptance criteria within its assigned scope. Run relevant ticket tests and affected checks until they pass. Reserve the full repository suite for final integration validation. If repository-required checks conflict with this policy, report the conflict to the orchestrator instead of silently omitting them.
+Implement the ticket's acceptance criteria within its assigned scope. Run relevant ticket tests and affected checks until they pass. Reserve the full repository suite for final integration validation. If repository-required checks conflict with this policy, report the conflict to the orchestrator instead of silently omitting them. Record each manual check with the log file that shows its result, in the ticket and in the handoff; mark a statement that no log shows as reported.
 
 Dependencies already integrated into your starting commit are part of your test environment. Report newly discovered dependencies or edit overlap before crossing another ticket's scope. The orchestrator owns scheduling; the integrator owns rebases, squashes, cherry-picks, and integration-branch changes. Request synchronization when needed and wait for the assigned integrator.
 
