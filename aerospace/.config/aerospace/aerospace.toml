@@ -106,24 +106,28 @@ ctrl-alt-e = 'exec-and-forget open -a Finder ~'
 # Browser (Super+G on Hyprland; Safari is the only installed browser)
 ctrl-alt-g = 'exec-and-forget open -a Safari'
 
-# Search (Super+R on Hyprland opened the launcher; here it opens Spotlight).
-# 'open -a Spotlight' does not show the search window on macOS 26, so send
-# the Spotlight hotkey Cmd+Space (key code 49) instead.
-ctrl-alt-r = 'exec-and-forget osascript -e "tell application \"System Events\" to key code 49 using {command down}"'
+# Recover covered windows, including popups that AeroSpace does not manage.
+ctrl-alt-o = 'exec-and-forget /usr/bin/osascript -l JavaScript ~/.config/aerospace/recover-window.js'
 
-# Layouts
+# Search: wait for Super's modifiers to be released before sending Cmd+Space.
+ctrl-alt-r = 'exec-and-forget /usr/bin/osascript -l JavaScript ~/.config/aerospace/open-spotlight.js'
+
+# Layouts. Keep windows side by side; accordion would hide windows behind
+# the focused one, so it has no key binding.
 ctrl-alt-slash = 'layout tiles horizontal vertical'
-ctrl-alt-comma = 'layout accordion horizontal vertical'
 
-# Focus (Super+h/j/k/l on Hyprland). At the edge of a monitor the focus
-# continues on the next monitor in that direction, and wraps around at the
-# outer edge of all monitors. The mouse follows the focus (see
-# focus-follows-mouse above). The window positions do not change here, so
-# move-mouse can run directly in the same list.
-ctrl-alt-h = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors left', 'move-mouse window-lazy-center']
-ctrl-alt-j = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors down', 'move-mouse window-lazy-center']
-ctrl-alt-k = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors up', 'move-mouse window-lazy-center']
-ctrl-alt-l = ['focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-all-monitors right', 'move-mouse window-lazy-center']
+# Focus (Super+h/j/k/l on Hyprland). focus-pane-or-window.sh first asks
+# Herdr: in a Herdr window the focus moves to the next pane in that
+# direction. At the edge of the Herdr layout, and in every other window,
+# the script runs the plain AeroSpace focus: the focus continues on the
+# next window, then on the next monitor in that direction, and stops
+# at the outer edge of all monitors. The mouse follows the focus
+# (see focus-follows-mouse above); the script moves it after a window
+# change.
+ctrl-alt-h = 'exec-and-forget ~/.config/aerospace/focus-pane-or-window.sh left'
+ctrl-alt-j = 'exec-and-forget ~/.config/aerospace/focus-pane-or-window.sh down'
+ctrl-alt-k = 'exec-and-forget ~/.config/aerospace/focus-pane-or-window.sh up'
+ctrl-alt-l = 'exec-and-forget ~/.config/aerospace/focus-pane-or-window.sh right'
 
 # Move the focused window. The mouse follows the window. The window gets
 # its new position only after the binding, so the mouse move runs in a

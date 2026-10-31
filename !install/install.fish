@@ -6,7 +6,10 @@
 #   2. stow           links this repo into $HOME, including the mise config
 #   3. mise           reads that config and installs every runtime and CLI tool
 #
-# Step 3 depends on step 2, so do not reorder these.
+# Step 3 depends on step 2, so do not reorder these. Step 3 also builds herdr
+# from source with the local patch (mise/.config/mise/herdr-local/). That
+# build needs rustup, git, curl, and a C compiler from step 1, and zig, which
+# mise installs before herdr.
 #
 # A fresh Mac has no fish, so this script cannot start there. Bootstrap first:
 #   bash '!install/brew.sh'
@@ -65,6 +68,9 @@ end
 # 2. Link the dotfiles, so ~/.config/mise/config.toml exists
 run_step ../stow.fish
 
+# The repository's own commit checks (.githooks/pre-commit)
+git -C .. config core.hooksPath .githooks
+
 # 3. Every runtime and CLI tool
 run_step mise.fish
 
@@ -80,6 +86,10 @@ if test (uname) = Darwin; and command -q swiftc
     swiftc -O -o ~/.local/bin/aerospace-window-frames \
         ../aerospace/.config/aerospace/window-frames.swift
     or echo "Warning: aerospace-window-frames did not build. AeroSpace then tiles macOS tabs."
+    echo "==> aerospace-send-herdr-focus"
+    swiftc -O -o ~/.local/bin/aerospace-send-herdr-focus \
+        ../aerospace/.config/aerospace/send-herdr-focus.swift
+    or echo "Warning: aerospace-send-herdr-focus did not build. Focus uses the slower AppleScript fallback."
 end
 
 # Rebuild bat cache against the stowed bat config

@@ -1,0 +1,60 @@
+#!/bin/sh
+# Checks the staged content of a commit: whitespace errors, shell and fish
+# syntax, and TOML syntax. It reads the index, not the working tree, so a
+# fixed file must be staged again. install.fish enables this folder with
+#   git config core.hooksPath .githooks
+# Skip it once with `git commit --no-verify`.
+
+# Prints sh, bash, fish, toml, or nothing for a staged path.
+staged_kind() {
+    case "$1" in
+        *.toml) echo toml; return ;;
+    esac
+    first_line=$(git show ":$1" 2>/dev/null | head -n 1)
+    case "$first_line" in
+        '#!'*fish*) echo fish ;;
+        '#!'*bash*) echo bash ;;
+        '#!'*/sh | '#!'*' sh') echo sh ;;
+        *)
+            case "$1" in
+                *.fish) echo fish ;;
+                *.sh) echo sh ;;
+            esac
+            ;;
+    esac
+}
+
+check_staged_syntax() {
+    case "$2" in
+        sh | bash) git show ":$1" | "$2" -n ;;
+        fish) git show ":$1" | fish --no-execute ;;
+        toml)
+            git show ":$1" | python3 -c '
+import sys, tomllib
+try:
+    tomllib.load(sys.stdin.buffer)
+except tomllib.TOMLDecodeError as error:
+    sys.exit(str(error))
+'
+            ;;
+    esac
+}
+
+failed=0
+git diff --cached --check || failed=1
+
+staged_paths=$(git diff --cached --name-only --diff-filter=ACMR)
+old_ifs=$IFS
+IFS='
+'
+for staged_path in $staged_paths; do
+    IFS=$old_ifs
+    kind=$(staged_kind "$staged_path")
+    if [ -n "$kind" ] && ! check_staged_syntax "$staged_path" "$kind"; then
+        echo "pre-commit: $kind syntax error in $staged_path" >&2
+        failed=1
+    fi
+done
+IFS=$old_ifs
+
+exit "$failed"

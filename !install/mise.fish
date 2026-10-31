@@ -17,7 +17,9 @@ if not command -v mise > /dev/null
     exit 1
 end
 
-# Needs the stowed config, so stow.fish must have run first.
+# Needs the stowed config, so stow.fish must have run first. herdr builds
+# from source in its postinstall hook and takes some minutes. When that hook
+# fails, it names the failed step and the missing prerequisite.
 mise install || exit 1
 
 mise doctor > /dev/null 2>&1

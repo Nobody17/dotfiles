@@ -1,9 +1,19 @@
+# Docker Desktop installs its commands in the current user's home directory.
+if test -d "$HOME/.docker/bin"
+    fish_add_path -g --append "$HOME/.docker/bin"
+end
+
 # Everything above the `status is-interactive` block runs for scripts too:
 # every `fish -c` from nvim, git hooks and tooling pays for it. Keep it to
 # environment variables and PATH. No subprocesses, no `... | source`.
 
 set -gx ERL_AFLAGS "-kernel shell_history enabled"
 set -gxa PHP_INI_SCAN_DIR "$HOME/.config/herd-lite/bin"
+
+# rustup installs a missing toolchain only on `rustup toolchain install`.
+# Without this, any rustup call in a folder with rust-toolchain.toml, or with
+# Homebrew's fallback default "stable", downloads about 1.3 GB on its own.
+set -gx RUSTUP_AUTO_INSTALL 0
 
 # Homebrew on macOS: /opt/homebrew on Apple Silicon, /usr/local on Intel.
 # Static values instead of `brew shellenv | source`, because the rule above
@@ -41,12 +51,22 @@ if test -d "$HOME/fvm/default/bin"
 end
 
 # Android SDK (React Native / Expo)
-if test -d "/opt/homebrew/share/android-commandlinetools"
+if set -q ANDROID_HOME; and test -d "$ANDROID_HOME"
+    # Keep an SDK selected by the machine or parent process.
+else if test -d "$HOME/Android/Sdk"
+    set -gx ANDROID_HOME "$HOME/Android/Sdk"
+else if test -d "$HOME/Android/sdk"
+    set -gx ANDROID_HOME "$HOME/Android/sdk"
+else if test -d "$HOME/Library/Android/sdk"
+    set -gx ANDROID_HOME "$HOME/Library/Android/sdk"
+else if test -d "/opt/homebrew/share/android-commandlinetools"
     set -gx ANDROID_HOME "/opt/homebrew/share/android-commandlinetools"
+end
+if set -q ANDROID_HOME
     set -gx ANDROID_SDK_ROOT "$ANDROID_HOME"
-    for dir in platform-tools emulator cmdline-tools/latest/bin
-        if test -d "$ANDROID_HOME/$dir"
-            fish_add_path -g "$ANDROID_HOME/$dir"
+    for directory in platform-tools emulator cmdline-tools/latest/bin
+        if test -d "$ANDROID_HOME/$directory"
+            fish_add_path -g "$ANDROID_HOME/$directory"
         end
     end
 end

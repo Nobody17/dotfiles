@@ -4,8 +4,10 @@ Shared agent files
 `~/.agents/` stays a real directory. Stow links tracked files from this package
 with `--no-folding`. Add your own shared skills under `.agents/skills/` here;
 add a corresponding link under `claude/.claude/skills/` and allow it in the
-root `.gitignore` for Claude discovery. Codex and Pi discover this directory
-directly.
+root `.gitignore` for Claude discovery. Pi discovers this directory directly.
+For Codex, also add a folder link under `codex/.codex/skills/` and allow it in
+the root `.gitignore`: Codex CLI 0.165.0 skips an individually symlinked
+`SKILL.md`, but discovers a symlink to the whole skill folder.
 
 Third-party skills installed into `~/.agents/skills/` stay outside the repo.
 Use `./stow.fish --no-adopt agents claude codex pi` to avoid adopting installed

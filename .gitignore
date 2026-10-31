@@ -2,6 +2,13 @@ runtime/
 .undodir/
 local.fish
 
+# Python caches
+__pycache__/
+*.py[cod]
+
+# macOS metadata
+.DS_Store
+
 # pi local state/secrets
 pi/.pi/agent/auth.json
 pi/.pi/agent/settings.json
@@ -28,9 +35,19 @@ claude/.claude/*
 claude/.claude/plugins/*
 !claude/.claude/plugins/known_marketplaces.json
 
-# Codex: track only the shared instruction link.
+# Codex: track shared instructions and explicit skill links.
 codex/.codex/*
 !codex/.codex/AGENTS.md
+!codex/.codex/skills/
+codex/.codex/skills/*
+!codex/.codex/skills/codex-review-code
+!codex/.codex/skills/codex-review-plan
+!codex/.codex/skills/homeassistant
+!codex/.codex/skills/ruby-testing
+!codex/.codex/skills/skill-creation
+!codex/.codex/skills/testing-principles
+!codex/.codex/skills/orchestrate-tickets
+!codex/.codex/skills/herdr-pane-mute
 
 # machine-generated files of the new packages. ~/.config/hypr/monitors.lua
 # writes the ghostty file, and btop and micro write their own folders.
@@ -52,3 +69,8 @@ claude/.claude/skills/*
 !claude/.claude/skills/homeassistant
 !claude/.claude/skills/skill-creation
 !claude/.claude/skills/testing-principles
+!claude/.claude/skills/ruby-testing
+!claude/.claude/skills/codex-review-code
+!claude/.claude/skills/codex-review-plan
+!claude/.claude/skills/orchestrate-tickets
+!claude/.claude/skills/herdr-pane-mute

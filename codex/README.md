@@ -1,6 +1,10 @@
 Shared global instructions live in `agents/.agents/AGENTS.md` (installed as `~/.agents/AGENTS.md`), tracked by this
 repository. Codex links to it and Claude imports it.
 
+Repo-owned skills use folder links under `codex/.codex/skills/`. These preserve
+Codex discovery when Stow installs the shared copy with individual file links.
+Codex CLI 0.165.0 follows skill folder links but skips a symlinked `SKILL.md`.
+
 Machine-local instructions live in `~/.agents/local.md`,
 outside the repository. Each application adds their contents automatically:
 
