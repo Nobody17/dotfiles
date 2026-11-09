@@ -57,6 +57,17 @@ ist in den Beispielen dieser Name:
 herdr agent rename <pane-id> reviewer
 ```
 
+## Schwere Befehle
+
+Gibt dein Auftrag eine Form für schwere Befehle vor (Tests, Builds; zum Beispiel
+`heavy-job.py` einer Orchestrierung), prüft der Reviewer nur lesend. Jeder
+Prompt an ihn enthält dann: "Führe keine Tests und Builds aus. Brauchst du einen
+Lauf, nenne Befehl und Zweck; ich führe ihn aus und gebe dir das Ergebnis."
+Wähle in Runde 1 dafür den Preset „Custom review instructions“ und gib dort den
+Review-Umfang und diesen Satz ein; nur dieser Preset nimmt eine eigene Anweisung
+an. Führe angeforderte Läufe in der Form deines Auftrags aus. Zeigt eine Antwort einen eigenen Lauf des
+Reviewers, nenne ihn im Bericht.
+
 ## Vor der ersten Runde
 
 Belege jede neue Zusage mit einer Gegenprobe über das gewählte Werkzeug oder
@@ -85,7 +96,8 @@ herdr agent read reviewer --source visible --lines 15
 ```
 
 Wähle den passenden Preset anhand seiner sichtbaren Beschriftung. Für lokale
-Änderungen ist das „Review uncommitted changes“. Navigiere zur Auswahl, lies
+Änderungen ist das „Review uncommitted changes“; bei einer Form für schwere
+Befehle gilt [Schwere Befehle](#schwere-befehle). Navigiere zur Auswahl, lies
 die Markierung erneut und bestätige erst, wenn sie beim gewünschten Preset steht:
 
 ```bash
@@ -109,6 +121,7 @@ Für die Prüfung der Korrekturen sende einen Freitext-Prompt. Er enthält:
 - die konkreten Zweifel als Fragen, nicht als Aufgabe
 - "Nenne nur konkrete Findings mit Datei und Zeile, keine Stilfragen"
 - "Ändere keine Dateien"
+- bei einer Form für schwere Befehle den Satz aus [Schwere Befehle](#schwere-befehle)
 - "Prüfe jede behauptete Korrektur und jede Zurückweisung. Melde einen Punkt
   erneut mit Beleg, wenn der Fehler fortbesteht; bestätigte Lösungen sind erledigt."
 - "Schließe mit dem geprüften Stand und den offenen Findings ab; bestätige

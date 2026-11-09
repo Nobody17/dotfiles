@@ -1,6 +1,6 @@
 # Finalize the integrated change
 
-You own the exclusive integration slot for final review, validation, and at most one history-rewrite job. Read the assignment and repository instructions. Verify the integration tip and ticket mapping, and confirm every implementation worker, earlier integrator, and reviewer has stopped editing.
+You own the exclusive integration slot for final review, validation, and at most one history-rewrite job. Read the assignment and repository instructions. Verify the integration tip and ticket mapping, and confirm every implementation worker, earlier integrator, and reviewer has stopped editing. Send every message for the orchestrator (readiness, questions, blocks, status) as a file, as [messages](messages.md) describes.
 
 ## Review and repair
 
@@ -14,7 +14,7 @@ Record the new ticket-to-commit mapping. Ask the reviewer to verify the final ca
 
 ## Validate and publish locally
 
-Run the full repository suite and required checks on the final candidate tree. Once they pass, run `scripts/verify-history.py` from this skill with the original base, candidate tip, and one `--ticket <id>=<sha>` for every implementation ticket. Verify a clean worktree.
+Run every heavy command (tests, builds) in the `heavy-job.py` form that your assignment gives; exit 124 means the orchestrator stopped the job, and its next message tells you what to do. Run the full repository suite and required checks on the final candidate tree. Once they pass, run `scripts/verify-history.py` from this skill with the original base, candidate tip, and one `--ticket <id>=<sha>` for every implementation ticket. Verify a clean worktree.
 
 If no rewrite was needed, validate the existing integration tip the same way. If history changed, update only the run-owned local integration branch after verifying its old SHA still matches the recorded tip. Use a compare-and-swap ref update, with that branch detached from all worktrees during the update, then restore its integration checkout. Preserve unrelated and published history; remote rewriting requires its own existing authorization.
 
