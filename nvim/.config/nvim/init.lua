@@ -3,6 +3,7 @@ vim.g.maplocalleader = ' '
 
 require 'settings'
 require 'keymaps'
+require('herdr-navigation').setup()
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',

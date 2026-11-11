@@ -1,6 +1,6 @@
 #!/bin/sh
-# Move the focus in one direction: first inside Herdr, then across windows
-# and monitors with AeroSpace.
+# Move the focus in one direction: first between Neovim windows, then inside
+# Herdr, then across windows and monitors with AeroSpace.
 #
 # Usage:  focus-pane-or-window.sh left|down|up|right
 #
@@ -8,6 +8,9 @@
 # takes the key before the terminal sees it, so Herdr alone can never
 # react to Super+h/j/k/l. This script gives Herdr the first chance:
 #
+#   0. If the focused Herdr pane runs Neovim, ask Neovim to focus its
+#      window in that direction. Neovim answers 1 when it moved, and 0 at
+#      its edge. At the edge, continue with step 1.
 #   1. If the focused window is a Herdr window, ask Herdr to focus the
 #      pane in that direction. Herdr answers with "changed": true when a
 #      pane took the focus. Then the job is done.
@@ -162,6 +165,41 @@ herdr_session_of_focused_window() {
     printf '%s\n' "$client_sessions" | session_matching_title "$focused_window_title"
 }
 
+# Print the path of the Neovim binary.
+neovim_binary() {
+    command -v nvim 2>/dev/null || mise which nvim 2>/dev/null
+}
+
+# Ask a Neovim in the Herdr pane to move to its neighbor window. Succeed only
+# when Neovim moved the focus. Fail when the pane runs no Neovim with a
+# navigation socket, when Neovim has no window in that direction, or when
+# Neovim does not answer within one second.
+# See ~/.config/nvim/lua/herdr-navigation.lua for the Neovim side.
+focus_neovim_window() {
+    pane_id="$1"
+    socket_directory="${XDG_STATE_HOME:-$HOME/.local/state}/nvim/herdr-navigation"
+
+    # Without any socket, skip the Herdr process query.
+    set -- "$socket_directory"/*.sock
+    [ -S "$1" ] || return 1
+
+    foreground_process_ids="$("$HERDR_BIN_PATH" pane process-info --pane "$pane_id" 2>/dev/null |
+        jq -r '.result.process_info.foreground_processes[].pid' 2>/dev/null)" || return 1
+
+    for process_id in $foreground_process_ids; do
+        socket_path="$socket_directory/$process_id.sock"
+        [ -S "$socket_path" ] || continue
+        neovim="$(neovim_binary)"
+        [ -n "$neovim" ] || return 1
+        answer="$(perl -e 'alarm shift; exec @ARGV' 1 \
+            "$neovim" --server "$socket_path" \
+            --remote-expr "v:lua.require'herdr-navigation'.focus_neighbor('$direction')" 2>/dev/null)"
+        [ "$answer" = "1" ]
+        return $?
+    done
+    return 1
+}
+
 # Move between macOS windows only if the originating window still has focus.
 focus_window() {
     current_window_id="$(aerospace list-windows --focused --format '%{window-id}' 2>/dev/null)" || return 1
@@ -198,6 +236,7 @@ if [ "${2:-}" = "--from-herdr" ]; then
     # Herdr sets these when handling the key in the requesting client. Do not
     # substitute this script's inherited caller pane or the API's global focus.
     [ -n "${HERDR_ACTIVE_PANE_ID:-}" ] && [ -x "${HERDR_BIN_PATH:-}" ] || exit 1
+    focus_neovim_window "$HERDR_ACTIVE_PANE_ID" && exit 0
     focus_result="$("$HERDR_BIN_PATH" pane focus --pane "$HERDR_ACTIVE_PANE_ID" \
         --direction "$direction" 2>/dev/null)" || exit 1
     outcome="$(printf '%s' "$focus_result" | jq -r '

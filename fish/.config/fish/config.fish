@@ -34,6 +34,16 @@ if set -q homebrew_prefix[1]
     fish_add_path -g "$HOME/.local/bin" "$HOME/.cargo/bin"
 end
 
+# Claude Code runs its Bash tool in this shell; ~/.bashrc sets it up. macOS
+# /bin/bash is 3.2, which Claude Code rejects as too old for many commands,
+# so macOS uses Homebrew bash. Linux uses the system bash. Not in
+# ~/.claude/settings.json, because that file holds one path for both systems.
+if set -q homebrew_prefix[1]; and test -x $homebrew_prefix/bin/bash
+    set -gx CLAUDE_CODE_SHELL $homebrew_prefix/bin/bash
+else if test -x /bin/bash
+    set -gx CLAUDE_CODE_SHELL /bin/bash
+end
+
 #path
 # ~/.local/bin and ~/.cargo/bin are added by cachyos-config.fish below.
 fish_add_path -g "$HOME/Programming/software/android-studio/bin/"

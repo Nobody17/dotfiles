@@ -1,10 +1,10 @@
 # Ticket worker
 
-Read your assignment file and repository instructions, verify the assigned worktree and starting SHA, then acknowledge readiness. Your next task message is the ticket file path or URL. Read that ticket and its linked context directly.
+Read your assignment file and repository instructions, verify the assigned worktree and starting SHA, then send a `ready` message. Send every message for the orchestrator (readiness, questions, blocks, status) as a file, as [messages](messages.md) describes. Your next task message is the ticket file path or URL. Read that ticket and its linked context directly.
 
 ## Implement and validate
 
-Implement the ticket's acceptance criteria within its assigned scope. Run relevant ticket tests and affected checks until they pass. Reserve the full repository suite for final integration validation. If repository-required checks conflict with this policy, report the conflict to the orchestrator instead of silently omitting them. Record each manual check with the log file that shows its result, in the ticket and in the handoff; mark a statement that no log shows as reported.
+Implement the ticket's acceptance criteria within its assigned scope. Run relevant ticket tests and affected checks until they pass. Run every heavy command (tests, builds) in the `heavy-job.py` form that your assignment gives; exit 124 means the orchestrator stopped the job, and its next message tells you what to do. Reserve the full repository suite for final integration validation. If repository-required checks conflict with this policy, report the conflict to the orchestrator instead of silently omitting them. Record each manual check with the log file that shows its result, in the ticket and in the handoff; mark a statement that no log shows as reported.
 
 Dependencies already integrated into your starting commit are part of your test environment. Report newly discovered dependencies or edit overlap before crossing another ticket's scope. The orchestrator owns scheduling; the integrator owns rebases, squashes, cherry-picks, and integration-branch changes. Request synchronization when needed and wait for the assigned integrator.
 
@@ -28,6 +28,6 @@ Write a concise handoff to the handoff path in your assignment. A later handoff 
 - Reviewer identity and pane/tab IDs, whether the session was created or borrowed, reviewed scope/tree, and its explicit final finding status.
 - Remaining risks and any repository-required changelog text.
 
-Then reply with the handoff path and a one-line status. Remain available for source fixes until integration succeeds, then let the orchestrator close your session and remove the unused worktree. Report completed review sessions for cleanup once their verdicts are captured. History operations stay with the integrator.
+Then end your reply with the handoff path and a one-line status. Remain available for source fixes until integration succeeds, then let the orchestrator close your session and remove the unused worktree. Report completed review sessions for cleanup once their verdicts are captured. History operations stay with the integrator.
 
 **Done:** the submitted tree is clean, ticket checks pass, and a complete review confirms no open findings for that tree.

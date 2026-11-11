@@ -28,3 +28,14 @@ git:
     - colorArg: always
       command: ~/.config/lazygit/delta-adaptive-columns.sh
   autoFetch: false
+customCommands:
+  - key: 'D'
+    context: 'commits'
+    description: 'Commit in diffview öffnen'
+    command: "nvim -c 'DiffviewOpen {{.SelectedCommit.Hash}}^!'"
+    output: terminal
+  - key: 'D'
+    context: 'commitFiles'
+    description: 'Datei des Commits in diffview öffnen'
+    command: "nvim -c 'DiffviewOpen {{.SelectedCommit.Hash}}^! -- {{.SelectedPath}}'"
+    output: terminal

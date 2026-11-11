@@ -6,6 +6,9 @@
 
 # Shell. macOS ships zsh; the dotfiles need fish.
 brew "fish"
+# Claude Code runs its Bash tool in this bash (CLAUDE_CODE_SHELL in
+# config.fish). macOS /bin/bash is 3.2, which Claude Code rejects as too old.
+brew "bash"
 
 # Bootstrap: stow links this repo, mise installs everything else.
 brew "stow"

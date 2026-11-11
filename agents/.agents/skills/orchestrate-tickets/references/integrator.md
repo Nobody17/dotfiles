@@ -1,6 +1,6 @@
 # Ticket integrator
 
-You own one integration or recovery job. Read the assignment, repository instructions, and the installed Herdr skill. Confirm that the exclusive lock records your assignment and that the pinned integration tip still matches Git. Your session exits after this job; the orchestrator releases the slot.
+You own one integration or recovery job. Read the assignment, repository instructions, and the installed Herdr skill. Confirm that the exclusive lock records your assignment and that the pinned integration tip still matches Git. Your session exits after this job; the orchestrator releases the slot. Send every message for the orchestrator (readiness, questions, blocks, status) as a file, as [messages](messages.md) describes.
 
 ## Prepare the candidate
 
@@ -14,7 +14,7 @@ If conflict resolution or other edits change the reviewed implementation, rerun 
 
 ## Validate and advance
 
-Run the assignment's fast, relevant checks against the combined candidate tree within the recorded total time budget. A timeout, skipped required check, or failed check blocks advancement. Return failures for a scoped fix; reserve the full suite for finalization. A deliberate test countercheck fails as expected and is recorded separately from the required passing checks.
+Run the assignment's fast, relevant checks against the combined candidate tree within the recorded total time budget. Run every heavy command (tests, builds) in the `heavy-job.py` form that your assignment gives; exit 124 means the orchestrator stopped the job, and its next message tells you what to do. A timeout, skipped required check, or failed check blocks advancement. Return failures for a scoped fix; reserve the full suite for finalization. A deliberate test countercheck fails as expected and is recorded separately from the required passing checks.
 
 Use the bundled history verifier before advancing:
 

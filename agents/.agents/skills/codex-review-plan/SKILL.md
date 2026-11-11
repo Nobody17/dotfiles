@@ -68,10 +68,13 @@ Prüfe zusätzlich in derselben Runde:
   überprüfbare Ergebnisse.
 - Tickets: eindeutige Akzeptanzkriterien, einzeln überprüfbare Ergebnisse,
   passende Größe und korrekte Blocker ohne Zyklen.
-- Zusammenhang, wenn Spec und Tickets vorliegen: Jede Anforderung der Spec ist
-  durch Tickets abgedeckt; Tickets und Gesprächsentscheidungen stimmen mit der
-  Spec überein. Lies dafür auch die übergeordnete Spec und die verknüpften
-  Tickets, soweit vorhanden.
+- Zusammenhang, wenn Spec und Tickets vorliegen: Der Reviewer stellt eine
+  Zuordnung auf, die jede User Story und jede Anforderung der Spec, auch jedes
+  Beispiel darin („zum Beispiel …“), auf mindestens ein Akzeptanzkriterium eines
+  Tickets abbildet. Eine Story, Anforderung oder ein Beispiel ohne Kriterium ist
+  ein Einwand. Tickets und Gesprächsentscheidungen stimmen mit der Spec überein.
+  Lies dafür auch die übergeordnete Spec und die verknüpften Tickets, soweit
+  vorhanden.
 
 ## Prompt
 
