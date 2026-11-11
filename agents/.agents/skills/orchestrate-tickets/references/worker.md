@@ -10,9 +10,9 @@ Dependencies already integrated into your starting commit are part of your test 
 
 ## Review the ticket
 
-Read and execute the assigned `codex-review-code` skill in this worktree. Follow its counterchecks, Codex review, correction loop, and stopping rules. Keep the review scoped to this ticket's changes since its starting SHA, including uncommitted and untracked work. If implementation commits exist, an uncommitted-only review is insufficient: cover the complete ticket diff.
+Read and execute the assigned `cross-review-code` skill in this worktree. Follow its counterchecks, review rounds, correction loop, and stopping rules. Keep the review scoped to this ticket's changes since its starting SHA, including uncommitted and untracked work. If implementation commits exist, an uncommitted-only review is insufficient: cover the complete ticket diff.
 
-Reviewers inspect without editing. Use Herdr for their sessions. When reusing a reviewer, verify both its target worktree and exclusive availability. A reviewer already assigned elsewhere stays with that assignment.
+The reviewer is the agent kind in your assignment. Reviewers inspect without editing. Use Herdr for their sessions. When reusing a reviewer, verify both its target worktree and exclusive availability. A reviewer already assigned elsewhere stays with that assignment.
 
 After a correction, rerun affected ticket checks and the review's required counterchecks. A review with open findings, an incomplete response, or an exhausted round limit is a blocked handoff. Return the evidence to the orchestrator; keep other tickets independent of that decision.
 

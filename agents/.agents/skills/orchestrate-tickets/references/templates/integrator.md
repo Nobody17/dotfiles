@@ -20,7 +20,7 @@ Run: {{run}} (the ledger is orchestrator-owned; do not edit it)
 - Conflicts: keep the logic of each ticket. A conflict that changes behaviour goes back as a `question`.
 - Fast checks: {{ledger.validation.integration_fast_checks}}; total budget {{ledger.validation.integration_budget_seconds}} s.
 - Test command: `{{ledger.validation.test_command}}`
-- Reviewer for a renewed review: skill {{ledger.config.review_skill}}, session named `{{agent_name}}-rev` in a new muted tab (`--no-focus`) of workspace {{ledger.config.herdr_workspace}}; it only reads.
+- Reviewer for a renewed review: {{ledger.config.reviewer}} with skill {{ledger.config.review_skill}}, session named `{{agent_name}}-rev` in a new muted tab (`--no-focus`) of workspace {{ledger.config.herdr_workspace}}; it only reads.
 
 ## Handoff
 - Write it to {{run}}/handoffs/{{job_id}}.md, then reply with the path.

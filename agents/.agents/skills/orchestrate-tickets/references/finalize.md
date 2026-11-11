@@ -4,7 +4,7 @@ You own the exclusive integration slot for final review, validation, and at most
 
 ## Review and repair
 
-Create a run-owned candidate branch/worktree at the recorded integration tip. Perform review and repairs there, keeping the integration checkout clean. Read and execute the installed `codex-review-code` skill against the complete range from the pinned run base to that tip. Select the committed range deliberately: an empty uncommitted diff does not review the run. Follow its counterchecks, correction loop, and stopping rules, using Herdr for the Codex reviewer.
+Create a run-owned candidate branch/worktree at the recorded integration tip. Perform review and repairs there, keeping the integration checkout clean. Read and execute the installed `cross-review-code` skill against the complete range from the pinned run base to that tip. Select the committed range deliberately: an empty uncommitted diff does not review the run. Follow its counterchecks, correction loop, and stopping rules, using Herdr for a reviewer of the agent kind in your assignment.
 
 Assign each justified fix to its owning ticket before editing, including test adjustments owned by dependent tickets. Keep fixes scoped to the existing acceptance criteria; report work that needs a new ticket to the orchestrator. In correction rounds, give the reviewer the full base-to-tip range plus the candidate's uncommitted/untracked repairs. Run affected tests and complete the review loop on that repaired tree. Keep review counterchecks restored before preserving changes.
 

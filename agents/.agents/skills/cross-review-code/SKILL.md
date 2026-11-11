@@ -1,9 +1,9 @@
 ---
-name: codex-review-code
+name: cross-review-code
 description: >-
-  Code-Gegenprüfung durch Codex in Herdr mit Korrekturschleife. Verwenden, wenn
+  Code-Gegenprüfung durch Codex oder agy in Herdr mit Korrekturschleife. Verwenden, wenn
   der Nutzer einen zweiten Agenten zum Review von Code verlangt. Für Pläne:
-  codex-review-plan. Ein gewöhnliches Review oder /code-review genügt nicht
+  cross-review-plan. Ein gewöhnliches Review oder /code-review genügt nicht
   als Auslöser.
 ---
 
@@ -44,7 +44,8 @@ Ermittle den absoluten Pfad des Ziel-Worktrees mit `git rev-parse --show-topleve
 im Projektverzeichnis. Halte den Review-Umfang fest: uncommittete Änderungen,
 Commit oder Vergleichsbasis.
 
-Prüfe vorhandene bereite Codex-Agenten mit `herdr agent list`. Lass einen
+Prüfe vorhandene bereite Agenten der gewählten Art ([Reviewer-Agent](#reviewer-agent))
+mit `herdr agent list`. Lass einen
 Kandidaten vor dem Review sein Arbeitsverzeichnis und seine Ausgabe von
 `git rev-parse --show-toplevel` nennen. Verwende ihn nur, wenn der Worktree
 dem Ziel entspricht; sonst starte nach `herdr` einen Reviewer im Ziel-Worktree.
@@ -57,15 +58,28 @@ ist in den Beispielen dieser Name:
 herdr agent rename <pane-id> reviewer
 ```
 
+## Reviewer-Agent
+
+Der Reviewer ist Codex (`herdr agent start ... --kind codex`). Nennen der Nutzer
+oder dein Auftrag agy (Antigravity CLI), ist er agy (`--kind agy`). Diese Wahl gilt
+für alle Runden. Für agy gilt zusätzlich:
+
+- Runde 1 ist Freitext, weil agy kein `/review` hat; siehe [Runde 1](#runde-1).
+- Ein `idle` beendet die Runde noch nicht: agy kann im Leerlauf Subagenten und
+  Hintergrundaufgaben weiterlaufen lassen. Fertig ist die Antwort erst mit der
+  verlangten Abschlussaussage; fehlt sie, warte erneut und lies nach.
+- Zeigt der Pane eine Anmeldung statt der Eingabezeile, ist agy nicht angemeldet.
+  Melde das wie eine offene Werkzeugfrage und warte.
+
 ## Schwere Befehle
 
 Gibt dein Auftrag eine Form für schwere Befehle vor (Tests, Builds; zum Beispiel
 `heavy-job.py` einer Orchestrierung), prüft der Reviewer nur lesend. Jeder
 Prompt an ihn enthält dann: "Führe keine Tests und Builds aus. Brauchst du einen
 Lauf, nenne Befehl und Zweck; ich führe ihn aus und gebe dir das Ergebnis."
-Wähle in Runde 1 dafür den Preset „Custom review instructions“ und gib dort den
-Review-Umfang und diesen Satz ein; nur dieser Preset nimmt eine eigene Anweisung
-an. Führe angeforderte Läufe in der Form deines Auftrags aus. Zeigt eine Antwort einen eigenen Lauf des
+Wähle bei Codex in Runde 1 dafür den Preset „Custom review instructions“ und gib
+dort den Review-Umfang und diesen Satz ein; nur dieser Preset nimmt eine eigene
+Anweisung an. Führe angeforderte Läufe in der Form deines Auftrags aus. Zeigt eine Antwort einen eigenen Lauf des
 Reviewers, nenne ihn im Bericht.
 
 ## Vor der ersten Runde
@@ -80,9 +94,14 @@ Der unveränderte Stand muss bestehen. Stelle bei Quelltextmutationen den
 ursprünglichen Stand wieder her und prüfe ihn erneut; bewahre die Ergebnisse
 abgeschlossener Gegenproben für eine Fortsetzung auf.
 
-**Nicht committen.** Wähle in Runde 1 den Preset für den festgelegten Umfang.
+**Nicht committen.**
 
-## Runde 1: Codex' eigenes /review
+## Runde 1
+
+Mit agy: Sende den Freitext-Prompt aus [Runde 2 und weiter](#runde-2-und-weiter-freitext)
+ohne die beiden Punkte zur Vorrunde.
+
+Mit Codex: Codex' eigenes `/review`, mit dem Preset für den festgelegten Umfang:
 
 ```bash
 herdr agent prompt reviewer "/review"

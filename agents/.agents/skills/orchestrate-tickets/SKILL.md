@@ -1,6 +1,6 @@
 ---
 name: orchestrate-tickets
-description: Orchestrate ticketed specs through Herdr with Opus workers, Codex reviews, and a fresh integrator per ticket.
+description: Orchestrate ticketed specs through Herdr with Opus workers, Codex or agy reviews, and a fresh integrator per ticket.
 disable-model-invocation: true
 ---
 
@@ -12,12 +12,12 @@ The invoking Claude or Codex session is the **orchestrator**. Execute an existin
 
 Read the repository instructions, tracker configuration, spec, and all tickets. Resolve missing references and dependency cycles before dispatch. Use existing tickets from Matt Pocock's spec/ticket workflow; keep their acceptance criteria authoritative. Check the spec and referenced code for models and interfaces shared across tickets. Record one owning ticket and its consumers for each in the ledger, and resolve their implementation dependencies before dispatching the affected tickets.
 
-Read the installed `herdr` skill and satisfy its environment check before controlling panes. Discover commands from the installed CLI. Resolve the installed `codex-review-code` skill and record its absolute path. If either dependency is unavailable, report the missing dependency and pause launch. When the `herdr-pane-mute` skill is installed, mute each pane you create for a delegated agent before that agent starts, as the skill describes.
+Read the installed `herdr` skill and satisfy its environment check before controlling panes. Discover commands from the installed CLI. Resolve the installed `cross-review-code` skill and record its absolute path. If either dependency is unavailable, report the missing dependency and pause launch. When the `herdr-pane-mute` skill is installed, mute each pane you create for a delegated agent before that agent starts, as the skill describes.
 
 Use these defaults unless the user supplies an override:
 
 - Ticket workers and integrators: Claude Code, `claude-opus-5-5`, installed effort default.
-- Codex reviewers: the configuration selected by `codex-review-code`.
+- Reviewer agent: Codex. When the user asks for agy, set `config.reviewer` in the ledger to `agy`; the assignment templates pass it to every review. Start one agy session before dispatch to confirm that agy is logged in.
 - Concurrency: four ticket workers and one integrator. Review sessions are additional.
 - Base branch: the repository's development branch; resolve ambiguity before creating branches.
 
@@ -50,7 +50,7 @@ When invoking a slash skill through Herdr, send the slash command alone, wait fo
 
 Read the worker's handoff file. Verify its submitted SHA, clean worktree, passing ticket checks, and completed review before queuing it. Keep the worker available for source fixes until integration succeeds; then retire it under the cleanup policy below. Retire completed review sessions once their verdicts are saved.
 
-**Reviewed:** the current submitted tree passes ticket checks and `codex-review-code` reports no open findings for that tree.
+**Reviewed:** the current submitted tree passes ticket checks and `cross-review-code` reports no open findings for that tree.
 
 ## 3. Integrate one ticket at a time
 
@@ -70,11 +70,11 @@ On timeout, inspect the existing owner before taking action. Preserve the lock w
 
 ## 4. Validate the whole change
 
-Once all tickets are integrated and no workers/reviewers are active, acquire the same exclusive slot and launch a fresh finalizer with [the finalization instructions](references/finalize.md). Pass the pinned base, integration tip, ticket-to-commit mapping, handoff paths, full validation commands, and its own handoff path.
+Once all tickets are integrated and no workers/reviewers are active, acquire the same exclusive slot and launch a fresh finalizer with [the finalization instructions](references/finalize.md). Pass the pinned base, integration tip, ticket-to-commit mapping, reviewer agent (`config.reviewer`), handoff paths, full validation commands, and its own handoff path.
 
 Record its final commit mapping, review result, and full-suite evidence. Apply the same exit and lock-release rules. If it hands back an unfinished rewrite or further repairs, launch a fresh recovery/finalization job with its evidence.
 
-**Complete:** final history verifies one commit per ticket, `codex-review-code` has no open findings for the final range, and full validation passes on the final tree. Report branch/SHA, ticket outcomes, checks, and any unresolved limitations. Locally integrated tickets remain distinct from tracker closure. Perform remote publication, PR changes, or tracker writes only when included in the user's authorized workflow.
+**Complete:** final history verifies one commit per ticket, `cross-review-code` has no open findings for the final range, and full validation passes on the final tree. Report branch/SHA, ticket outcomes, checks, and any unresolved limitations. Locally integrated tickets remain distinct from tracker closure. Perform remote publication, PR changes, or tracker writes only when included in the user's authorized workflow.
 
 ## Retire unused resources
 

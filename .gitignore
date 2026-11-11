@@ -40,8 +40,8 @@ codex/.codex/*
 !codex/.codex/AGENTS.md
 !codex/.codex/skills/
 codex/.codex/skills/*
-!codex/.codex/skills/codex-review-code
-!codex/.codex/skills/codex-review-plan
+!codex/.codex/skills/cross-review-code
+!codex/.codex/skills/cross-review-plan
 !codex/.codex/skills/homeassistant
 !codex/.codex/skills/ruby-testing
 !codex/.codex/skills/skill-creation
@@ -77,7 +77,7 @@ claude/.claude/skills/*
 !claude/.claude/skills/skill-creation
 !claude/.claude/skills/testing-principles
 !claude/.claude/skills/ruby-testing
-!claude/.claude/skills/codex-review-code
-!claude/.claude/skills/codex-review-plan
+!claude/.claude/skills/cross-review-code
+!claude/.claude/skills/cross-review-plan
 !claude/.claude/skills/orchestrate-tickets
 !claude/.claude/skills/herdr-pane-mute

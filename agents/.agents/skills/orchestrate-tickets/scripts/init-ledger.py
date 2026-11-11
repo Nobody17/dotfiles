@@ -72,7 +72,7 @@ def starter_ledger(arguments, run_directory, repository, base_sha):
         'base_branch': arguments.base_branch, 'base_sha': base_sha,
         'config': {'agent_name_prefix': arguments.prefix, 'herdr_workspace': arguments.workspace,
                    'max_workers': 4, 'max_integrators': 1, 'permission_mode': TO_FILL,
-                   'model': 'claude-opus-5-5', 'model_marker': 'Opus 5.5', 'review_skill': TO_FILL,
+                   'model': 'claude-opus-5-5', 'model_marker': 'Opus 5.5', 'review_skill': TO_FILL, 'reviewer': 'codex',
                    'branch_pattern': f'{namespace}/t{{ticket}}', 'candidate_branch_pattern': f'{namespace}/i{{ticket}}-candidate',
                    'worktree_pattern': f'{repository}-{arguments.prefix}t{{ticket}}',
                    'recovery_prefix': f'refs/orchestrate/{run_directory.name}',

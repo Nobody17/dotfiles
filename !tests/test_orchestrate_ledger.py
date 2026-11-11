@@ -44,11 +44,11 @@ class LedgerTests(unittest.TestCase):
     def ledger(self):
         return json.loads((self.run_directory / "ledger.json").read_text())
 
-    def render(self, template_text):
+    def render(self, template_text, *arguments):
         template, output = self.root / "template.md", self.root / "assignment.md"
         template.write_text(template_text)
         result = subprocess.run([sys.executable, str(SCRIPTS / "render-assignment.py"), str(template), str(output),
-                                 "--ledger", str(self.run_directory / "ledger.json")], capture_output=True, text=True)
+                                 "--ledger", str(self.run_directory / "ledger.json"), *arguments], capture_output=True, text=True)
         return result, output
 
     def test_starts_a_ledger_with_the_base_from_git_and_one_entry_per_ticket(self):
@@ -108,6 +108,22 @@ class LedgerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(output.read_text(), f"Tests: env DATABASE_URL=postgres://db bin/rails test in {self.run_directory}\n")
+
+    def test_starter_templates_name_codex_as_reviewer_unless_the_ledger_chooses_agy(self):
+        self.init_ledger()
+        worker_template = (self.run_directory / "assignments/templates/worker.md").read_text()
+        reviewer_line = next(line for line in worker_template.splitlines() if line.startswith("- Reviewer:")) + "\n"
+
+        default_result, default_output = self.render(reviewer_line, "--ticket", "01")
+        default_text = default_output.read_text() if default_output.exists() else default_result.stderr
+        ledger = self.ledger()
+        ledger["config"]["reviewer"] = "agy"
+        (self.run_directory / "ledger.json").write_text(json.dumps(ledger))
+        agy_result, agy_output = self.render(reviewer_line, "--ticket", "01")
+
+        self.assertEqual([default_result.returncode, agy_result.returncode], [0, 0], agy_result.stderr)
+        self.assertTrue(default_text.startswith("- Reviewer: codex,"), default_text)
+        self.assertTrue(agy_output.read_text().startswith("- Reviewer: agy,"))
 
 
 if __name__ == "__main__":

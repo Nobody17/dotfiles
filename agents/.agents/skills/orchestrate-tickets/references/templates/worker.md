@@ -28,7 +28,7 @@ Every heavy command (tests, builds) runs through the wrapper; the run has {{ledg
 
 ## Review
 - Skill: {{ledger.config.review_skill}} (absolute path; read and execute it).
-- Reviewer: a fresh session in a new muted Herdr tab (`--no-focus`) of workspace {{ledger.config.herdr_workspace}}, named `{{ticket.agent_name}}-rev`, cwd = your worktree.
+- Reviewer: {{ledger.config.reviewer}}, a fresh session in a new muted Herdr tab (`--no-focus`) of workspace {{ledger.config.herdr_workspace}}, named `{{ticket.agent_name}}-rev`, cwd = your worktree.
 - Review scope: everything since {{ticket.start_sha}}, committed and uncommitted.
 - The run has a form for heavy commands, so the reviewer only reads.
 

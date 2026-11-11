@@ -59,7 +59,7 @@ python3 <skill>/scripts/heavy-job.py --run <run> --label <ticket>-<purpose> -- <
 
 Agents append their files to `<arguments>`. The command runs without a shell; wrap a command that needs one as `-- sh -c '<command>'`.
 
-Reviewers are heavy-job sources too: one reviewer ran the full suite with 8 workers in a worker's stack and caused OOM kills. With this form in the assignment, `codex-review-code` tells the reviewer to ask for runs instead, and the assigned agent runs them in this form. The rule is an instruction, not a lock: a reviewer's own run still shows in its answer and in the memory alarms.
+Reviewers are heavy-job sources too: one reviewer ran the full suite with 8 workers in a worker's stack and caused OOM kills. With this form in the assignment, `cross-review-code` tells the reviewer to ask for runs instead, and the assigned agent runs them in this form. The rule is an instruction, not a lock: a reviewer's own run still shows in its answer and in the memory alarms.
 
 ## Review an overdue job
 

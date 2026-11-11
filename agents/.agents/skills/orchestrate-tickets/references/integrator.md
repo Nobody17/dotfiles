@@ -10,7 +10,7 @@ In a run-owned candidate worktree, consolidate only this ticket's changes since 
 
 Resolve mechanical conflicts using the ticket and current interfaces. A conflict that needs a product decision or changes ticket behavior returns to the orchestrator for a scoped source fix. Finish or abort the current rebase before handing back ownership.
 
-If conflict resolution or other edits change the reviewed implementation, rerun affected ticket tests and `codex-review-code` on the changed ticket candidate. Follow that skill's correction and stopping rules. An unchanged patch rebased without conflict needs the fast integration checks; record that its ticket review predates integration rather than claiming the combined tree was fully reviewed.
+If conflict resolution or other edits change the reviewed implementation, rerun affected ticket tests and `cross-review-code` on the changed ticket candidate. Follow that skill's correction and stopping rules. An unchanged patch rebased without conflict needs the fast integration checks; record that its ticket review predates integration rather than claiming the combined tree was fully reviewed.
 
 ## Validate and advance
 

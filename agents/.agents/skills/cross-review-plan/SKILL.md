@@ -1,10 +1,10 @@
 ---
-name: codex-review-plan
+name: cross-review-plan
 description: >-
-  Plan-Gegenprüfung durch Codex in Herdr vor der Umsetzung. Verwenden, wenn
+  Plan-Gegenprüfung durch Codex oder agy in Herdr vor der Umsetzung. Verwenden, wenn
   der Nutzer einen zweiten Agenten zum Review der Planung oder zum gemeinsamen
   Review von Spec und Tickets verlangt. Spec und Tickets werden auf Wunsch
-  einbezogen. Für fertigen Code: codex-review-code.
+  einbezogen. Für fertigen Code: cross-review-code.
 ---
 
 # Plan-Review mit einem zweiten Agenten
@@ -31,8 +31,11 @@ arbeite mit den vorhandenen Unterlagen, ohne fehlende Dokumenttypen anzulegen.
 ## Reviewer wählen
 
 Ermittle den absoluten Pfad des Ziel-Worktrees mit `git rev-parse --show-toplevel`
-im Projektverzeichnis. Prüfe vorhandene bereite Codex-Agenten mit `herdr agent list`.
-Lass einen Kandidaten sein Arbeitsverzeichnis und seine Ausgabe von
+im Projektverzeichnis. Die Art des Reviewers (Codex, auf Wunsch agy) und die
+Regeln für agy stehen im Abschnitt „Reviewer-Agent“ von
+`../cross-review-code/SKILL.md` neben diesem Skill; lies ihn vor dem Start.
+Prüfe vorhandene bereite Agenten
+dieser Art mit `herdr agent list`. Lass einen Kandidaten sein Arbeitsverzeichnis und seine Ausgabe von
 `git rev-parse --show-toplevel` nennen. Verwende ihn nur, wenn der Worktree
 dem Ziel entspricht; sonst starte nach `herdr` einen Reviewer im Ziel-Worktree.
 Ist das Skill `herdr-pane-mute` installiert, schalte den neuen Pane vor dem
