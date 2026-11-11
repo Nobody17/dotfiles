@@ -33,7 +33,7 @@ class AntigravityLinkTests(unittest.TestCase):
         self.assertEqual((configuration / "skills").resolve(), (self.home / ".agents/skills").resolve())
         self.assertTrue((configuration / "skills/example").is_dir())
         self.assertEqual(
-            (configuration / "rules/local.md").resolve(), (self.home / ".agents/local.md").resolve()
+            (configuration / "GEMINI.md").resolve(), (self.home / ".agents/local.md").resolve()
         )
 
     def test_second_install_keeps_the_links(self):

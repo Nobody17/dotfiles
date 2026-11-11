@@ -50,7 +50,7 @@ codex/.codex/skills/*
 !codex/.codex/skills/herdr-pane-mute
 
 # Antigravity: track only the shared instructions link. The installer
-# links skills/ and rules/local.md on each machine.
+# links skills/ and GEMINI.md (local.md) on each machine.
 antigravity/.gemini/*
 !antigravity/.gemini/config/
 antigravity/.gemini/config/*

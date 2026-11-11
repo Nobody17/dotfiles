@@ -10,7 +10,9 @@ def antigravity_links(home: Path) -> dict[Path, Path]:
     configuration = home / ".gemini/config"
     return {
         configuration / "skills": home / ".agents/skills",
-        configuration / "rules/local.md": home / ".agents/local.md",
+        # rules/*.md would need YAML frontmatter, which Claude and Pi would then read too.
+        # GEMINI.md loads always, without frontmatter, next to AGENTS.md.
+        configuration / "GEMINI.md": home / ".agents/local.md",
     }
 
 
