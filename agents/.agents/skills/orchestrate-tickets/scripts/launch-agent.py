@@ -7,7 +7,10 @@ Usage: launch-agent.py --ledger <ledger.json> --workspace <herdr-workspace> --cw
 Order, write-ahead: create the tab with --no-focus, record pane and tab under
 ledger.resources.sessions (status "starting"), mute the pane, start Claude with the pinned
 model, prompt suggestions off, and the session label <agent-name>, then record the
-session ID (status "live"). Prints the record as JSON.
+session ID (status "live"). `agent start` can return before Herdr knows the session ID;
+the script then asks `herdr agent get` again for up to SESSION_WAIT_SECONDS. Without an ID
+the record stays "starting" and the script exits 1: the agent runs, inspect its pane.
+Prints the record as JSON.
 The caller still checks the model that the session shows before it assigns work.
 """
 import argparse
@@ -16,7 +19,10 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
+
+SESSION_WAIT_SECONDS = 30
 
 
 def parse_arguments():
@@ -36,6 +42,22 @@ def herdr(arguments):
     if result.returncode:
         sys.exit(f'herdr {arguments[0]} {arguments[1]} failed; inspect the live state before a retry:\n{result.stdout}{result.stderr}')
     return json.loads(result.stdout)['result'] if result.stdout.strip() else None
+
+
+def session_value(agent):
+    return (agent.get('agent_session') or {}).get('value')
+
+
+def wait_for_session(agent, fetch_agent, timeout_seconds=SESSION_WAIT_SECONDS, sleep=time.sleep,
+                     clock=time.monotonic):
+    """Return the agent once it has a session ID, fetching it again each second; None after the timeout."""
+    deadline = clock() + timeout_seconds
+    while not session_value(agent):
+        if clock() >= deadline:
+            return None
+        sleep(1)
+        agent = fetch_agent()
+    return agent
 
 
 def update_session(ledger_path, pane_id, record):
@@ -68,8 +90,11 @@ def main():
     started = herdr(['agent', 'start', arguments.name, '--kind', 'claude', '--pane', pane_id, '--timeout', '90000', '--',
                      '--model', arguments.model, '--permission-mode', arguments.permission_mode,
                      '--settings', '{"promptSuggestionEnabled": false}', '--name', arguments.name])
-    agent = started['agent']
-    record.update(status='live', session_id=agent['agent_session']['value'], cwd=agent['cwd'],
+    agent = wait_for_session(started['agent'], lambda: herdr(['agent', 'get', pane_id])['agent'])
+    if agent is None:
+        sys.exit(f'{arguments.name} runs in pane {pane_id}, but Herdr reported no session ID within '
+                 f'{SESSION_WAIT_SECONDS} s; the ledger record stays "starting". Inspect `herdr agent get {pane_id}`.')
+    record.update(status='live', session_id=session_value(agent), cwd=agent['cwd'],
                   started_at=datetime.datetime.now(datetime.timezone.utc).isoformat())
     update_session(arguments.ledger, pane_id, record)
     print(json.dumps(record, indent=2))

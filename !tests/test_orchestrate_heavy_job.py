@@ -58,6 +58,44 @@ class HeavyJobTests(unittest.TestCase):
         self.assertEqual(list(jobs.glob("*.json")), [])
         self.assertEqual([log.read_text() for log in jobs.glob("*.log")], ["progress\n"])
 
+    def history(self):
+        lines = (self.run_directory / "heavy-jobs" / "history.jsonl").read_text().splitlines()
+        return [json.loads(line) for line in lines]
+
+    def test_adds_each_ended_job_to_the_history(self):
+        self.write_policy(review_after_minutes=1)
+        self.run_wrapper("--label", "first", "--", "sh", "-c", "exit 3")
+        self.run_wrapper("--label", "second", "--", "true")
+
+        first, second = self.history()
+
+        self.assertEqual([first["label"], first["exit"], second["label"], second["exit"]], ["first", 3, "second", 0])
+        self.assertEqual(first["cwd"], str(self.run_directory))
+        self.assertGreaterEqual(first["run_seconds"], 0)
+        self.assertEqual(first["waited_seconds"], 0)
+        self.assertNotIn("memory_peak_mb", first)
+
+    def test_records_the_memory_peak_from_the_probe(self):
+        probe = ("n=$(cat probe-count 2>/dev/null || echo 0); echo $((n + 1)) > probe-count; "
+                 "echo $((1000 - n * 100)) MB")
+        self.write_policy(review_after_minutes=1, memory_probe=probe, memory_probe_seconds=0.2)
+
+        result = self.run_wrapper("--label", "probed", "--", "sleep", "1.5")
+
+        entry = self.history()[0]
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(entry["memory_available_before_mb"], 1000)
+        self.assertLess(entry["memory_available_lowest_mb"], 1000)
+        self.assertEqual(entry["memory_peak_mb"], 1000 - entry["memory_available_lowest_mb"])
+
+    def test_a_failing_memory_probe_leaves_the_job_and_its_history_intact(self):
+        self.write_policy(review_after_minutes=1, memory_probe="exit 1", memory_probe_seconds=0.2)
+
+        result = self.run_wrapper("--label", "no-probe", "--", "true")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("memory_peak_mb", self.history()[0])
+
     def test_refuses_a_job_without_review_time(self):
         result = self.run_wrapper("--", "true")
         self.assertEqual(result.returncode, 125)

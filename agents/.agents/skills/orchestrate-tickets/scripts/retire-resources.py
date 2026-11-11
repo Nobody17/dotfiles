@@ -101,23 +101,40 @@ def worktree_problems(worktree_path, allow_ignored):
     return problems
 
 
-def branch_integration_proof(repository, tip, destination_sha, squash_proof):
-    """Return how the branch's complete work reached the destination, or None."""
+def rewritten_commit_in_destination(repository, tip, destination_sha, rewrite):
+    """True when the branch starts at rewrite's start commit and its integrated commit is in the destination."""
+    start_commit, integrated_commit = rewrite
+    return is_ancestor(repository, start_commit, tip) and is_ancestor(repository, integrated_commit, destination_sha)
+
+
+def range_diff_lines(repository, start_commit, tip, integrated_commit):
+    # The creation factor pairs the commits also when the integrator changed much of a small patch.
+    return git_output(repository, "range-diff", "--no-color", "--creation-factor=100", f"{start_commit}..{tip}",
+                      f"{integrated_commit}^..{integrated_commit}").splitlines()
+
+
+def branch_integration_proof(repository, tip, destination_sha, squash_proof, accounted_proof=None):
+    """Return (how the branch's complete work reached the destination, range-diff lines or None), or None.
+
+    A squash proof needs the same patch. An accounted proof accepts a changed patch: the caller states that
+    every difference (conflict resolution, a line adapted to another ticket) is checked and reviewed; the
+    range-diff goes into the plan as the evidence for the ledger."""
     if is_ancestor(repository, tip, destination_sha):
-        return "ancestor of destination"
-    if squash_proof is None:
-        return None
-    start_commit, integrated_commit = squash_proof
-    if not is_ancestor(repository, start_commit, tip):
-        return None
-    if not is_ancestor(repository, integrated_commit, destination_sha):
-        return None
-    if patch_id(repository, start_commit, tip) != patch_id(repository, f"{integrated_commit}^", integrated_commit):
-        return None
-    return f"same patch as integrated commit {integrated_commit}"
+        return "ancestor of destination", None
+    if squash_proof is not None and rewritten_commit_in_destination(repository, tip, destination_sha, squash_proof):
+        start_commit, integrated_commit = squash_proof
+        if patch_id(repository, start_commit, tip) == patch_id(repository, f"{integrated_commit}^", integrated_commit):
+            return f"same patch as integrated commit {integrated_commit}", None
+    if accounted_proof is not None and rewritten_commit_in_destination(repository, tip, destination_sha, accounted_proof):
+        start_commit, integrated_commit = accounted_proof
+        return (f"rewritten as integrated commit {integrated_commit}; differences accounted by the caller",
+                range_diff_lines(repository, start_commit, tip, integrated_commit))
+    return None
 
 
-def plan_retirement(repository, destination, destination_sha, recovery_prefix, worktrees, branches, squash_proofs, allow_ignored):
+def plan_retirement(repository, destination, destination_sha, recovery_prefix, worktrees, branches, squash_proofs,
+                    allow_ignored, accounted_proofs=None):
+    accounted_proofs = accounted_proofs or {}
     refs = all_refs(repository)
     current_destination = refs.get(f"refs/heads/{destination}")
     if current_destination != destination_sha:
@@ -159,11 +176,19 @@ def plan_retirement(repository, destination, destination_sha, recovery_prefix, w
             raise RetirementRefused(f"{recovery_ref} already points to {recovered_tip}")
         if branch_ref in branches_in_use:
             raise RetirementRefused(f"Branch {branch} is checked out in a worktree that stays")
-        proof = branch_integration_proof(repository, expected_tip, destination_sha, squash_proofs.get(branch))
+        proof = branch_integration_proof(repository, expected_tip, destination_sha, squash_proofs.get(branch),
+                                         accounted_proofs.get(branch))
         if proof is None:
-            raise RetirementRefused(f"Branch {branch} has work that {destination} does not contain")
-        branch_steps.append({"branch": branch, "tip": expected_tip, "recovery_ref": recovery_ref,
-                             "recovery_ref_exists": recovered_tip is not None, "proof": proof, "action": "delete"})
+            raise RetirementRefused(
+                f"Branch {branch} has work that {destination} does not contain. If an integrator rewrote it "
+                f"with changes, check `git range-diff <start>..{branch} <integrated>^..<integrated>`, "
+                f"then pass --accounted {branch}=<start>:<integrated>")
+        proof_text, range_diff = proof
+        step = {"branch": branch, "tip": expected_tip, "recovery_ref": recovery_ref,
+                "recovery_ref_exists": recovered_tip is not None, "proof": proof_text, "action": "delete"}
+        if range_diff is not None:
+            step["range_diff"] = range_diff
+        branch_steps.append(step)
 
     return {"destination": destination, "destination_sha": destination_sha, "worktrees": worktree_steps, "branches": branch_steps}
 
@@ -200,21 +225,26 @@ def main():
     parser.add_argument("--branch", action="append", default=[], metavar="NAME=TIP")
     parser.add_argument("--squash", action="append", default=[], metavar="NAME=START:INTEGRATED",
                         help="proof for a branch whose work reached the destination as a rewritten commit")
+    parser.add_argument("--accounted", action="append", default=[], metavar="NAME=START:INTEGRATED",
+                        help="proof for a rewritten branch whose patch changed (conflict resolution, adapted lines): "
+                             "you checked every difference; the plan prints the range-diff as evidence")
     parser.add_argument("--drop-ignored", action="store_true", help="remove worktrees even when they hold ignored files")
     parser.add_argument("--dry-run", action="store_true")
     arguments = parser.parse_args()
     try:
         repository = arguments.repo
         branch_pairs = [parse_pair(text, "=", "NAME=TIP") for text in arguments.branch]
-        squash_pairs = []
-        for text in arguments.squash:
+        rewrite_pairs = []
+        for text in [*arguments.squash, *arguments.accounted]:
             name, commits = parse_pair(text, "=", "NAME=START:INTEGRATED")
-            squash_pairs.append((name, *parse_pair(commits, ":", "START:INTEGRATED")))
+            rewrite_pairs.append((name, *parse_pair(commits, ":", "START:INTEGRATED")))
         revisions = [arguments.destination_sha, *(tip for _, tip in branch_pairs),
-                     *(commit for _, start, integrated in squash_pairs for commit in (start, integrated))]
+                     *(commit for _, start, integrated in rewrite_pairs for commit in (start, integrated))]
         destination_commit, *commits = resolve_commits(repository, revisions)
         branches = [(name, commits.pop(0)) for name, _ in branch_pairs]
-        squash_proofs = {name: (commits.pop(0), commits.pop(0)) for name, _, _ in squash_pairs}
+        rewrite_proofs = [(name, (commits.pop(0), commits.pop(0))) for name, _, _ in rewrite_pairs]
+        squash_proofs = dict(rewrite_proofs[:len(arguments.squash)])
+        accounted_proofs = dict(rewrite_proofs[len(arguments.squash):])
         plan = plan_retirement(
             repository,
             arguments.destination,
@@ -224,6 +254,7 @@ def main():
             branches,
             squash_proofs,
             arguments.drop_ignored,
+            accounted_proofs,
         )
         result = plan if arguments.dry_run else apply_retirement(repository, plan)
     except (RetirementRefused, subprocess.CalledProcessError, OSError) as error:

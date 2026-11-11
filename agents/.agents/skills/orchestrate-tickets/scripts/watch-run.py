@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Wait for run events: new handoff and message files, lifecycle changes of the run's Herdr agents, and resource alarms.
 
-Usage: watch-run.py <run-directory> --prefix <agent-name-prefix> [--once] [--timeout-minutes N]
+Usage: watch-run.py <run-directory> --prefix <agent-name-prefix> [--once] [--timeout-minutes N] [--all]
+                    [--ignore-gone REGEX] [--ignore-message REGEX]
 
-Prints one line per event:
+Prints one line per event that needs the orchestrator:
   handoff <file>                   a new file in <run>/handoffs/
   message <file>                   a new file in <run>/messages/ (see references/messages.md)
-  agent <name> <old>-><new>        an agent reached idle, done, blocked, or unknown
-  agent <name> gone                an agent left `herdr agent list`
+  agent <name> <old>-><new>        an agent reached blocked, or unknown after it worked;
+                                   with --all also idle, done, and unknown at start
+  agent <name> gone                an agent left `herdr agent list`; a session that
+                                   ledger.resources.sessions marks closed only with --all
   agent <name> <idle|done> <N> min with <K> shells
                                    a resting agent still has running shells (background commands)
                                    after resource_watch.idle_shell_minutes (default 30)
@@ -26,6 +29,10 @@ Prints one line per event:
   herdr unavailable: <error>       `herdr agent list` failed three polls in a row
 
 --once prints all events of the first poll that has events, then exits 0.
+--ignore-gone and --ignore-message are Python regular expressions (re.search) on the agent name and
+on the message file name. A matching "agent <name> gone" or "message <file>" event is not printed
+and does not end --once; the file still counts as seen. Use them for events that need no action,
+such as closed reviewer sessions ('-rev$') and the ready messages of integrators.
 <run>/watch-state.json keeps the seen files, agent states, and alarm states between calls,
 so the next call reports an event that occurred between two calls, and an alarm only once.
 The first call, without a state file, takes the existing files as seen; the first run of a
@@ -67,6 +74,11 @@ def parse_arguments():
     parser.add_argument('--prefix', required=True, help='name prefix of the run agents, for example nb-')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--timeout-minutes', type=float)
+    parser.add_argument('--all', action='store_true', help='also report idle, done, start states and closed sessions')
+    parser.add_argument('--ignore-gone', type=re.compile, metavar='REGEX',
+                        help='do not report "gone" for agent names that match, for example -rev$')
+    parser.add_argument('--ignore-message', type=re.compile, metavar='REGEX',
+                        help='do not report message files whose name matches')
     return parser.parse_args()
 
 
@@ -93,11 +105,14 @@ def save_state(state_path, state):
     temporary.replace(state_path)
 
 
-def file_events(run_directory, seen_files):
+def file_events(run_directory, seen_files, ignored_message=None):
+    """Events for new files. A message file whose name matches ignored_message counts as seen without an event."""
     new_files = sorted(watched_files(run_directory) - seen_files)
     events = []
     for relative_path in new_files:
         directory, name = relative_path.split('/', 1)
+        if directory == 'messages' and ignored_message and ignored_message.search(name):
+            continue
         events.append(f'{WATCHED_DIRECTORIES[directory]} {name}')
     return events, seen_files | set(new_files)
 
@@ -114,14 +129,28 @@ def run_agent_states(prefix):
     return {agent['name']: agent['agent_status'] for agent in agents if (agent.get('name') or '').startswith(prefix)}, ''
 
 
-def agent_events(previous_states, current_states):
+def agent_events(previous_states, current_states, closed_names=frozenset(), report_all=False, ignored_gone=None):
+    """Lifecycle events. By default only those that need the orchestrator: blocked, unknown after
+    work, and an agent gone that the ledger does not mark closed and ignored_gone does not match."""
     events = []
     for name, status in sorted(current_states.items()):
         previous = previous_states.get(name, 'new')
-        if status != previous and status in SETTLED_STATES:
+        if status == previous or status not in SETTLED_STATES:
+            continue
+        needs_orchestrator = status == 'blocked' or (status == 'unknown' and previous != 'new')
+        if report_all or needs_orchestrator:
             events.append(f'agent {name} {previous}->{status}')
-    events += [f'agent {name} gone' for name in sorted(set(previous_states) - set(current_states))]
+    events += [f'agent {name} gone' for name in sorted(set(previous_states) - set(current_states))
+               if report_all or not (name in closed_names or (ignored_gone and ignored_gone.search(name)))]
     return events
+
+
+def closed_session_names(run_directory):
+    try:
+        sessions = json.loads((run_directory / 'ledger.json').read_text()).get('resources', {}).get('sessions', [])
+    except (OSError, json.JSONDecodeError):
+        return set()
+    return {session.get('name') for session in sessions if session.get('status') == 'closed'}
 
 
 def watch_policy(run_directory):
@@ -311,7 +340,7 @@ def main():
     deadline = time.time() + arguments.timeout_minutes * 60 if arguments.timeout_minutes else None
     failures = 0
     while True:
-        events, state['files'] = file_events(run_directory, state['files'])
+        events, state['files'] = file_events(run_directory, state['files'], arguments.ignore_message)
         current_states, error = run_agent_states(arguments.prefix)
         if current_states is None:
             failures += 1
@@ -319,7 +348,8 @@ def main():
                 events.append(f'herdr unavailable: {error}')
         else:
             failures = 0
-            events += agent_events(state['agents'], current_states)
+            events += agent_events(state['agents'], current_states, closed_session_names(run_directory),
+                                   report_all=arguments.all, ignored_gone=arguments.ignore_gone)
             state['agents'] = current_states
         events += poll_resources(run_directory, state, state['agents'], time.time())
         if not events and deadline and time.time() > deadline:

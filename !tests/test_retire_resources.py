@@ -110,6 +110,44 @@ class RetireResourcesTests(unittest.TestCase):
         self.assertEqual(self.ref("refs/heads/t03"), tip)
         self.assertIsNone(self.ref(f"{RECOVERY_PREFIX}/t03"))
 
+    def test_refusal_of_a_rewritten_branch_names_the_accounted_option(self):
+        worktree, tip = self.add_ticket_worktree("t03")
+        self.squash_onto_integration("t03.txt", "something else\n")
+
+        result = self.run_script("--worktree", str(worktree), "--branch", f"t03={tip}")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("--accounted t03=<start>:<integrated>", result.stderr)
+
+    def test_accounted_branch_with_a_changed_patch_is_deleted_and_reports_the_range_diff(self):
+        worktree, tip = self.add_ticket_worktree("t05")
+        integrated = self.squash_onto_integration("t05.txt", "t05, changed by the integrator\n")
+        arguments = ("--worktree", str(worktree), "--branch", f"t05={tip}", "--accounted", f"t05={self.base}:{integrated}")
+
+        dry_run = self.run_script(*arguments, "--dry-run")
+        result = self.run_script(*arguments)
+
+        self.assertEqual(dry_run.returncode, 0, dry_run.stderr)
+        self.assertEqual(self.ref("refs/heads/t05"), None if result.returncode == 0 else tip)
+        planned = json.loads(dry_run.stdout)["branches"][0]
+        self.assertEqual(planned["action"], "delete")
+        self.assertIn("accounted by the caller", planned["proof"])
+        self.assertTrue(any("changed by the integrator" in line for line in planned["range_diff"]), planned["range_diff"])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIsNone(self.ref("refs/heads/t05"))
+        self.assertEqual(self.ref(f"{RECOVERY_PREFIX}/t05"), tip)
+
+    def test_accounted_needs_an_integrated_commit_in_the_destination(self):
+        worktree, tip = self.add_ticket_worktree("t06")
+        other_worktree, other_tip = self.add_ticket_worktree("elsewhere")
+
+        result = self.run_script("--worktree", str(worktree), "--branch", f"t06={tip}",
+                                 "--accounted", f"t06={self.base}:{other_tip}")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("does not contain", result.stderr)
+        self.assertEqual(self.ref("refs/heads/t06"), tip)
+
     def test_dirty_worktree_stops_the_whole_run(self):
         merged_worktree, merged_tip = self.add_ticket_worktree("t04")
         git(self.repository, "merge", "--quiet", "--ff-only", "t04")

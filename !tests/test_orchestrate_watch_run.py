@@ -164,5 +164,65 @@ class WatchRunCommandTests(unittest.TestCase):
         self.assertTrue(state["jobs_reported"][0].startswith("1@"))
 
 
+class AgentEventTests(unittest.TestCase):
+    PREVIOUS = {"ns-t01": "working", "ns-t01-rev": "working", "ns-i01": "working", "ns-t02": "working"}
+
+    def test_reports_by_default_only_the_agent_events_that_need_the_orchestrator(self):
+        current = {"ns-t01": "done", "ns-t01-rev": "idle", "ns-t02": "blocked", "ns-t03": "unknown"}
+
+        events = watch_run.agent_events(self.PREVIOUS, current, closed_names={"ns-i01"})
+
+        self.assertEqual(events, ["agent ns-t02 working->blocked"])
+
+    def test_reports_unknown_after_work_and_gone_of_a_session_not_closed(self):
+        current = {"ns-t01": "unknown"}
+
+        events = watch_run.agent_events({"ns-t01": "working", "ns-t02": "idle"}, current, closed_names=set())
+
+        self.assertEqual(events, ["agent ns-t01 working->unknown", "agent ns-t02 gone"])
+
+    def test_reports_every_lifecycle_change_with_report_all(self):
+        current = {"ns-t01": "done", "ns-t01-rev": "idle", "ns-t02": "blocked", "ns-t03": "unknown"}
+
+        events = watch_run.agent_events(self.PREVIOUS, current, closed_names={"ns-i01"}, report_all=True)
+
+        self.assertEqual(events, [
+            "agent ns-t01 working->done", "agent ns-t01-rev working->idle", "agent ns-t02 working->blocked",
+            "agent ns-t03 new->unknown", "agent ns-i01 gone",
+        ])
+
+    def test_ignores_gone_for_agent_names_that_match_the_pattern(self):
+        import re
+        previous = {"ns-t01-rev": "idle", "ns-t02": "idle"}
+
+        events = watch_run.agent_events(previous, {}, closed_names=set(), ignored_gone=re.compile("-rev$"))
+
+        self.assertEqual(events, ["agent ns-t02 gone"])
+
+    def test_takes_an_ignored_message_as_seen_without_an_event(self):
+        import re
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = Path(directory)
+            for folder, name in (("messages", "i04-1-20261110T150627Z-ready.md"),
+                                 ("messages", "t04-20261110T145334Z-ready.md"), ("handoffs", "i04-1.md")):
+                (run_directory / folder).mkdir(exist_ok=True)
+                (run_directory / folder / name).write_text("x")
+
+            events, seen = watch_run.file_events(run_directory, set(), re.compile(r"^[if]\d.*-ready\.md$"))
+            repeated_events, _seen = watch_run.file_events(run_directory, seen, None)
+
+            self.assertEqual(events, ["handoff i04-1.md", "message t04-20261110T145334Z-ready.md"])
+            self.assertEqual(repeated_events, [])
+
+    def test_reads_the_closed_sessions_from_the_ledger(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run_directory = Path(directory)
+            (run_directory / "ledger.json").write_text(json.dumps({"resources": {"sessions": [
+                {"name": "ns-t01", "status": "closed"}, {"name": "ns-t02", "status": "live"}]}}))
+
+            self.assertEqual(watch_run.closed_session_names(run_directory), {"ns-t01"})
+            self.assertEqual(watch_run.closed_session_names(run_directory / "missing"), set())
+
+
 if __name__ == "__main__":
     unittest.main()

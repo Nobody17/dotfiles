@@ -9,6 +9,10 @@ The template marks a value as {{dotted.path}}. The roots are:
   run       the directory of the ledger
   <key>     each --set value
 A path that does not resolve stops the script, and it writes no file.
+ledger.validation.must_contain guards the commands against a damaged ledger: it maps a key of
+ledger.validation to the texts its value must contain, for example
+  {"test_command": ["DATABASE_URL=", "PARALLEL_WORKERS=2"]}
+A missing key or text stops the script before it renders.
 Keep one template per role (worker, integrator) in <run>/assignments/templates/.
 """
 import argparse
@@ -57,10 +61,26 @@ def resolvable(context, dotted_path):
         return False
 
 
+def damaged_validation_values(ledger):
+    """Return one line per value of ledger.validation that lacks a text its must_contain entry names."""
+    validation = ledger.get('validation') or {}
+    problems = []
+    for key, required_texts in (validation.get('must_contain') or {}).items():
+        value = validation.get(key)
+        if not isinstance(value, str):
+            problems.append(f'validation.{key} is missing')
+            continue
+        problems += [f'validation.{key} does not contain {text!r}' for text in required_texts if text not in value]
+    return problems
+
+
 def main():
     arguments = parse_arguments()
     ledger_path = arguments.ledger.resolve()
     ledger = json.loads(ledger_path.read_text())
+    problems = damaged_validation_values(ledger)
+    if problems:
+        sys.exit('ledger check failed: ' + '; '.join(problems))
     context = {'ledger': ledger, 'run': str(ledger_path.parent)}
     if arguments.ticket is not None:
         context['ticket'] = ledger['tickets'][arguments.ticket]

@@ -12,11 +12,13 @@ Measure; record the numbers and how you got them in `ledger.heavy_jobs.sizing`.
 
 1. **Pool:** the memory limit that the jobs share, such as the container VM total or the host memory.
 2. **Resident load:** what stays in the pool while no job runs, for every runtime stack you will start. One stack per worktree multiplies it by the number of live worktrees: ticket workers, the integration worktree, candidate worktrees.
-3. **Job peak:** the peak memory of one heavy job with the run's test settings (for example 2 parallel test processes). Measure one typical ticket test run with the pool's own tool, such as `docker stats --no-stream` in a loop.
+3. **Job peak:** the peak memory of one heavy job with the run's test settings (for example 2 parallel test processes). Read `memory_peak_mb` of comparable jobs in `<run>/heavy-jobs/history.jsonl` of this or an earlier run; `heavy-job.py` writes it when `heavy_jobs.memory_probe` is set. Without a history, measure one typical ticket test run through the wrapper before dispatch.
 4. **Slots** = (pool − resident load − 20 % reserve) ÷ job peak, rounded down, at least 1. When the result is below 1, reduce the worker limit: fewer worktrees mean less resident load.
-5. **Review time:** about 1.5 × the longest measured ticket or fast-check job. An early review costs one look; a late one lets a hang hold its slot. A full-suite run gets its own `--review-after-minutes` in the finalizer's command.
+5. **Review time:** about 1.5 × the longest `run_seconds` of a ticket or fast-check job in the history. An early review costs one look; a late one lets a hang hold its slot. A full-suite run gets its own `--review-after-minutes` in the finalizer's command.
 
-Re-measure when the number of live stacks or the test settings change, and lower the slots or the worker limit when an alarm shows pressure.
+Re-measure when the number of live stacks or the test settings change, and lower the slots or the worker limit when an alarm shows pressure. A high `waited_seconds` in the history with memory to spare is the signal to add a slot.
+
+Sessions outside the run share the pool and take no slot. Before you size, list them (`herdr agent list`) and ask the user which of them run tests during the run; leave their stacks running.
 
 ## Record the policy
 
@@ -26,6 +28,7 @@ Re-measure when the number of live stacks or the test settings change, and lower
   "review_after_minutes": 10,
   "lock": "<run>/heavy-job.lock",
   "stop_cleanup": "<command that stops what the stopped client leaves behind>",
+  "memory_probe": "<prints the available MB of the pool>",
   "sizing": "pool 7.7 GB; 4 stacks resident 4.1 GB; job peak 1.6 GB; reserve 1.5 GB -> 1 slot"
 },
 "resource_watch": {
@@ -34,7 +37,8 @@ Re-measure when the number of live stacks or the test settings change, and lower
   "checks": [
     {"name": "disk-gb", "command": "df -g <run> | awk 'NR==2 {print $4}'", "minimum": 8},
     {"name": "pool-memory-mb", "command": "<prints available MB>", "minimum": 1200},
-    {"name": "oom", "command": "<prints the kernel log>", "match": "Killed process"}
+    {"name": "oom", "command": "<prints the kernel log>", "match": "Killed process"},
+    {"name": "base", "command": "<prints 'base moved: <sha>' when the base branch left the pinned SHA>", "match": "base moved"}
   ]
 }
 ```
@@ -76,6 +80,7 @@ When the evidence needs the job's context, prompt its owning agent for a diagnos
 The watcher reports facts; the orchestrator decides. Record each decision in the ledger before you act.
 
 - `resource <memory or disk check> … below …`: lower `heavy_jobs.slots`, pause dispatch, or retire finished worktrees and their stacks. Running jobs keep their slots until they end.
+- `resource base new: base moved: <sha>`: the base branch got commits from outside the run. Tell the user, name the files that those commits share with the run's tickets, and have the finalizer rebase the ticket commits onto the new tip before the whole-change review. After the decision, set the new SHA in the check command.
 - `resource oom new: …`: find the job whose process was killed, from the log line and `heavy-job.py --list`, and review that job now.
 - `agent <name> … with <K> shells`: read its last reply with `last-reply.py`, then the pane. A shell outside the wrapper gets no review time: tell the agent to stop it and to use the wrapper.
 - `job … left by ended wrapper`: nothing watches the job now. Inspect its process group; stop it and run the cleanup command, or let it finish. Tell the owning agent, then delete its record in `<run>/heavy-jobs/`.

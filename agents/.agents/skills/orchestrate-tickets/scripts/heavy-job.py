@@ -16,11 +16,17 @@ Defaults come from ledger.heavy_jobs in <run>/ledger.json; an option overrides i
   lock                  slot lock file (default <run>/heavy-job.lock); slot k > 0 uses <lock>.<k>
   stop_cleanup          shell command, run in the job's directory after --stop, that stops what the
                         stopped client leaves behind (for example a process inside a container)
+  memory_probe          shell command that prints the available memory of the pool in MB as its first
+                        word (optional); the job samples it before the start and every
+                        memory_probe_seconds (default 15)
 
 The slots are flock(2) locks, so `lockf -k <lock> <command>` on macOS shares slot 0.
 The script never stops a job by itself. At the review time it writes a line to stderr and marks
 the job record as overdue; watch-run.py reports it, and a reviewer decides with --extend or --stop.
 <run>/heavy-jobs/<job>.json records the job, <job>.log keeps its output; <job> is the wrapper's pid.
+Each ended job adds one JSON line to <run>/heavy-jobs/history.jsonl: label, cwd, slot, start, seconds waited
+for the slot, run seconds, exit code and, with memory_probe, the available MB before the start, the
+lowest available MB, and their difference as the job's peak. Size slots and review time from this file.
 The command runs in its own process group; the job holds its slot until the whole group has ended.
 --stop sends SIGTERM to the group, SIGKILL after --kill-after-seconds (default 30), runs stop_cleanup,
 and the job exits 124. A SIGTERM, SIGINT, or SIGHUP to this script stops the job the same way
@@ -47,6 +53,8 @@ USAGE_EXIT = 125
 NOT_FOUND_EXIT = 127
 POLL_SECONDS = 2
 CLEANUP_LIMIT_SECONDS = 300
+MEMORY_PROBE_LIMIT_SECONDS = 30
+DEFAULT_MEMORY_PROBE_SECONDS = 15
 OUTPUT_DRAIN_SECONDS = 5
 
 
@@ -117,7 +125,11 @@ def job_settings(arguments, policy, run_directory):
         return None, f'slots must be a whole number of 1 or more, not {slots!r}'
     if not isinstance(review_minutes, (int, float)) or review_minutes <= 0:
         return None, 'no review time: set ledger.heavy_jobs.review_after_minutes or --review-after-minutes'
-    return {'slots': slots, 'review_seconds': review_minutes * 60, 'lock': lock, 'cleanup': cleanup}, None
+    probe_seconds = policy.get('memory_probe_seconds', DEFAULT_MEMORY_PROBE_SECONDS)
+    if not isinstance(probe_seconds, (int, float)) or probe_seconds <= 0:
+        return None, f'memory_probe_seconds must be a number above 0, not {probe_seconds!r}'
+    return {'slots': slots, 'review_seconds': review_minutes * 60, 'lock': lock, 'cleanup': cleanup,
+            'memory_probe': policy.get('memory_probe'), 'memory_probe_seconds': probe_seconds}, None
 
 
 def slot_lock_paths(lock, slots):
@@ -245,6 +257,42 @@ class OutputCopy:
                     destination_open = False  # the reader is gone; keep reading so the job never blocks
 
 
+def probe_available_megabytes(command):
+    """Run the memory probe. Returns the first word of its output as a number, or None."""
+    try:
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=MEMORY_PROBE_LIMIT_SECONDS)
+        return float(result.stdout.split()[0]) if result.returncode == 0 else None
+    except (subprocess.TimeoutExpired, IndexError, ValueError, OSError):
+        return None
+
+
+class MemorySamples:
+    """Sample the available memory of the pool: once before the job starts, then in a thread until stop()."""
+
+    def __init__(self, command, interval_seconds):
+        self.command = command
+        self.before_start = probe_available_megabytes(command)
+        self.lowest = self.before_start
+        self.stopped = threading.Event()
+        self.thread = threading.Thread(target=self.sample, args=(interval_seconds,), daemon=True)
+        self.thread.start()
+
+    def sample(self, interval_seconds):
+        while not self.stopped.wait(interval_seconds):
+            available = probe_available_megabytes(self.command)
+            if available is not None and (self.lowest is None or available < self.lowest):
+                self.lowest = available
+
+    def stop(self):
+        self.stopped.set()
+
+    def summary(self):
+        if self.before_start is None or self.lowest is None:
+            return {}
+        return {'memory_available_before_mb': self.before_start, 'memory_available_lowest_mb': self.lowest,
+                'memory_peak_mb': self.before_start - self.lowest}
+
+
 def request_paths(jobs_directory, job):
     return sorted(jobs_directory.glob(f'{job}.request-*.json'))
 
@@ -271,8 +319,10 @@ class JobRunner:
     """One heavy job from slot to exit. States: running, group running (the command ended, processes of its
     group still run), cleanup failed (stopped, cleanup failed; the slot stays held until --release)."""
 
-    def __init__(self, arguments, settings, run_directory, slot, slot_count):
+    def __init__(self, arguments, settings, run_directory, slot, slot_count, waited_seconds=0.0):
         self.arguments, self.settings = arguments, settings
+        self.waited_seconds = waited_seconds
+        self.memory = None
         self.label = arguments.label or ' '.join(arguments.command)[:80]
         self.jobs_directory = run_directory / 'heavy-jobs'
         self.job = str(os.getpid())
@@ -300,6 +350,8 @@ class JobRunner:
         self.log = self.log_path.open('wb')
         for signal_number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
             signal.signal(signal_number, self.note_signal)
+        if self.settings.get('memory_probe'):
+            self.memory = MemorySamples(self.settings['memory_probe'], self.settings['memory_probe_seconds'])
         self.process = subprocess.Popen(self.arguments.command, start_new_session=True,
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.copies = [OutputCopy(self.process.stdout, sys.stdout.buffer, self.log),
@@ -402,7 +454,24 @@ class JobRunner:
             copy.thread.join(OUTPUT_DRAIN_SECONDS)
         return self.exit_code
 
+    def write_history(self):
+        """Add the ended job to history.jsonl. A write error never changes the job's result."""
+        if not hasattr(self, 'started'):
+            return
+        if self.memory:
+            self.memory.stop()
+        entry = {'job': self.job, 'label': self.label, 'cwd': os.getcwd(), 'slot': self.slot,
+                 'started': self.started.isoformat(), 'waited_seconds': round(self.waited_seconds),
+                 'run_seconds': round((now_utc() - self.started).total_seconds()), 'exit': self.exit_code,
+                 **(self.memory.summary() if self.memory else {})}
+        try:
+            with (self.jobs_directory / 'history.jsonl').open('a') as history:
+                history.write(json.dumps(entry) + '\n')
+        except OSError as error:
+            say(f'cannot write the job history: {error}')
+
     def close(self):
+        self.write_history()
         self.record_path.unlink(missing_ok=True)
         for path in request_paths(self.jobs_directory, self.job):
             path.unlink(missing_ok=True)
@@ -421,8 +490,9 @@ def run_job(arguments, settings, run_directory):
         return slot_lock_paths(settings['lock'], slots if isinstance(slots, int) and slots >= 1 else 1)
 
     label = arguments.label or ' '.join(arguments.command)[:80]
+    wait_started = time.time()
     slot, slot_count, descriptor = acquire_slot(current_lock_paths, label)
-    runner = JobRunner(arguments, settings, run_directory, slot, slot_count)
+    runner = JobRunner(arguments, settings, run_directory, slot, slot_count, time.time() - wait_started)
     try:
         runner.start()
         return runner.run()
