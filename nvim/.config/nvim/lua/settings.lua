@@ -71,3 +71,6 @@ vim.api.nvim_create_autocmd('FileType', {
     pcall(vim.treesitter.start, event.buf)
   end,
 })
+
+-- Diffs show the whole file: no lines without changes are folded away.
+vim.opt.diffopt:append 'context:99999'
