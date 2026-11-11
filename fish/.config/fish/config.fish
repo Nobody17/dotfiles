@@ -1,6 +1,7 @@
-# The following lines were added by Docker Desktop to add commands to your PATH.
-export PATH="$PATH:/Users/eric/.docker/bin"
-# End of Docker Desktop section.
+# Docker Desktop installs its commands in the current user's home directory.
+if test -d "$HOME/.docker/bin"
+    fish_add_path -g --append "$HOME/.docker/bin"
+end
 
 # Everything above the `status is-interactive` block runs for scripts too:
 # every `fish -c` from nvim, git hooks and tooling pays for it. Keep it to
@@ -60,29 +61,24 @@ if test -d "$HOME/fvm/default/bin"
 end
 
 # Android SDK (React Native / Expo)
-if test -d "$HOME/Library/Android/sdk"
+if set -q ANDROID_HOME; and test -d "$ANDROID_HOME"
+    # Keep an SDK selected by the machine or parent process.
+else if test -d "$HOME/Android/Sdk"
+    set -gx ANDROID_HOME "$HOME/Android/Sdk"
+else if test -d "$HOME/Android/sdk"
+    set -gx ANDROID_HOME "$HOME/Android/sdk"
+else if test -d "$HOME/Library/Android/sdk"
     set -gx ANDROID_HOME "$HOME/Library/Android/sdk"
 else if test -d "/opt/homebrew/share/android-commandlinetools"
     set -gx ANDROID_HOME "/opt/homebrew/share/android-commandlinetools"
 end
 if set -q ANDROID_HOME
     set -gx ANDROID_SDK_ROOT "$ANDROID_HOME"
-    for dir in platform-tools emulator cmdline-tools/latest/bin
-        if test -d "$ANDROID_HOME/$dir"
-            fish_add_path -g "$ANDROID_HOME/$dir"
+    for directory in platform-tools emulator cmdline-tools/latest/bin
+        if test -d "$ANDROID_HOME/$directory"
+            fish_add_path -g "$ANDROID_HOME/$directory"
         end
     end
-end
-
-# JDK 17 for Gradle (system default is 26, too new for Gradle 8.13 / Expo SDK 53).
-# JAVA_HOME only — `java` on PATH stays at the system default.
-# jdk17-openjdk comes from paru: mise only offers openjdk-17.0.2, which has
-# had no security patches since 2022.
-if test -d /usr/lib/jvm/java-17-openjdk
-    set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
-else if test -d /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
-    # macOS: the temurin@17 cask from the Brewfile installs to this path.
-    set -gx JAVA_HOME /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
 end
 
 if status is-interactive
@@ -125,7 +121,7 @@ if status is-interactive
     starship init fish | source
     enable_transience
 
-    # mise must be the last PATH modification.
+    # mise selects JAVA_HOME and must be the last PATH modification.
     if type -q mise
         mise activate fish | source
     end
@@ -133,6 +129,7 @@ else
     # Scripts get the tool versions through the shims instead, which costs
     # nothing at startup. Per-directory switching still works: each shim
     # resolves the version itself when it runs.
+    # Use mise exec for scripts that also need JAVA_HOME, such as Gradle.
     if test -d "$HOME/.local/share/mise/shims"
         fish_add_path -g --prepend "$HOME/.local/share/mise/shims"
     end

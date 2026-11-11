@@ -31,6 +31,15 @@ esac
         self.script('sleep', 'echo sleep >>"$CALL_LOG"\n')
         self.script('float-macos-tabs.sh', 'echo tabs >>"$CALL_LOG"\n')
         self.script('dwindle-autotiling.sh', 'echo dwindle >>"$CALL_LOG"\n')
+        # The callback uses BSD stat. Supply its mtime operation on Linux too.
+        stat_command = self.root / 'stat'
+        stat_command.write_text(
+            '#!/usr/bin/env python3\n'
+            'import os, sys\n'
+            'assert sys.argv[1:3] == ["-f", "%m"]\n'
+            'print(int(os.stat(sys.argv[3]).st_mtime))\n'
+        )
+        stat_command.chmod(0o755)
 
     def script(self, name, body):
         path = self.root / name

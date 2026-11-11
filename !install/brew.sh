@@ -115,9 +115,10 @@ if [ "$power_settings_are_current" = false ]; then
                   sleep "$adapter_system_sleep_minutes"
 fi
 
-# 5. rustup owns rust; mise defers to it. The rustup formula is keg-only,
-#    so brew does not link it into $homebrew_prefix/bin. After "rustup
-#    default stable" the usual proxies appear in ~/.cargo/bin.
+# 5. Prepare rustup for mise. The rustup formula is keg-only, so brew does
+#    not link it into $homebrew_prefix/bin. "rustup default stable" creates
+#    the proxies in ~/.cargo/bin and a default for commands outside mise.
+#    mise.fish installs the configured toolchain; mise up handles updates.
 rustup_command="rustup"
 if ! command -v rustup >/dev/null 2>&1 && [ -x "$homebrew_prefix/opt/rustup/bin/rustup" ]; then
     rustup_command="$homebrew_prefix/opt/rustup/bin/rustup"

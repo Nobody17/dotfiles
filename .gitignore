@@ -40,6 +40,12 @@ codex/.codex/*
 !codex/.codex/AGENTS.md
 !codex/.codex/skills/
 codex/.codex/skills/*
+!codex/.codex/skills/codex-review-code
+!codex/.codex/skills/codex-review-plan
+!codex/.codex/skills/homeassistant
+!codex/.codex/skills/ruby-testing
+!codex/.codex/skills/skill-creation
+!codex/.codex/skills/testing-principles
 !codex/.codex/skills/orchestrate-tickets
 !codex/.codex/skills/herdr-pane-mute
 

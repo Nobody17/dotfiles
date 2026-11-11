@@ -433,7 +433,7 @@ if set --query _flag_delete
     exit 0
 end
 
-if command --query bat; and test -d $HOME/.config/bat
+if contains -- bat $selected_packages; and command --query bat; and test -d $HOME/.config/bat
     if bat cache --build >/dev/null 2>&1
         echo "  • The script rebuilt the bat theme cache."
     else
@@ -441,39 +441,25 @@ if command --query bat; and test -d $HOME/.config/bat
     end
 end
 
-if command --query mise; and test -f $HOME/.config/mise/config.toml
+if contains -- mise $selected_packages; and command --query mise; and test -f $HOME/.config/mise/config.toml
     echo "  • The mise configuration can list new tools. Install them:"
     echo "      mise install"
 end
 
-# ghostty reloads on SIGUSR2. Every other signal makes it crash, so name the
-# signal and never send a number. This block stays on Linux: macOS pkill knows
-# neither --signal nor --exact, and the macOS app reloads with cmd+shift+,
-if test (uname) = Linux; and command --query ghostty; and pgrep --exact ghostty >/dev/null 2>&1
-    if pkill --signal SIGUSR2 --exact ghostty >/dev/null 2>&1
-        echo "  • The script told ghostty to read its configuration again."
-    end
+# Applying configuration can change live windows and workspaces. Leave it
+# to the user after linking, including when a desktop package was selected.
+if contains -- ghostty $selected_packages
+    echo "  • Reload the Ghostty configuration from its menu when you are ready."
 end
 
-if set --query HYPRLAND_INSTANCE_SIGNATURE; and command --query hyprctl; and test -d $HOME/.config/hypr
-    if hyprctl reload >/dev/null 2>&1
-        echo "  • The script reloaded the Hyprland configuration."
-    else
-        echo "  • ⚠️  \"hyprctl reload\" failed. Run it yourself to see the error."
-    end
+if contains -- hypr $selected_packages; and set --query HYPRLAND_INSTANCE_SIGNATURE; and command --query hyprctl
+    echo "  • Reload the Hyprland configuration when you are ready:"
+    echo "      hyprctl reload"
 end
 
-if test (uname) = Darwin
-    if command --query ghostty; or test -d /Applications/Ghostty.app
-        echo "  • Reload the ghostty configuration inside ghostty with cmd+shift+,"
-    end
-    if command --query aerospace; and test -e $HOME/.config/aerospace/aerospace.toml
-        if aerospace reload-config >/dev/null 2>&1
-            echo "  • The script reloaded the AeroSpace configuration."
-        else
-            echo "  • ⚠️  \"aerospace reload-config\" failed. Run it yourself to see the error."
-        end
-    end
+if contains -- aerospace $selected_packages; and test (uname) = Darwin
+    echo "  • Reload the AeroSpace configuration when you are ready:"
+    echo "      aerospace reload-config"
 end
 
 # ------------------------------------------------------------- pi advisory

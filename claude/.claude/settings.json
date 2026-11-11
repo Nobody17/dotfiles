@@ -29,7 +29,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+    "command": "if [ -f \"$HOME/.claude/statusline-command.sh\" ]; then bash \"$HOME/.claude/statusline-command.sh\"; fi"
   },
   "enabledPlugins": {
     "impeccable@impeccable": true,
