@@ -49,6 +49,13 @@ codex/.codex/skills/*
 !codex/.codex/skills/orchestrate-tickets
 !codex/.codex/skills/herdr-pane-mute
 
+# Antigravity: track only the shared instructions link. The installer
+# links skills/ and rules/local.md on each machine.
+antigravity/.gemini/*
+!antigravity/.gemini/config/
+antigravity/.gemini/config/*
+!antigravity/.gemini/config/AGENTS.md
+
 # machine-generated files of the new packages. ~/.config/hypr/monitors.lua
 # writes the ghostty file, and btop and micro write their own folders.
 ghostty/.config/ghostty/hypr-background-opacity.conf

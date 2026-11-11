@@ -1,8 +1,33 @@
 #!/usr/bin/env python3
-"""Install automatic machine-local context for Codex and Pi; preserve other hooks."""
+"""Install automatic machine-local context for Codex, Pi and Antigravity; preserve other hooks."""
 
 import json
 from pathlib import Path
+
+
+def antigravity_links(home: Path) -> dict[Path, Path]:
+    """Antigravity (app and agy CLI) reads ~/.gemini/config; point it at the shared agent files."""
+    configuration = home / ".gemini/config"
+    return {
+        configuration / "skills": home / ".agents/skills",
+        configuration / "rules/local.md": home / ".agents/local.md",
+    }
+
+
+def blocked_links(links: dict[Path, Path]) -> list[Path]:
+    """Paths that hold something other than the wanted link."""
+    return [
+        link for link, target in links.items()
+        if (link.is_symlink() and link.resolve() != target.resolve())
+        or (link.exists() and not link.is_symlink())
+    ]
+
+
+def make_links(links: dict[Path, Path]) -> None:
+    for link, target in links.items():
+        if not link.is_symlink():
+            link.parent.mkdir(parents=True, exist_ok=True)
+            link.symlink_to(target)
 
 
 def install(home: Path) -> None:
@@ -16,6 +41,10 @@ def install(home: Path) -> None:
             raise RuntimeError(f"Existing Pi prompt link points elsewhere: {append}")
     elif append.exists():
         raise RuntimeError(f"Preserve the existing Pi prompt before installing: {append}")
+    links = antigravity_links(home)
+    blocked = blocked_links(links)
+    if blocked:
+        raise RuntimeError(f"Move these Antigravity files away before installing: {blocked}")
 
     hooks_path = home / ".codex/hooks.json"
     configuration = json.loads(hooks_path.read_text()) if hooks_path.exists() else {}
@@ -53,6 +82,7 @@ def install(home: Path) -> None:
         append.unlink()
     if not append.is_symlink():
         append.symlink_to(local)
+    make_links(links)
     if changed or migrated:
         hooks_path.parent.mkdir(parents=True, exist_ok=True)
         if hooks_path.exists():
@@ -64,5 +94,5 @@ def install(home: Path) -> None:
 
 if __name__ == "__main__":
     install(Path.home())
-    print("Installed Pi prompt link and Codex SessionStart hook.")
+    print("Installed Pi prompt link, Antigravity links and Codex SessionStart hook.")
     print("In Codex, review and trust 'Loading machine-local instructions' with /hooks.")

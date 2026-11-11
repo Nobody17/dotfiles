@@ -1,5 +1,5 @@
 Shared global instructions live in `agents/.agents/AGENTS.md` (installed as `~/.agents/AGENTS.md`), tracked by this
-repository. Codex links to it and Claude imports it.
+repository. Codex and Antigravity link to it and Claude imports it.
 
 Repo-owned skills use folder links under `codex/.codex/skills/`. These preserve
 Codex discovery when Stow installs the shared copy with individual file links.
@@ -10,12 +10,16 @@ outside the repository. Each application adds their contents automatically:
 
 - Claude imports the file from its global `CLAUDE.md`.
 - Pi reads its global `APPEND_SYSTEM.md`, a local symlink to the file.
+- Antigravity reads `~/.gemini/config/rules/local.md`, a local symlink to the file.
 - Codex runs a global `SessionStart` hook which outputs the file as developer
   context on startup, resume, clear, and compaction. No matcher restricts it.
 
-Install the shared links with `./stow.fish --no-adopt agents codex claude pi`, then run
+Install the shared links with `./stow.fish --no-adopt agents codex antigravity claude pi`, then run
 `python3 '!install/agent-instructions.py'`. The installer preserves existing
-Codex hooks and local instructions. It stops if Pi already has a different
+Codex hooks and local instructions. It also links
+`~/.gemini/config/skills` to `~/.agents/skills`, so the Antigravity app and
+the `agy` CLI (installed by mise) see every shared skill. It stops if
+Antigravity already has its own skills folder or `rules/local.md`. It stops if Pi already has a different
 appended system prompt, so those instructions can be merged deliberately.
 
 In Codex, open `/hooks` and trust `Loading machine-local instructions` once.

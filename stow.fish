@@ -26,6 +26,7 @@ set --local repository_root (path resolve (path dirname (status filename)))
 # program writes into:
 #   agents  keeps local instructions and installed skills outside this repository
 #   codex   writes config, credentials and session state
+#   antigravity  agy writes credentials and session state into ~/.gemini
 #   claude  writes .credentials.json, sessions/ and history.jsonl
 #   btop    writes btop.conf again when you quit, and makes themes/
 #   micro   writes settings.json again, and makes colorschemes/ and plug/
@@ -35,7 +36,7 @@ set --local repository_root (path resolve (path dirname (status filename)))
 #           describe the hardware of one machine
 #   karabiner writes karabiner.json and automatic_backups/ itself; only the
 #           generator script generate-defy-rules.py lives in this repository
-set --local no_folding_packages agents codex claude btop micro ghostty herdr hypr karabiner
+set --local no_folding_packages agents codex antigravity claude btop micro ghostty herdr hypr karabiner
 
 # Packages that belong to one platform only. A run with no package names
 # skips the packages of the other platform. A package that you name on the

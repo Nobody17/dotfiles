@@ -59,6 +59,7 @@ lazydocker = "latest"
 neovim = "latest"
 claude = "latest"
 codex = "latest"
+agy = "latest"  # Antigravity CLI
 pi = "latest"
 
 # Idiomatic version files (.ruby-version, .nvmrc, go.mod-era files, ...).
