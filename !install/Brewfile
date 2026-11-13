@@ -27,8 +27,25 @@ brew "unixodbc"
 # Provide rustup for mise to install and update Rust toolchains.
 brew "rustup"
 
-# SSH security keys
+# SSH security keys. config.fish starts Homebrew ssh-agent so `ssh-add -K`
+# can hold FIDO (sk) keys; Apple's /usr/bin/ssh-agent ignores libfido2.
 brew "libfido2"
+brew "openssh"
+
+# System and developer tools not managed by mise
+brew "btop"
+brew "displayplacer"
+brew "glab"
+brew "tree-sitter-cli"
+brew "watchman"
+brew "cocoapods"
+brew "xcodes"
+
+# Database and media libraries for local projects
+brew "postgresql@17", restart_service: :changed, link: true
+brew "libpq"
+brew "vips"
+brew "ghostscript"
 
 # Terminal. On Arch this is "paru -S ghostty" instead.
 cask "ghostty"
@@ -38,6 +55,19 @@ tap "nikitabobko/tap"
 cask "nikitabobko/tap/aerospace"
 
 # Window borders for AeroSpace. Hyprland draws borders itself on Arch.
-# The service reads ~/.config/borders/bordersrc (the borders package).
+# install.fish starts the service after stow links ~/.config/borders/bordersrc.
 tap "FelixKratz/formulae"
 brew "FelixKratz/formulae/borders"
+
+# Key remapping and Dygma Defy firmware configurator.
+# install.fish generates ~/.config/karabiner/karabiner.json after stowing.
+cask "karabiner-elements"
+cask "bazecor"
+
+# Containers, mobile SDKs, and desktop utilities
+cask "docker-desktop"
+cask "android-studio"
+cask "android-commandlinetools"
+cask "cyberduck"
+cask "localsend"
+cask "nextcloud"

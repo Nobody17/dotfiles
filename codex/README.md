@@ -19,7 +19,10 @@ Install the shared links with `./stow.fish --no-adopt agents codex antigravity c
 `python3 '!install/agent-instructions.py'`. The installer preserves existing
 Codex hooks and local instructions. It also links
 `~/.gemini/config/skills` to `~/.agents/skills`, so the Antigravity app and
-the `agy` CLI (installed by mise) see every shared skill. It stops if
+the `agy` CLI (installed by mise) see every shared skill. It adds
+`"agentMode": "auto"` to `~/.gemini/antigravity-cli/settings.json`, so agy starts in Auto
+mode. The repo does not track that file, because agy writes machine-local data into it.
+If the file already has an `agentMode`, the installer keeps it. It stops if
 Antigravity already has its own skills folder or `GEMINI.md`. It stops if Pi already has a different
 appended system prompt, so those instructions can be merged deliberately.
 

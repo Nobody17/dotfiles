@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Install automatic machine-local context for Codex, Pi and Antigravity; preserve other hooks."""
+"""Install automatic machine-local context for Codex, Pi and Antigravity, and agy Auto mode; preserve other hooks."""
 
 import json
 from pathlib import Path
@@ -14,6 +13,12 @@ def antigravity_links(home: Path) -> dict[Path, Path]:
         # GEMINI.md loads always, without frontmatter, next to AGENTS.md.
         configuration / "GEMINI.md": home / ".agents/local.md",
     }
+
+
+def with_auto_agent_mode(settings: dict) -> dict:
+    """agy settings that start sessions in Auto mode, unless this machine already chose a mode."""
+    # agy 1.5.7 made Auto the default, but only where no mode is saved; earlier versions start in Default.
+    return settings if "agentMode" in settings else {**settings, "agentMode": "auto"}
 
 
 def blocked_links(links: dict[Path, Path]) -> list[Path]:
@@ -47,6 +52,10 @@ def install(home: Path) -> None:
     blocked = blocked_links(links)
     if blocked:
         raise RuntimeError(f"Move these Antigravity files away before installing: {blocked}")
+    # agy writes trustedWorkspaces into this file, so the repo cannot own it; merge one key instead.
+    agy_settings_path = home / ".gemini/antigravity-cli/settings.json"
+    agy_settings = json.loads(agy_settings_path.read_text()) if agy_settings_path.exists() else {}
+    wanted_agy_settings = with_auto_agent_mode(agy_settings)
 
     hooks_path = home / ".codex/hooks.json"
     configuration = json.loads(hooks_path.read_text()) if hooks_path.exists() else {}
@@ -85,6 +94,10 @@ def install(home: Path) -> None:
     if not append.is_symlink():
         append.symlink_to(local)
     make_links(links)
+    if wanted_agy_settings != agy_settings:
+        agy_settings_path.parent.mkdir(parents=True, exist_ok=True)
+        agy_settings_path.touch(mode=0o600)
+        agy_settings_path.write_text(json.dumps(wanted_agy_settings, indent=2) + "\n")
     if changed or migrated:
         hooks_path.parent.mkdir(parents=True, exist_ok=True)
         if hooks_path.exists():
@@ -96,5 +109,5 @@ def install(home: Path) -> None:
 
 if __name__ == "__main__":
     install(Path.home())
-    print("Installed Pi prompt link, Antigravity links and Codex SessionStart hook.")
+    print("Installed Pi prompt link, Antigravity links, agy Auto mode and Codex SessionStart hook.")
     print("In Codex, review and trust 'Loading machine-local instructions' with /hooks.")

@@ -132,6 +132,12 @@ rules = [
           "to": [{"key_code": "left_control", "modifiers": ["left_option"]}],
           "conditions": [DEFY]}]},
 
+    # Super is already Ctrl+Alt from the rule above, so Super+Shift+S arrives
+    # with left_control + left_option + shift.
+    {"description": "Defy: Super+Shift+S opens the macOS screenshot menu",
+     "manipulators": [combo("s", ["left_control", "left_option", "shift"],
+                            [{"key_code": "5", "modifiers": CMDSHIFT}])]},
+
     # On the MacBook keyboard the same modifier sits on one key: Fn/Globe.
     # The Fn functions of the built-in keyboard are lost (emoji picker,
     # Fn+key combos). The Defy keeps its own Fn behavior.
@@ -202,15 +208,64 @@ rules = [
      ]},
 ]
 
-json.dump({"title": "Linux parity on macOS (Dygma Defy + built-in keyboard)", "rules": rules},
-          open(f"{HOME}/.config/karabiner/assets/complex_modifications/"
-               "dygma-linux-parity.json", "w"), indent=2)
+DEFAULT_PROFILE = {
+    "name": "Default profile",
+    "selected": True,
+    "complex_modifications": {"rules": []},
+    "devices": [],
+    "fn_function_keys": [],
+    "simple_modifications": [],
+    "virtual_hid_keyboard": {"country_code": 0, "keyboard_type_v2": "ansi"},
+}
 
-cfgp = f"{HOME}/.config/karabiner/karabiner.json"
-cfg = json.load(open(cfgp))
-cfg["profiles"][0]["complex_modifications"] = {"rules": copy.deepcopy(rules)}
-cfg["profiles"][0]["devices"] = copy.deepcopy(DEVICES)
-json.dump(cfg, open(cfgp, "w"), indent=2)
-for r in rules:
-    print(f"  {len(r['manipulators']):3}  {r['description']}")
-print("total manipulators:", sum(len(r["manipulators"]) for r in rules))
+DEFAULT_CONFIGURATION = {
+    "global": {"show_in_menu_bar": True},
+    "profiles": [DEFAULT_PROFILE],
+}
+
+
+def updated_karabiner_configuration(existing_configuration, generated_rules, configured_devices):
+    configuration = (
+        copy.deepcopy(existing_configuration)
+        if existing_configuration
+        else copy.deepcopy(DEFAULT_CONFIGURATION)
+    )
+    profiles = configuration.setdefault("profiles", [])
+    if not profiles:
+        profiles.append(copy.deepcopy(DEFAULT_PROFILE))
+    profiles[0]["complex_modifications"] = {"rules": copy.deepcopy(generated_rules)}
+    profiles[0]["devices"] = copy.deepcopy(configured_devices)
+    return configuration
+
+
+def install_karabiner_rules(home_directory):
+    karabiner_directory = os.path.join(home_directory, ".config", "karabiner")
+    complex_modifications_directory = os.path.join(
+        karabiner_directory, "assets", "complex_modifications"
+    )
+    os.makedirs(complex_modifications_directory, exist_ok=True)
+
+    asset_path = os.path.join(complex_modifications_directory, "dygma-linux-parity.json")
+    with open(asset_path, "w") as asset_file:
+        json.dump(
+            {"title": "Linux parity on macOS (Dygma Defy + built-in keyboard)", "rules": rules},
+            asset_file,
+            indent=2,
+        )
+
+    configuration_path = os.path.join(karabiner_directory, "karabiner.json")
+    existing_configuration = None
+    if os.path.exists(configuration_path):
+        with open(configuration_path) as configuration_file:
+            existing_configuration = json.load(configuration_file)
+
+    configuration = updated_karabiner_configuration(existing_configuration, rules, DEVICES)
+    with open(configuration_path, "w") as configuration_file:
+        json.dump(configuration, configuration_file, indent=2)
+
+
+if __name__ == "__main__":
+    install_karabiner_rules(HOME)
+    for rule in rules:
+        print(f"  {len(rule['manipulators']):3}  {rule['description']}")
+    print("total manipulators:", sum(len(rule["manipulators"]) for rule in rules))

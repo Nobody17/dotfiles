@@ -4,12 +4,19 @@
 Run with --dry-run to inspect. A LaunchAgent runs this every 10 seconds.
 Uses displayplacer 1.4 output and only applies changes when needed.
 """
+import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 
-DISPLAYPLACER = '/opt/homebrew/bin/displayplacer'
+DISPLAYPLACER = (
+    shutil.which('displayplacer')
+    or ('/opt/homebrew/bin/displayplacer'
+        if os.path.exists('/opt/homebrew/bin/displayplacer')
+        else '/usr/local/bin/displayplacer')
+)
 
 # These external monitors sit to the left of the MacBook.
 LAPTOP_RIGHT_OF = {

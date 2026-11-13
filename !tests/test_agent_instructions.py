@@ -1,6 +1,7 @@
 """The instructions installer links the shared agent files for Antigravity."""
 
 import importlib.util
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -50,6 +51,51 @@ class AntigravityLinkTests(unittest.TestCase):
             self.installer.install(self.home)
         self.assertFalse(own_skills.is_symlink())
         self.assertFalse((self.home / ".codex/hooks.json").exists())
+
+
+class AntigravityAgentModeTests(unittest.TestCase):
+    def setUp(self):
+        self.installer = load_installer()
+        self.directory = tempfile.TemporaryDirectory()
+        self.home = Path(self.directory.name)
+        self.settings = self.home / ".gemini/antigravity-cli/settings.json"
+
+    def tearDown(self):
+        self.directory.cleanup()
+
+    def read_settings(self):
+        return json.loads(self.settings.read_text())
+
+    def test_install_starts_agy_in_auto_mode(self):
+        self.installer.install(self.home)
+
+        self.assertEqual(self.read_settings(), {"agentMode": "auto"})
+
+    def test_install_keeps_the_other_agy_settings(self):
+        self.settings.parent.mkdir(parents=True)
+        self.settings.write_text(json.dumps({"trustedWorkspaces": ["/work"]}))
+
+        self.installer.install(self.home)
+
+        self.assertEqual(
+            self.read_settings(), {"trustedWorkspaces": ["/work"], "agentMode": "auto"}
+        )
+
+    def test_install_keeps_a_mode_chosen_on_this_machine(self):
+        self.settings.parent.mkdir(parents=True)
+        self.settings.write_text(json.dumps({"agentMode": ""}))
+
+        self.installer.install(self.home)
+
+        self.assertEqual(self.read_settings(), {"agentMode": ""})
+
+    def test_install_stops_on_unreadable_agy_settings(self):
+        self.settings.parent.mkdir(parents=True)
+        self.settings.write_text("{not json")
+
+        with self.assertRaises(ValueError):
+            self.installer.install(self.home)
+        self.assertFalse((self.home / ".agents/local.md").exists())
 
 
 if __name__ == "__main__":

@@ -73,23 +73,47 @@ git -C .. config core.hooksPath .githooks
 
 # 3. Every runtime and CLI tool
 run_step mise.fish
+if test -d "$HOME/.local/share/mise/shims"
+    fish_add_path -g --prepend "$HOME/.local/share/mise/shims"
+end
 
 # 4. Third-party agent skills for Claude Code, Codex and pi. Downloaded from
 # their sources into ~/.agents/skills; needs npx from step 3.
 run_step agent-skills.fish
 
-# The AeroSpace tab helper. float-macos-tabs.sh needs it to see which
-# windows share one macOS tab group. swiftc comes with the Xcode Command
-# Line Tools, which the Homebrew installer already put in place.
-if test (uname) = Darwin; and command -q swiftc
-    echo "==> aerospace-window-frames"
-    swiftc -O -o ~/.local/bin/aerospace-window-frames \
-        ../aerospace/.config/aerospace/window-frames.swift
-    or echo "Warning: aerospace-window-frames did not build. AeroSpace then tiles macOS tabs."
-    echo "==> aerospace-send-herdr-focus"
-    swiftc -O -o ~/.local/bin/aerospace-send-herdr-focus \
-        ../aerospace/.config/aerospace/send-herdr-focus.swift
-    or echo "Warning: aerospace-send-herdr-focus did not build. Focus uses the slower AppleScript fallback."
+# 5. Herdr agent hooks and machine-local agent instruction links
+if command -q herdr
+    echo "==> herdr-integrations.py"
+    python3 herdr-integrations.py; or exit 1
+end
+
+echo "==> agent-instructions.py"
+python3 agent-instructions.py; or exit 1
+
+# macOS desktop helpers, Karabiner rules, monitor policy, and window borders.
+# swiftc comes with the Xcode Command Line Tools from the Homebrew installer.
+if test (uname) = Darwin
+    if command -q swiftc
+        echo "==> aerospace-window-frames"
+        swiftc -O -o ~/.local/bin/aerospace-window-frames \
+            ../aerospace/.config/aerospace/window-frames.swift
+        or echo "Warning: aerospace-window-frames did not build. AeroSpace then tiles macOS tabs."
+        echo "==> aerospace-send-herdr-focus"
+        swiftc -O -o ~/.local/bin/aerospace-send-herdr-focus \
+            ../aerospace/.config/aerospace/send-herdr-focus.swift
+        or echo "Warning: aerospace-send-herdr-focus did not build. Focus uses the slower AppleScript fallback."
+    end
+
+    echo "==> karabiner rules"
+    python3 ~/.config/karabiner/generate-defy-rules.py; or exit 1
+
+    echo "==> monitor-layout.py"
+    python3 monitor-layout.py; or exit 1
+
+    if command -q brew; and command -q borders
+        echo "==> borders service"
+        brew services start borders; or exit 1
+    end
 end
 
 # Rebuild bat cache against the stowed bat config
