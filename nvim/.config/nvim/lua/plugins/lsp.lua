@@ -206,6 +206,29 @@ return {
         ensure_installed = vim.tbl_keys(servers),
         automatic_enable = true,
       }
+
+      -- Diffview shows git revisions in buffers with a special 'buftype'.
+      -- vim.lsp.enable() skips such buffers, so start ruby_lsp for them here.
+      -- Jumps go to the working tree, not to the revision in the diff.
+      -- RuboCop stays off: its warnings on old code are only noise.
+      vim.api.nvim_create_autocmd('User', {
+        group = vim.api.nvim_create_augroup('diffview-ruby-lsp', { clear = true }),
+        pattern = 'DiffviewDiffBufRead',
+        callback = function()
+          local buffer = vim.api.nvim_get_current_buf()
+          local is_git_revision = vim.bo[buffer].buftype ~= ''
+          if vim.bo[buffer].filetype ~= 'ruby' or not is_git_revision then
+            return
+          end
+          local repository_root = vim.fs.root(vim.fn.getcwd(), { 'Gemfile', '.git' })
+          if repository_root == nil then
+            return
+          end
+          local config = vim.deepcopy(vim.lsp.config.ruby_lsp)
+          config.root_dir = repository_root
+          vim.lsp.start(config, { bufnr = buffer, reuse_client = config.reuse_client })
+        end,
+      })
     end,
   },
   -- {

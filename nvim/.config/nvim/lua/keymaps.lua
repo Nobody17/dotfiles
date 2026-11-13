@@ -36,7 +36,7 @@ vim.keymap.set('x', '<leader>p', '"_dP', { desc = '[P]aste without overwriting p
 
 vim.keymap.set('n', '<leader>y', '"+y', { desc = '[Y]ank into system clipboard' })
 vim.keymap.set('v', '<leader>y', '"+y', { desc = '[Y]ank into system clipboard' })
-vim.keymap.set('n', '<leader>Y', '"+Y', { desc = '[Y]ank into system clipboard' })
+vim.keymap.set('n', '<leader>Y', '"+y$', { desc = '[Y]ank to end of line into system clipboard' })
 
 vim.keymap.set('n', '<leader>d', '"_d', { desc = '[D]elete into void register' })
 vim.keymap.set('v', '<leader>d', '"_d', { desc = '[D]elete into void register' })
