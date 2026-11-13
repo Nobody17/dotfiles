@@ -33,7 +33,8 @@ arbeite mit den vorhandenen Unterlagen, ohne fehlende Dokumenttypen anzulegen.
 Ermittle den absoluten Pfad des Ziel-Worktrees mit `git rev-parse --show-toplevel`
 im Projektverzeichnis. Die Art des Reviewers (Codex, auf Wunsch agy) und die
 Regeln für agy stehen im Abschnitt „Reviewer-Agent“ von
-`../cross-review-code/SKILL.md` neben diesem Skill; lies ihn vor dem Start.
+`../cross-review-code/SKILL.md` neben diesem Skill. Lies ihn und den Abschnitt
+„Vereinfachung“ dort vor dem Start; beide gelten auch hier.
 Prüfe vorhandene bereite Agenten
 dieser Art mit `herdr agent list`. Lass einen Kandidaten sein Arbeitsverzeichnis und seine Ausgabe von
 `git rev-parse --show-toplevel` nennen. Verwende ihn nur, wenn der Worktree
@@ -90,8 +91,8 @@ Gesprächsentscheidungen>. Prüfe diesen Umfang gemeinsam gegen den Code in
 <absoluter-worktree-pfad>. Fragen: Stimmen die Annahmen über den
 Bestand? Fehlen Schritte, ohne die das Vorhaben nicht läuft? Ist die
 Reihenfolge haltbar oder hängt Schritt N von etwas ab, das erst später kommt?
-Was lässt sich nicht testen? Wo ist der Plan aufwendiger als nötig, gibt es
-einen einfacheren Weg zum gleichen Ziel? Nenne nur konkrete Einwände mit Datei
+Was lässt sich nicht testen? <Satz aus „Vereinfachung“>
+Nenne nur konkrete Einwände mit Datei
 und Zeile oder mit dem Schritt, den sie betreffen. Ändere keine Dateien und
 setze nichts um. Schließe mit den geprüften Quellenständen und den offenen Einwänden
 ab; bestätige ausdrücklich, wenn keine offen sind." --wait --timeout 60000
@@ -110,6 +111,10 @@ Anforderung fehlt oder die Unterlagen widersprechen einander. Das korrigierst
 du selbst in den betroffenen Quellen.
 
 **Falscher Einwand.** Widersprich im nächsten Prompt mit Begründung.
+
+**Vereinfachung.** Der Plan, die Spec oder ein Ticket ist aufwendiger oder
+genauer, als der Zweck verlangt. Ordne den Einwand nach „Vereinfachung“ in
+`../cross-review-code/SKILL.md` ein.
 
 **Echte Weggabelung.** Zwei Umsetzungen sind beide vertretbar und führen zu
 merklich verschiedener Arbeit, verschiedenem Aufwand oder verschiedenen

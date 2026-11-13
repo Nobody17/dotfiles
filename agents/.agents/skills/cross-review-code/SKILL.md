@@ -77,10 +77,26 @@ Gibt dein Auftrag eine Form für schwere Befehle vor (Tests, Builds; zum Beispie
 `heavy-job.py` einer Orchestrierung), prüft der Reviewer nur lesend. Jeder
 Prompt an ihn enthält dann: "Führe keine Tests und Builds aus. Brauchst du einen
 Lauf, nenne Befehl und Zweck; ich führe ihn aus und gebe dir das Ergebnis."
-Wähle bei Codex in Runde 1 dafür den Preset „Custom review instructions“ und gib
-dort den Review-Umfang und diesen Satz ein; nur dieser Preset nimmt eine eigene
-Anweisung an. Führe angeforderte Läufe in der Form deines Auftrags aus. Zeigt eine Antwort einen eigenen Lauf des
+Führe angeforderte Läufe in der Form deines Auftrags aus. Zeigt eine Antwort einen eigenen Lauf des
 Reviewers, nenne ihn im Bericht.
+
+## Vereinfachung
+
+Jeder Reviewer-Prompt enthält: "Melde auch Over-engineering und Gold-Plating:
+Wo ist Code oder eine Vorgabe aufwendiger oder genauer, als ihr Zweck verlangt,
+zum Beispiel unnötige Abstraktion, Nachbau von Vorhandenem oder mehr Genauigkeit
+als nötig? Nenne den einfacheren Weg und was dadurch wegfällt."
+
+Ein solches Finding zählt als konkretes Finding. Ordne es ein:
+
+- **Gleiches zugesagtes Verhalten:** Du entscheidest selbst. Setze die
+  Vereinfachung um oder weise sie mit Begründung zurück.
+- **Gelockerte Vorgabe:** Der Vorschlag senkt eine Genauigkeit, Anforderung oder
+  ein Akzeptanzkriterium. Stammt die strenge Vorgabe nur aus deiner eigenen
+  Auslegung, entscheide selbst. Steht sie in Spec, Ticket, Plan oder einer
+  Nutzerentscheidung, frage den Nutzer mit `AskUserQuestion` und nenne Aufwand
+  und Folgen beider Varianten. Halte die Entscheidung in der betroffenen Quelle
+  fest.
 
 ## Vor der ersten Runde
 
@@ -101,7 +117,8 @@ abgeschlossener Gegenproben für eine Fortsetzung auf.
 Mit agy: Sende den Freitext-Prompt aus [Runde 2 und weiter](#runde-2-und-weiter-freitext)
 ohne die beiden Punkte zur Vorrunde.
 
-Mit Codex: Codex' eigenes `/review`, mit dem Preset für den festgelegten Umfang:
+Mit Codex: Codex' eigenes `/review` mit dem Preset „Custom review instructions“.
+Nur dieser Preset nimmt eine eigene Anweisung an:
 
 ```bash
 herdr agent prompt reviewer "/review"
@@ -114,10 +131,11 @@ prüfst du ebenfalls zuerst den sichtbaren Zustand nach den `herdr`-Regeln:
 herdr agent read reviewer --source visible --lines 15
 ```
 
-Wähle den passenden Preset anhand seiner sichtbaren Beschriftung. Für lokale
-Änderungen ist das „Review uncommitted changes“; bei einer Form für schwere
-Befehle gilt [Schwere Befehle](#schwere-befehle). Navigiere zur Auswahl, lies
-die Markierung erneut und bestätige erst, wenn sie beim gewünschten Preset steht:
+Navigiere zum Preset, lies die Markierung erneut und bestätige erst, wenn sie
+dort steht. Gib dann als Anweisung ein: den absoluten Ziel-Worktree, den
+Review-Umfang, den Satz aus [Vereinfachung](#vereinfachung) und bei einer Form
+für schwere Befehle den Satz aus [Schwere Befehle](#schwere-befehle). Bestätige
+und lies die Antwort:
 
 ```bash
 herdr agent send-keys reviewer enter
@@ -139,6 +157,7 @@ Für die Prüfung der Korrekturen sende einen Freitext-Prompt. Er enthält:
 - was du aus der Vorrunde geändert hast und mit welcher Begründung
 - die konkreten Zweifel als Fragen, nicht als Aufgabe
 - "Nenne nur konkrete Findings mit Datei und Zeile, keine Stilfragen"
+- den Satz aus [Vereinfachung](#vereinfachung)
 - "Ändere keine Dateien"
 - bei einer Form für schwere Befehle den Satz aus [Schwere Befehle](#schwere-befehle)
 - "Prüfe jede behauptete Korrektur und jede Zurückweisung. Melde einen Punkt
@@ -149,7 +168,8 @@ Für die Prüfung der Korrekturen sende einen Freitext-Prompt. Er enthält:
 ## Findings behandeln
 
 Prüfe jedes Finding anhand seines Fehlerfalls. Korrigiere belegte Fehler;
-widersprich falschen Findings im nächsten Prompt mit Begründung.
+widersprich falschen Findings im nächsten Prompt mit Begründung. Ordne
+Vereinfachungs-Findings nach [Vereinfachung](#vereinfachung) ein.
 
 Nach jeder Korrektur die eigenen Tests laufen lassen und für jede neu
 hinzugekommene Zusage die Gegenprobe wiederholen.
