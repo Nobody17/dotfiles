@@ -18,13 +18,6 @@ DISPLAYPLACER = (
         else '/usr/local/bin/displayplacer')
 )
 
-# These external monitors sit to the left of the MacBook.
-LAPTOP_RIGHT_OF = {
-    'BA6ADBB0-0DE4-4385-B2D2-2D477E83E5D0',
-    'D9AD7CFD-50E6-4937-8163-3C941C9E64A5',  # Samsung
-}
-
-
 def displays():
     output = subprocess.check_output([DISPLAYPLACER, 'list'], text=True, timeout=8)
     result = []
@@ -71,21 +64,14 @@ def main():
         return
     screens.sort(key=lambda s: (not s['internal'], s['inches'],
                                s['best']['width'] * s['best']['height'], s['id']), reverse=True)
-    # Keep the default left-side laptop layout for other monitors.
-    laptop_on_right = screens[0]['id'] in LAPTOP_RIGHT_OF
-    left, right = 0, 0
+    # The laptop sits to the right of the main external monitor. macOS changes
+    # persistent screen ids, so do not match on ids.
+    next_x = 0
     arguments, changed = [], False
-    for index, screen in enumerate(screens):
+    for screen in screens:
         mode = screen['best']
-        if index == 0:
-            x, right = 0, mode['width']
-        elif screen['internal'] and not laptop_on_right:
-            left -= mode['width']
-            x = left
-        else:
-            x = right
-            right += mode['width']
-        origin = f'({x},0)'
+        origin = f'({next_x},0)'
+        next_x += mode['width']
         resolution = f"{mode['width']}x{mode['height']}"
         scaling = 'on' if mode['scaled'] else 'off'
         arguments.append(f"id:{screen['id']} res:{resolution} hz:{mode['hz']:g} "
