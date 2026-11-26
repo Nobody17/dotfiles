@@ -57,8 +57,16 @@ class AntigravityAgentModeTests(unittest.TestCase):
     def setUp(self):
         self.installer = load_installer()
         self.directory = tempfile.TemporaryDirectory()
-        self.home = Path(self.directory.name)
+        self.home = Path(self.directory.name) / "home"
+        self.repository_root = Path(self.directory.name) / "dotfiles"
+        self.home.mkdir()
+        self.repository_root.mkdir()
         self.settings = self.home / ".gemini/antigravity-cli/settings.json"
+        self.expected_skill_rules = [
+            f"read_file({self.home / '.gemini/config/skills'})",
+            f"read_file({self.home / '.agents/skills'})",
+            f"read_file({self.repository_root / 'agents/.agents/skills'})",
+        ]
 
     def tearDown(self):
         self.directory.cleanup()
@@ -66,35 +74,80 @@ class AntigravityAgentModeTests(unittest.TestCase):
     def read_settings(self):
         return json.loads(self.settings.read_text())
 
-    def test_install_starts_agy_in_auto_mode(self):
-        self.installer.install(self.home)
-
-        self.assertEqual(self.read_settings(), {"agentMode": "auto"})
-
-    def test_install_keeps_the_other_agy_settings(self):
-        self.settings.parent.mkdir(parents=True)
-        self.settings.write_text(json.dumps({"trustedWorkspaces": ["/work"]}))
-
-        self.installer.install(self.home)
+    def test_install_starts_agy_in_auto_mode_and_allows_reading_skills(self):
+        self.installer.install(self.home, repository_root=self.repository_root)
 
         self.assertEqual(
-            self.read_settings(), {"trustedWorkspaces": ["/work"], "agentMode": "auto"}
+            self.read_settings(),
+            {
+                "agentMode": "auto",
+                "permissions": {"allow": self.expected_skill_rules},
+            },
+        )
+
+    def test_install_keeps_the_other_agy_settings_and_permission_rules(self):
+        self.settings.parent.mkdir(parents=True)
+        self.settings.write_text(
+            json.dumps(
+                {
+                    "trustedWorkspaces": ["/work"],
+                    "permissions": {
+                        "allow": ["command(git)", self.expected_skill_rules[0]],
+                        "deny": ["command(rm -rf)"],
+                    },
+                }
+            )
+        )
+
+        self.installer.install(self.home, repository_root=self.repository_root)
+
+        self.assertEqual(
+            self.read_settings(),
+            {
+                "trustedWorkspaces": ["/work"],
+                "agentMode": "auto",
+                "permissions": {
+                    "allow": ["command(git)", *self.expected_skill_rules],
+                    "deny": ["command(rm -rf)"],
+                },
+            },
+        )
+
+    def test_second_install_does_not_duplicate_skill_read_permissions(self):
+        self.installer.install(self.home, repository_root=self.repository_root)
+        self.installer.install(self.home, repository_root=self.repository_root)
+
+        self.assertEqual(
+            self.read_settings()["permissions"]["allow"],
+            self.expected_skill_rules,
         )
 
     def test_install_keeps_a_mode_chosen_on_this_machine(self):
         self.settings.parent.mkdir(parents=True)
         self.settings.write_text(json.dumps({"agentMode": ""}))
 
-        self.installer.install(self.home)
+        self.installer.install(self.home, repository_root=self.repository_root)
 
-        self.assertEqual(self.read_settings(), {"agentMode": ""})
+        self.assertEqual(self.read_settings()["agentMode"], "")
+        self.assertEqual(
+            self.read_settings()["permissions"],
+            {"allow": self.expected_skill_rules},
+        )
 
     def test_install_stops_on_unreadable_agy_settings(self):
         self.settings.parent.mkdir(parents=True)
         self.settings.write_text("{not json")
 
         with self.assertRaises(ValueError):
-            self.installer.install(self.home)
+            self.installer.install(self.home, repository_root=self.repository_root)
+        self.assertFalse((self.home / ".agents/local.md").exists())
+
+    def test_install_stops_on_malformed_agy_permissions_shape(self):
+        self.settings.parent.mkdir(parents=True)
+        self.settings.write_text(json.dumps({"permissions": ["not-an-object"]}))
+
+        with self.assertRaises(ValueError):
+            self.installer.install(self.home, repository_root=self.repository_root)
         self.assertFalse((self.home / ".agents/local.md").exists())
 
 

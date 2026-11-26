@@ -1,7 +1,10 @@
-"""Install automatic machine-local context for Codex, Pi and Antigravity, and agy Auto mode; preserve other hooks."""
+"""Install automatic machine-local context for Codex, Pi and Antigravity, and agy defaults; preserve other hooks."""
 
 import json
 from pathlib import Path
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
 def antigravity_links(home: Path) -> dict[Path, Path]:
@@ -21,6 +24,41 @@ def with_auto_agent_mode(settings: dict) -> dict:
     return settings if "agentMode" in settings else {**settings, "agentMode": "auto"}
 
 
+def skill_read_allow_rules(home: Path, repository_root: Path = REPOSITORY_ROOT) -> list[str]:
+    """agy read_file rules covering the config link, shared skills, and stowed repo skills."""
+    skill_directories = (
+        home / ".gemini/config/skills",
+        home / ".agents/skills",
+        repository_root / "agents/.agents/skills",
+    )
+    return [f"read_file({directory})" for directory in skill_directories]
+
+
+def with_skill_read_permissions(
+    settings: dict,
+    home: Path,
+    repository_root: Path = REPOSITORY_ROOT,
+) -> dict:
+    """agy settings that allow reading global skills without prompting, preserving other rules."""
+    permissions = settings.get("permissions", {})
+    if not isinstance(permissions, dict):
+        raise ValueError("agy settings 'permissions' must be a JSON object")
+    existing_allow_rules = permissions.get("allow", [])
+    if not isinstance(existing_allow_rules, list):
+        raise ValueError("agy settings 'permissions.allow' must be a JSON array")
+    merged_allow_rules = list(existing_allow_rules)
+    for rule in skill_read_allow_rules(home, repository_root):
+        if rule not in merged_allow_rules:
+            merged_allow_rules.append(rule)
+    return {
+        **settings,
+        "permissions": {
+            **permissions,
+            "allow": merged_allow_rules,
+        },
+    }
+
+
 def blocked_links(links: dict[Path, Path]) -> list[Path]:
     """Paths that hold something other than the wanted link."""
     return [
@@ -37,7 +75,7 @@ def make_links(links: dict[Path, Path]) -> None:
             link.symlink_to(target)
 
 
-def install(home: Path) -> None:
+def install(home: Path, repository_root: Path = REPOSITORY_ROOT) -> None:
     local = home / ".agents/local.md"
     previous = home / ".config/agent-instructions/local.md"
     if previous.exists() and local.exists() and previous.read_bytes() != local.read_bytes():
@@ -52,10 +90,16 @@ def install(home: Path) -> None:
     blocked = blocked_links(links)
     if blocked:
         raise RuntimeError(f"Move these Antigravity files away before installing: {blocked}")
-    # agy writes trustedWorkspaces into this file, so the repo cannot own it; merge one key instead.
+    # agy writes trustedWorkspaces into this file, so the repo cannot own it; merge defaults instead.
     agy_settings_path = home / ".gemini/antigravity-cli/settings.json"
     agy_settings = json.loads(agy_settings_path.read_text()) if agy_settings_path.exists() else {}
-    wanted_agy_settings = with_auto_agent_mode(agy_settings)
+    if not isinstance(agy_settings, dict):
+        raise ValueError("agy settings must be a JSON object")
+    wanted_agy_settings = with_skill_read_permissions(
+        with_auto_agent_mode(agy_settings),
+        home,
+        repository_root,
+    )
 
     hooks_path = home / ".codex/hooks.json"
     configuration = json.loads(hooks_path.read_text()) if hooks_path.exists() else {}
@@ -109,5 +153,8 @@ def install(home: Path) -> None:
 
 if __name__ == "__main__":
     install(Path.home())
-    print("Installed Pi prompt link, Antigravity links, agy Auto mode and Codex SessionStart hook.")
+    print(
+        "Installed Pi prompt link, Antigravity links, agy defaults (Auto mode + skill read permissions) "
+        "and Codex SessionStart hook."
+    )
     print("In Codex, review and trust 'Loading machine-local instructions' with /hooks.")
