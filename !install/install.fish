@@ -90,6 +90,10 @@ end
 echo "==> agent-instructions.py"
 python3 agent-instructions.py; or exit 1
 
+# ~/.claude/settings.json from the tracked base and the private local part
+echo "==> claude-settings.py"
+python3 claude-settings.py; or exit 1
+
 # macOS desktop helpers, Karabiner rules, monitor policy, and window borders.
 # swiftc comes with the Xcode Command Line Tools from the Homebrew installer.
 if test (uname) = Darwin

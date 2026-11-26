@@ -30,7 +30,8 @@ pi/.pi/agent/pi-debug.log
 # can never reach a commit by accident.
 claude/.claude/*
 !claude/.claude/CLAUDE.md
-!claude/.claude/settings.json
+!claude/.claude/settings.base.json
+!claude/.claude/statusline-command.sh
 !claude/.claude/plugins/
 claude/.claude/plugins/*
 !claude/.claude/plugins/known_marketplaces.json

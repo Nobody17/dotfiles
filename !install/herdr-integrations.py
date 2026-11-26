@@ -39,11 +39,11 @@ def install_claude_hook_script(
     herdr_executable: str,
     base_environment: dict[str, str] | None = None,
 ) -> Path:
-    """Stage Claude's hook script in a temporary HOME so tracked settings.json stays clean.
+    """Stage Claude's hook script in a temporary HOME so ~/.claude/settings.json stays clean.
 
-    claude/.claude/settings.json already invokes $HOME/.claude/hooks/herdr-agent-state.sh
+    claude/.claude/settings.base.json already invokes $HOME/.claude/hooks/herdr-agent-state.sh
     portably on both Linux and macOS. Running `herdr integration install claude` directly
-    on $HOME would append a machine-specific absolute path into that tracked file.
+    on $HOME would append a machine-specific absolute path into ~/.claude/settings.json.
     """
     with tempfile.TemporaryDirectory() as temporary_home_name:
         temporary_home = Path(temporary_home_name)

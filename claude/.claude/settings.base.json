@@ -1,0 +1,58 @@
+{
+  "model": "fable",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "c=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$c\" | grep -qE '(^|[;&|(]|[[:space:]])(git([[:space:]]+-[^;&|]*)?[[:space:]]+push|gh[[:space:]]+pr[[:space:]]+(create|merge)|glab[[:space:]]+mr[[:space:]]+(create|merge))([[:space:]]|$|[;&|])'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"Pushes and PRs/MRs are outward-facing. Approve only if you asked for this push or PR.\"}}'; fi",
+            "timeout": 10,
+            "statusMessage": "Checking for git push / PR"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "if [ -n \"$CLAUDE_ENV_FILE\" ] && [ -d \"$HOME/.local/share/mise/shims\" ]; then printf 'export PATH=\"$HOME/.local/share/mise/shims:$PATH\"\\n' >> \"$CLAUDE_ENV_FILE\"; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "if [ -f \"$HOME/.claude/statusline-command.sh\" ]; then bash \"$HOME/.claude/statusline-command.sh\"; fi"
+  },
+  "enabledPlugins": {
+    "impeccable@impeccable": true,
+    "ruby-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
+    }
+  },
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "theme": "dark",
+  "switchModelsOnFlag": true
+}

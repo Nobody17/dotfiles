@@ -1,0 +1,31 @@
+# Files of the claude package that stow must not link into the home folder.
+#
+# settings.base.json is only the tracked part of ~/.claude/settings.json.
+# !install/claude-settings.py merges it with ~/.claude/settings.private.json
+# into a real ~/.claude/settings.json.
+#
+# Anchoring rule: stow matches a pattern that holds a "/" against the path
+# inside the package WITH a leading slash.
+#
+# This file also replaces the built-in ignore list of stow, so the useful parts
+# of that list are repeated at the end.
+
+^/\.claude/settings\.base\.json$
+
+# Repeated from the built-in list of stow
+\.git
+\.gitignore
+\.gitmodules
+\.svn
+\.hg
+CVS
+RCS
+_darcs
+\.cvsignore
+.+~
+\#.*\#
+\.\#.+
+.+,v
+^/README.*
+^/LICENSE.*
+^/COPYING

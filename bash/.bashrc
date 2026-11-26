@@ -104,8 +104,12 @@ case $- in
         fi
         ;;
     *)
-        # Scripts and the Claude Code Bash tool use the shims. Each shim picks
-        # the tool version of the current folder when it runs.
+        # Scripts use the shims. Each shim picks the tool version of the
+        # current folder when it runs. The Claude Code Bash tool does not get
+        # its PATH from here: its shell snapshot ends with the PATH of the
+        # fish session that started Claude Code, where `mise activate` put
+        # the tool versions of that folder first. The SessionStart hook in
+        # claude/.claude/settings.base.json puts the shims first for it.
         path_prepend "$HOME/.local/share/mise/shims"
         ;;
 esac
