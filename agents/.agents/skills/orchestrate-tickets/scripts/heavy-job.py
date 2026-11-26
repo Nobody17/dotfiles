@@ -48,6 +48,8 @@ import threading
 import time
 from pathlib import Path
 
+import awake
+
 STOPPED_EXIT = 124
 USAGE_EXIT = 125
 NOT_FOUND_EXIT = 127
@@ -356,6 +358,9 @@ class JobRunner:
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.copies = [OutputCopy(self.process.stdout, sys.stdout.buffer, self.log),
                        OutputCopy(self.process.stderr, sys.stderr.buffer, self.log)]
+        awake.keep_awake(os.getpid())
+        self.sleep_meter = awake.SleepMeter()
+        self.slept_seconds = 0.0
 
     def note_signal(self, signal_number, _frame):
         self.received_signal = signal_number
@@ -376,7 +381,7 @@ class JobRunner:
             'slot': self.slot, 'pid': os.getpid(), 'process_group': self.process.pid, 'state': self.state,
             'cleanup_attempts': self.cleanup_attempts,
             'started': self.started.isoformat(), 'review_at': self.review_at.isoformat(),
-            'overdue': now_utc() > self.review_at,
+            'overdue': now_utc() > self.review_at, 'slept_seconds': round(self.slept_seconds),
             'last_output': datetime.datetime.fromtimestamp(last_output, datetime.timezone.utc).isoformat(),
             'log': str(self.log_path),
         })
@@ -430,14 +435,23 @@ class JobRunner:
                 say(f'the command ended, but processes of its group still run; the slot stays held: {self.label}')
                 self.group_announced = True
 
+    def note_sleep(self):
+        """A machine sleep is no run time: move the review time by it."""
+        slept = self.sleep_meter.take()
+        if slept:
+            self.slept_seconds += slept
+            self.review_at += datetime.timedelta(seconds=slept)
+            say(f'the machine slept {slept / 60:.0f} min; the review time moves by that: {self.label}')
+
     def announce_review(self):
         if self.state != 'cleanup failed' and now_utc() > self.review_at and not self.overdue_announced:
-            minutes = (now_utc() - self.started).total_seconds() / 60
+            minutes = ((now_utc() - self.started).total_seconds() - self.slept_seconds) / 60
             say(f'running {minutes:.0f} min; needs a review, the job continues: {self.label}')
             self.overdue_announced = True
 
     def run(self):
         while self.exit_code is None:
+            self.note_sleep()
             self.write_record()
             self.observe_command()
             if self.received_signal is not None and self.state != 'cleanup failed':

@@ -26,6 +26,8 @@ Prints one line per event that needs the orchestrator:
   job <job> <label> cleanup failed; slot held until --stop or --release
                                    a stopped job's stop_cleanup failed
   timeout after <N> min            no event within --timeout-minutes
+  sleep <N> min                    the machine slept; nothing ran in that time. The timeout and the
+                                   review times of heavy jobs move by it. Check that the agents continue.
   herdr unavailable: <error>       `herdr agent list` failed three polls in a row
 
 --once prints all events of the first poll that has events, then exits 0.
@@ -55,6 +57,8 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+import awake
 
 SETTLED_STATES = {'idle', 'done', 'blocked', 'unknown'}
 RESTING_STATES = {'idle', 'done'}
@@ -306,7 +310,8 @@ def job_events(run_directory, reported, now):
             continue
         if minutes_since(record['review_at'], now) > 0:
             report_once(f'{job}@{record["review_at"]}',
-                        f'job {job} {label} needs a review: running {minutes_since(record["started"], now):.0f} min, '
+                        f'job {job} {label} needs a review: running '
+                        f'{minutes_since(record["started"], now) - record.get("slept_seconds", 0) / 60:.0f} min, '
                         f'last output {minutes_since(record["last_output"], now):.0f} min ago')
     return events, still_reported
 
@@ -339,8 +344,15 @@ def main():
     save_state(state_path, state)
     deadline = time.time() + arguments.timeout_minutes * 60 if arguments.timeout_minutes else None
     failures = 0
+    awake.keep_awake(os.getpid())
+    sleep_meter = awake.SleepMeter()
     while True:
         events, state['files'] = file_events(run_directory, state['files'], arguments.ignore_message)
+        slept = sleep_meter.take()
+        if slept:
+            events.append(f'sleep {slept / 60:.0f} min')
+            if deadline:
+                deadline += slept
         current_states, error = run_agent_states(arguments.prefix)
         if current_states is None:
             failures += 1
@@ -351,7 +363,8 @@ def main():
             events += agent_events(state['agents'], current_states, closed_session_names(run_directory),
                                    report_all=arguments.all, ignored_gone=arguments.ignore_gone)
             state['agents'] = current_states
-        events += poll_resources(run_directory, state, state['agents'], time.time())
+        if not slept:  # after a sleep the job wrappers first move their review times
+            events += poll_resources(run_directory, state, state['agents'], time.time())
         if not events and deadline and time.time() > deadline:
             events.append(f'timeout after {arguments.timeout_minutes:g} min')
         save_state(state_path, state)
